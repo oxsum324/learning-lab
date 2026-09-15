@@ -1,4 +1,6 @@
-export const KEY='learning-lab:v1';
+import {validDrawing} from './drawing-model.js?v=0.2.0';
+export const SANDBOX=typeof location!=='undefined'&&new URLSearchParams(location.search).get('sandbox')==='1';
+export const KEY=SANDBOX?'learning-lab:sandbox:v1':'learning-lab:v1';
 export const emptyState=()=>({schemaVersion:1,topicId:'structural-analysis',records:[],drafts:{}});
 export function assess(fields,values,hint=0){
  const checks=fields.map(f=>{const raw=String(values[f.id]??'').trim();const n=raw===''?NaN:Number(raw);return {label:f.label,expected:f.value,actual:Number.isFinite(n)?n:null,unit:f.unit,ok:Number.isFinite(n)&&Math.abs(n-f.value)<=Math.max(Math.abs(f.value)*.01,.000001)};});
@@ -12,8 +14,8 @@ function draftOK(d){return isObj(d)&&Number.isFinite(d.activeMs)&&d.activeMs>=0&
 export function validateState(s){
  if(!isObj(s)||s.schemaVersion!==1||s.topicId!=='structural-analysis'||!Array.isArray(s.records)||s.records.length>2000||!isObj(s.drafts))throw Error('備份格式或版本不支援。');
  const ids=new Set();
- for(const r of s.records){if(!isObj(r)||!str(r.id,100)||!r.id||ids.has(r.id)||!Number.isInteger(r.day)||r.day<1||r.day>30||!draftOK(r)||!str(r.submittedAt,50)||!Number.isFinite(Date.parse(r.submittedAt))||!str(r.curriculumVersion,40)||!isObj(r.assessment)||!str(r.assessment.text,500))throw Error('備份含無效或重複的作答紀錄。');ids.add(r.id);}
- if(Object.keys(s.drafts).length>30||Object.entries(s.drafts).some(([k,v])=>!/^([1-9]|[12][0-9]|30)$/.test(k)||!draftOK(v)))throw Error('備份草稿資料無效。');
+ for(const r of s.records){if(!isObj(r)||!str(r.id,100)||!r.id||ids.has(r.id)||!Number.isInteger(r.day)||r.day<1||r.day>30||!draftOK(r)||!validDrawing(r.drawing)||!str(r.submittedAt,50)||!Number.isFinite(Date.parse(r.submittedAt))||!str(r.curriculumVersion,40)||!isObj(r.assessment)||!str(r.assessment.text,500))throw Error('備份含無效或重複的作答紀錄。');ids.add(r.id);}
+ if(Object.keys(s.drafts).length>30||Object.entries(s.drafts).some(([k,v])=>!/^([1-9]|[12][0-9]|30)$/.test(k)||!draftOK(v)||!validDrawing(v.drawing)))throw Error('備份草稿資料無效。');
  return s;
 }
 export function mergeStates(a,b){
