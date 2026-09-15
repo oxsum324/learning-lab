@@ -50,3 +50,12 @@ git subtree push --prefix site origin gh-pages
 - [NPTEL 力法](https://archive.nptel.ac.in/content/storage2/courses/105101085/Slides/Module-5/Lecture-2/5.2_2.html)
 
 題目與30天安排為自編複習材料，外部來源提供理論參考。
+
+## v0.3.0 第二主題
+
+- 結構學：`/?topic=structural-analysis`；舊版不帶topic的連結與儲存鍵保持相容。
+- 鋼筋混凝土（含預力）：`/?topic=reinforced-concrete`；30天任務、官方題源、作答提示與白話參考。
+- RC為任務與人工審閱模式：自選教材短題或D24～27官方原卷作答，尚無30份逐題數值詳解；不假報數值驗收。
+- 兩科各有草稿、計時、圖解、歷史、JSON備份與記住的課次；錯科備份會拒絕匯入，請先切換對應主題。
+- 切換時先保存及暫停計時，儲存失敗就保留本頁以便匯出。
+- RC課表生成：`node scripts/build-rc-course.mjs <已核可進度表路徑>`；只擷取課表欄位，公開掃描覆蓋兩科。
