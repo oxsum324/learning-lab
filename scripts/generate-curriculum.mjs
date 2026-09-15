@@ -2,7 +2,7 @@ import {readFileSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 const root=process.argv[2];if(!root)throw Error('Provide the local curriculum folder.');
 const read=name=>readFileSync(join(root,name),'utf8').replace(/^---[\s\S]*?---\s*/,'');
-const plan=read('30天學習方案.md');
+const plan=read('30天學習方案.md').replaceAll('画','畫');
 const days=plan.split('\n').filter(l=>/^\| D\d\d /.test(l)).map(l=>{const c=l.split('|').map(x=>x.trim());return {day:Number(c[1].slice(1,3)),read:c[2],task:c[3],check:c[4]};});
 if(days.length!==30)throw Error('Expected 30 days.');
 const bank=read('題庫與核對答案.md');const before=bank.split('## 核對答案')[0];
