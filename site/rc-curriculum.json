@@ -279,13 +279,13 @@
         {
           "id": "as_req",
           "label": "所需拉力筋",
-          "value": 1138.601,
+          "value": 1256.959,
           "unit": "mm2"
         },
         {
           "id": "a",
           "label": "壓力塊深度",
-          "value": 22.326,
+          "value": 73.939,
           "unit": "mm"
         },
         {

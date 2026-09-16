@@ -43,6 +43,13 @@ test('all five curricula expose only approved seed checks on D01-D07, D14 and D2
   });
  }
 });
+test('independent blind-solve corrections override only the affected public checks',()=>{
+ const read=id=>JSON.parse(readFileSync(new URL('../site/'+TOPICS[id].curriculum,import.meta.url)));
+ const value=(course,day,id)=>course.days[day-1].fields.find(field=>field.id===id)?.value;
+ assert.equal(value(read('structural-analysis'),7,'r_b'),12.1519);assert.equal(value(read('structural-analysis'),7,'m_a'),-31.3924);
+ assert.equal(value(read('reinforced-concrete'),7,'as_req'),1256.959);assert.equal(value(read('reinforced-concrete'),7,'a'),73.939);
+ assert.equal(value(read('structural-dynamics'),5,'dy_c05_base_shear'),117.6);
+});
 test('runtime modules use the package release version so cached legacy code cannot reject new topics',()=>{
  for(const file of ['app.js','core.js','drawing.js']){const code=readFileSync(new URL('../site/'+file,import.meta.url),'utf8');for(const match of code.matchAll(/from ['"]([^'"]+)['"]/g))assert.equal(match[1].split('?v=')[1],version);}
 });

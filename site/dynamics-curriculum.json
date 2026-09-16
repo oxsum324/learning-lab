@@ -174,8 +174,8 @@
       "fields": [
         {
           "id": "dy_c05_base_shear",
-          "label": "核對值：dy_c05_base_shear",
-          "value": 84,
+          "label": "基底總剪力",
+          "value": 117.6,
           "unit": "kN"
         }
       ],

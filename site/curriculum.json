@@ -178,14 +178,14 @@
         },
         {
           "id": "r_b",
-          "label": "B撐桿反力",
-          "value": 64,
+          "label": "B撐桿向上反力",
+          "value": 12.1519,
           "unit": "kN"
         },
         {
           "id": "m_a",
           "label": "A固定端矩",
-          "value": -176,
+          "value": -31.3924,
           "unit": "kN-m"
         },
         {
