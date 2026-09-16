@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {TOPICS,resolveTopic,storageKey,dayKey} from '../site/topics.js';
 import {emptyState,validateState,mergeStates,safeSave} from '../site/core.js';
 import {emptyDrawing,shape} from '../site/drawing-model.js';
-const ids=Object.keys(TOPICS),added=ids.slice(2);
+const ids=Object.keys(TOPICS),added=ids.slice(2),version=JSON.parse(readFileSync(new URL('../package.json',import.meta.url))).version;
 test('five topics keep ten disjoint production and sandbox keys with legacy compatibility',()=>{
  assert.equal(ids.length,5);assert.equal(storageKey(ids[0]),'learning-lab:v1');assert.equal(storageKey(ids[1]),'learning-lab:reinforced-concrete:v1');
  assert.equal(new Set(ids.flatMap(id=>[storageKey(id),storageKey(id,true)])).size,10);
@@ -25,12 +25,24 @@ test('all new topics preserve drawings, timer, drafts and attempts; all cross-to
 test('90 review tasks contain hints and diagnostics never reveal answers before reference opens',()=>{
  for(const id of added){const c=JSON.parse(readFileSync(new URL('../site/'+TOPICS[id].curriculum,import.meta.url)));
   assert.equal(c.topicId,id);assert.equal(c.days.length,30);assert.match(c.answers,/尚未提供30份逐題數值詳解/);
-  c.days.forEach((d,i)=>{assert.equal(d.day,i+1);assert.deepEqual(d.fields,[]);for(const key of ['read','task','check','problem'])assert.ok(d[key]);assert.ok(d.guide.worked.length>=3);assert.ok(d.guide.plain.length>20);assert.ok(d.guide.draw.length>=2);});
+  c.days.forEach((d,i)=>{assert.equal(d.day,i+1);for(const key of ['read','task','check','problem'])assert.ok(d[key]);assert.ok(d.guide.worked.length>=3);assert.ok(d.guide.plain.length>20);assert.ok(d.guide.draw.length>=2);});
   assert.match(c.days[0].problem,/診斷|閉卷|作答/);assert.ok(c.sources.some(s=>s.url.includes('code=114180')));
   if(id==='structural-dynamics'){assert.doesNotMatch(c.days[0].problem,/0\.628|0\.06/);assert.match(c.days[0].guide.worked.join(' '),/0\.628/);}
   if(id==='soil-foundations'){assert.doesNotMatch(c.days[0].problem,/66\.57|29\.43/);assert.match(c.days[0].guide.worked.join(' '),/66\.57/);}
  }
 });
-test('runtime modules use current release imports so cached legacy code cannot reject new topics',()=>{
- for(const file of ['app.js','core.js','drawing.js']){const code=readFileSync(new URL('../site/'+file,import.meta.url),'utf8');for(const match of code.matchAll(/from ['"]([^'"]+)['"]/g))assert.match(match[1],/\?v=0\.4\.0$/);}
+test('all five curricula expose only approved seed checks on D01-D07, D14 and D23',()=>{
+ const seeded=new Set([1,2,3,4,5,6,7,14,23]);
+ for(const id of ids){
+  const c=JSON.parse(readFileSync(new URL('../site/'+TOPICS[id].curriculum,import.meta.url)));
+  c.days.forEach(day=>{
+   if(!seeded.has(day.day))assert.deepEqual(day.fields,[],`${id} D${day.day}`);
+   else assert.ok(day.fields.length>0,`${id} D${day.day}`);
+   assert.equal(new Set(day.fields.map(field=>field.id)).size,day.fields.length,`${id} D${day.day}`);
+   day.fields.forEach(field=>{assert.match(field.id,/^[a-z][a-z0-9_]*$/);assert.ok(field.label);assert.ok(Number.isFinite(field.value));assert.ok(field.unit);});
+  });
+ }
+});
+test('runtime modules use the package release version so cached legacy code cannot reject new topics',()=>{
+ for(const file of ['app.js','core.js','drawing.js']){const code=readFileSync(new URL('../site/'+file,import.meta.url),'utf8');for(const match of code.matchAll(/from ['"]([^'"]+)['"]/g))assert.equal(match[1].split('?v=')[1],version);}
 });

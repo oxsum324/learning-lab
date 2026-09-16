@@ -60,19 +60,22 @@ git subtree push --prefix site origin gh-pages
 - 切換時先保存及暫停計時，儲存失敗就保留本頁以便匯出。
 - RC課表生成：`node scripts/build-rc-course.mjs <已核可進度表路徑>`；只擷取課表欄位，公開掃描覆蓋兩科。
 
-## v0.4.0 五科入口
+## v0.5.0 五科入口
 
 | 主題 | 連結參數 |
 |---|---|
-| 結構學 | `/?topic=structural-analysis&v=0.4.0` |
-| 鋼筋混凝土（含預力） | `/?topic=reinforced-concrete&v=0.4.0` |
-| 鋼結構 | `/?topic=steel-structures&v=0.4.0` |
-| 耐震設計及結構動力 | `/?topic=structural-dynamics&v=0.4.0` |
-| 土壤力學及大地工程 | `/?topic=soil-foundations&v=0.4.0` |
+| 結構學 | `/?topic=structural-analysis&v=0.5.0` |
+| 鋼筋混凝土（含預力） | `/?topic=reinforced-concrete&v=0.5.0` |
+| 鋼結構 | `/?topic=steel-structures&v=0.5.0` |
+| 耐震設計及結構動力 | `/?topic=structural-dynamics&v=0.5.0` |
+| 土壤力學及大地工程 | `/?topic=soil-foundations&v=0.5.0` |
 
 - 新增90天任務、逐日白話提示、圖解作答方向、首日診斷與參考，及114年各科官方原卷連結。
 - 新科沿用每日30～60分鐘。這是複習任務與人工審閱模式，尚未提供90份逐題數值詳解；數值題使用指定教材／原卷。
 - 每科分開保存草稿、計時、圖解、歷次提交及JSON備份；舊兩科儲存鍵不變。尚無Firebase同步。
 - 生成：`node scripts/build-review-courses.mjs <鋼結構進度表> <動力耐震進度表> <土壤基礎進度表>`。只輸出核准課表及診斷段落，不複製私人紀錄。
-- 公開掃描動態涵蓋五科150天；20項測試涵蓋跨科備份拒絕、舊資料相容、圖解與提示紀錄。
+- 題庫核對完成後，在本機執行 `npm run inject-seed-fields`；它從五科 Markdown 的「核對欄位與驗算紀錄」寫入 D01～D07、D14、D23，答案不寫入題目區。
+- 公開掃描動態涵蓋五科150天；25項測試涵蓋跨科備份拒絕、舊資料相容、圖解與提示紀錄。
+- `package.json`是版本唯一來源；`npm test`與`npm run build`會先同步公開資產快取版本。CI只驗證main，不自動部署。
+- `node scripts/backup-records.mjs [JSON檔]`驗證並複製瀏覽器匯出紀錄至本機歷史備份；自動偵測可用備份根目錄，或設定`LEARNING_LAB_BACKUP_ROOT`。同名檔不覆蓋，遠端同步須另行確認。
 - 瀏覽器驗證使用獨立測試空間，涵蓋切科、計時、圖解、提交、重新整理、匯出／還原、錯科匯入與手機寬度；功能測試不算學習成果。
