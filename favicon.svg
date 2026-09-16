@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="學習工作室">
+  <rect width="64" height="64" rx="14" fill="#173c36"/>
+  <path d="M13 44h38M19 40V24M32 40V16M45 40V29" fill="none" stroke="#dfead8" stroke-linecap="round" stroke-width="5"/>
+  <circle cx="19" cy="24" r="4" fill="#8bc7b5"/><circle cx="32" cy="16" r="4" fill="#8bc7b5"/><circle cx="45" cy="29" r="4" fill="#8bc7b5"/>
+</svg>
