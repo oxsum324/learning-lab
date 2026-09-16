@@ -1,4 +1,4 @@
-import {SHEETS,COLORS,emptyDrawing,validDrawing,shape,moveShape,makeTemplate} from './drawing-model.js?v=0.2.0';
+import {SHEETS,COLORS,emptyDrawing,validDrawing,shape,moveShape,makeTemplate} from './drawing-model.js?v=0.4.0';
 const NS='http://www.w3.org/2000/svg';
 const svgNode=(tag,attrs={})=>{const n=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,String(v));return n;};
 function arrow(g,x1,y1,x2,y2,color){g.append(svgNode('line',{x1,y1,x2,y2,stroke:color,'stroke-width':3}));const a=Math.atan2(y2-y1,x2-x1),l=13;g.append(svgNode('path',{d:`M ${x2-l*Math.cos(a-.45)} ${y2-l*Math.sin(a-.45)} L ${x2} ${y2} L ${x2-l*Math.cos(a+.45)} ${y2-l*Math.sin(a+.45)}`,fill:'none',stroke:color,'stroke-width':3}));}
@@ -69,6 +69,6 @@ export class DrawingEditor{
  if(a==='rotate'&&this.selected>=0){const s=this.items()[this.selected];if(!['pin','roller','fixed'].includes(s.type)){this.message('旋轉適用於鉸支承、滾支承與固定端。');return;}this.commit(()=>{s.turn=((s.turn??0)+90)%360;});return;}if(a==='reverse'&&this.selected>=0){this.commit(()=>{const s=this.items()[this.selected];if(s.type==='arrow'){[s.x1,s.x2]=[s.x2,s.x1];[s.y1,s.y2]=[s.y2,s.y1];}else if(s.type==='curve')s.bend=-s.bend;else s.direction*=-1;});return;}
  if(a==='template'){this.commit(()=>{this.items().push(...makeTemplate(this.prop('template').value));this.selected=-1;});return;}
  if(a==='stamp'){if(this.tool==='select'){this.message('先選擇一種繪圖工具，再按置於中央。');return;}this.commit(()=>{const s=this.currentShape(this.tool,420,230);if(this.tool==='arrow'){s.x2=420;s.y2=120;}this.items().push(s);this.selected=this.items().length-1;});return;}
- if(a==='export'){const svg=renderDrawing(this.data,this.key);const blob=new Blob([new XMLSerializer().serializeToString(svg)],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`結構學-${SHEETS[this.key].replace('/','-')}.svg`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);this.message('已交給瀏覽器下載SVG；可放大或用瀏覽器列印。');}
+ if(a==='export'){const svg=renderDrawing(this.data,this.key);const blob=new Blob([new XMLSerializer().serializeToString(svg)],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`學習圖解-${SHEETS[this.key].replace('/','-')}.svg`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);this.message('已交給瀏覽器下載SVG；可放大或用瀏覽器列印。');}
  }
 }
