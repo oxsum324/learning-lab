@@ -1,5 +1,7 @@
 import {readFileSync,writeFileSync} from 'node:fs';
+import {dirname,join} from 'node:path';
 import {TOPICS} from '../site/topics.js';
+import {fieldsForDay,readSeedFields} from './seed-fields.mjs';
 
 // Only approved learning content is selected. Never publish whole private notes.
 const inputs=process.argv.slice(2);
@@ -120,6 +122,7 @@ for(let j=0;j<configs.length;j++){
  course.days[0].problem=clean(questions.trim());
  course.days[0].guide.worked=answer.split(/\r?\n/).filter(s=>s.trim());
  if(c.id==='steel-structures')course.days[0].guide.worked.push('受拉板：分別畫毛斷面降伏、穿孔淨斷面斷裂，以及拉剪組合的塊狀剪斷路徑。','挫屈：柱整體彎曲、梁側向移動伴隨扭轉、斷面板件局部變形，應用不同圖示區分。','偏心螺栓群：先標群中心與偏心距，將直接力及偏心力矩引起的各螺栓力按方向合成，再比較最不利者。');
+ const courseDir=dirname(inputs[j]),bank=join(courseDir,'題庫與核對答案.md'),errata=join(courseDir,'題庫勘誤_2026-09-16.md'),verified=readSeedFields(bank,errata);course.days.forEach(day=>day.fields=fieldsForDay(verified,c.id,day.day));
  writeFileSync(new URL('../site/'+TOPICS[c.id].curriculum,import.meta.url),JSON.stringify(course,null,2)+'\n');
  console.log('Generated '+c.id+': 30 tasks and separated diagnostic reference.');
 }

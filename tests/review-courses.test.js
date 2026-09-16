@@ -50,6 +50,11 @@ test('independent blind-solve corrections override only the affected public chec
  assert.equal(value(read('reinforced-concrete'),7,'as_req'),1256.959);assert.equal(value(read('reinforced-concrete'),7,'a'),73.939);
  assert.equal(value(read('structural-dynamics'),5,'dy_c05_base_shear'),117.6);
 });
+test('all curriculum builders share the verified seed-field parser',()=>{
+ for(const file of ['generate-curriculum.mjs','build-rc-course.mjs','build-review-courses.mjs']){
+  const source=readFileSync(new URL('../scripts/'+file,import.meta.url),'utf8');assert.match(source,/readSeedFields/);assert.match(source,/fieldsForDay/);
+ }
+});
 test('runtime modules use the package release version so cached legacy code cannot reject new topics',()=>{
  for(const file of ['app.js','core.js','drawing.js']){const code=readFileSync(new URL('../site/'+file,import.meta.url),'utf8');for(const match of code.matchAll(/from ['"]([^'"]+)['"]/g))assert.equal(match[1].split('?v=')[1],version);}
 });

@@ -1,4 +1,6 @@
 import {readFileSync,writeFileSync} from 'node:fs';
+import {dirname,join} from 'node:path';
+import {fieldsForDay,readSeedFields} from './seed-fields.mjs';
 const input=process.argv[2];if(!input)throw Error('Provide the approved RC plan Markdown path.');
 const rows=readFileSync(input,'utf8').split(/\r?\n/).filter(s=>/^\| D\d{2} \|/.test(s)).map(s=>s.split('|').slice(1,-1).map(s=>s.trim()));
 if(rows.length!==30)throw Error('Expected 30 approved tasks.');
@@ -38,5 +40,6 @@ const plain=[
 const course={topicId:'reinforced-concrete',version:'rc-2026-09-v1',reference:'30分鐘：3分鐘閉卷提取＋5分鐘查條文＋17分鐘手算／畫圖＋5分鐘核對記錄。\n60分鐘：另加5分鐘舊錯題、5分鐘適用條件、15分鐘變化題、5分鐘訂正。\n週測D07、D14、D23：20分鐘閉卷＋10分鐘核對。D24～27：25分鐘原題＋5分鐘檢查。\n教練檢核10分：模型與圖2、公式適用2、計算單位3、條文構造2、白話合理性1；不是官方配分。\n錯題於作答後第2天及第7天重做，先處理重大模型、單位及規範版本錯誤。\n114年原題指定土木401-112；實際應試依當年公告與原卷要求。學會出版品與國土署官方規範分別記錄。',answers:'本主題目前提供30天任務、解題提示及白話參考，尚未提供30份逐題數值詳解。\n自選題請記下教材、頁碼、題號及規範版本；官方試卷只有試題，不代表提供官方解答。\n提交的文字與圖解都會保留，完整推導與計算結果由教練審閱。',sources:[{label:'考選部命題大綱',url:'https://wwwc.moex.gov.tw/main/content/wHandMenuFile.ashx?file_id=2030'},{label:'114年官方原題 PDF',url:exam},{label:'國土署規範與勘誤',url:'https://www.nlma.gov.tw/ch/legislation/regsearch/6874'}],days:rows.map((r,i)=>{const day=i+1;return {day,read:r[1],task:r[1],check:r[3],fields:[],problem:`今日核心任務：${r[2]}。\n作答驗收：${r[3]}。\n${day>=24&&day<=27?'使用下方114年官方原題連結，閱讀完整條件及原圖；本頁不以摘要替代試卷。':'涉及數值時，先從手邊同主題教材選一個短題，記下來源、頁碼、題號、已知數值及規範版本，再在下方作答。若尚無題目，可先畫圖與列推導流程，提交時標明「尚待數值練習」。'}\n60分鐘選做：補完核心題，做一個條件變化，並重做最近錯題的關鍵步驟。`,guide:{worked:[`解題入口：${r[2]}。`,'先畫受力／應變或配筋示意，標出題目已知量、正負號、單位及規範版本。',`自我檢查：${r[3]}。`, '若用到教材數值，請對照該題完整解答與條文；本區是作答架構提示，不是數值詳解。'],plain:plain[i],draw:[`本課圖示應可支持以下檢核：${r[3]}。`,'可用受力圖頁畫斷面與配筋，內力圖頁畫應力／應變或P–M概形，變形圖頁畫變形或階段示意；務必自行加上圖名及單位。']}};})};
 course.days[0].problem='0～5分鐘｜版本卡：填教材名稱、版本、單位；核對官方試卷的指定規範。\n5～20分鐘｜閉卷診斷，各5分鐘：①畫單筋梁應變及受力，列彎矩強度流程。②畫柱P–M概形，說明c改變時如何求各層筋應力。③畫偏心預力梁上下緣應力，列傳遞與服務階段檢核。\n20～25分鐘｜核對條文／教材，用不同顏色訂正並自標綠、黃、紅。今天是概念診斷，尚未驗收計算能力。\n25～30分鐘｜白話回答：為什麼不能先假定所有鋼筋降伏？為什麼預力要分階段檢查？\n有60分鐘時，加做最弱主題的一題教材短題，記下題號及規範版本。';
 course.days[0].guide.worked=['梁：由應變相容求鋼筋應變與應力，合力平衡求壓力區，再以合力與力臂求名義彎矩；設計強度另核對折減因數與構造限制。','柱：對指定中性軸位置逐層求鋼筋應變及拉壓力，與混凝土壓力合併求軸力及彎矩；改變中性軸位置得到不同互制點。','預力：在自訂一致的正負號下，疊加軸向、偏心及外載彎曲應力；分清傳遞與服務階段的預力、荷載與材料強度。','白話核對：鋼筋是否降伏由所在位置的應變決定；預力及外載隨階段改變，因此各階段可能有不同控制條件。'];
+const rcBank=join(dirname(input),'題庫與核對答案.md'),rcErrata=join(dirname(input),'題庫勘誤_2026-09-16.md'),rcFields=readSeedFields(rcBank,rcErrata);course.days.forEach(day=>day.fields=fieldsForDay(rcFields,'reinforced-concrete',day.day));
 writeFileSync(new URL('../site/rc-curriculum.json',import.meta.url),JSON.stringify(course,null,2)+'\n');
 console.log('Generated 30 RC learning tasks, hints, and source links.');
