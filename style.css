@@ -81,3 +81,21 @@ body.drawing-focused{overflow:hidden}
  .drawing-board{break-inside:avoid}.answer-layout{display:block}.question-content{max-height:none;overflow:visible}
 }
 fieldset{border:0;margin:0;padding:0;min-width:0}.topic-picker{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:16px 0}.topic-picker label{margin:0}.lesson-sources{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}.lesson-sources a{color:#22746a;text-decoration:underline}
+/* One continuous drawing surface; only the non-answer guide changes by task. */
+.drawing-controls{position:sticky;top:0;z-index:1;background:#f9fbf7;padding:6px 0;border-bottom:1px solid var(--line)}
+.drawing-controls:has(.drawing-menu[open]){position:static}
+.drawing-layout-name{font-size:13px;color:var(--green);margin:4px 0 8px;line-height:1.5}
+.drawing-board{overflow-x:auto;overflow-y:hidden;border-radius:0 0 6px 6px;scrollbar-gutter:stable}
+.drawing-board svg{max-width:none}
+.drawing-menu select{max-width:100%}
+#drawing-focus .drawing-controls{top:88px}
+@media(min-width:960px){.question-panel{position:sticky;top:8px}#drawing-focus .question-panel{top:96px}}
+@media(max-width:600px){
+ .drawing-tools{grid-template-columns:repeat(5,minmax(0,1fr))}
+ .drawing-tools button{padding:7px 3px!important;font-size:12px!important}
+ .drawing-head{flex-wrap:wrap}.drawing-head .active-tool{order:2;flex-basis:100%}
+ .drawing-controls{padding-top:4px}.drawing-menus{gap:4px}
+ #drawing-focus .drawing-controls{top:64px}
+}
+@media print{.drawing-controls{display:none}.drawing-board{overflow:visible;break-inside:auto}.drawing-board svg{width:100%!important}}
+@media(max-height:500px){.drawing-controls,#drawing-focus .drawing-controls{position:static}}
