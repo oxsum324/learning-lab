@@ -52,6 +52,7 @@ export function applyEditorialReview(course,topic){
    day.problem=seeds?`${source}\n\n---\n\n${marker}\n\n${seeds}`:`今日任務：${activity}。\n驗收：${day.check}。\n${source}`;
   }
   if(day.guide){
+   day.guide.draw=day.guide.draw.map(s=>s.replace('三張圖紙可自行加圖名，分別保存模型、分析過程與結果；使用文字、箭頭、曲線或自由筆作答。','在同頁畫布標示模型、分析過程與結果；依題型選分區，也可使用自由畫布。'));
    if(day.day!==1){
     day.guide.worked=[`作答入口：${activity}。`,seeds?'使用本頁明列的條件與題設模型；先畫圖、標單位及正方向，再列式。':exam?'由原卷完整條件起式；題型摘要不能代替原圖與載重。':'先抄明選定模型的完整條件；資料不足就列缺項，不自行補設有利條件。',`核對重點：${day.check}。`,day.fields.length?'數值欄位核對指定量；圖形、推導與適用條件需另行審閱。':'本課沒有固定數值核對；請用題源解答或教練審閱檢查完整作答。'];
     if(change.problem)day.guide.worked[1]='八項逐一留下公式、圖解或短答；計算題先抄明原題條件，避免以回憶的答案代替重算。';

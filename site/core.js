@@ -1,5 +1,5 @@
-import {validDrawing} from './drawing-model.js?v=0.9.0';
-import {TOPICS,resolveTopic,storageKey,dayKey} from './topics.js?v=0.9.0';
+import {validDrawing} from './drawing-model.js?v=0.10.0';
+import {TOPICS,resolveTopic,storageKey,dayKey} from './topics.js?v=0.10.0';
 export const SANDBOX=typeof location!=='undefined'&&new URLSearchParams(location.search).get('sandbox')==='1';
 export const TOPIC_ID=resolveTopic(typeof location!=='undefined'?location.search:'');
 export const KEY=storageKey(TOPIC_ID,SANDBOX);

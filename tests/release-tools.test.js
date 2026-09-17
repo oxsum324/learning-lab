@@ -12,7 +12,7 @@ const packageJson=JSON.parse(readFileSync(new URL('package.json',repo),'utf8'));
 test('version injection derives public cache keys and visible release from package.json',()=>{
  const run=spawnSync(process.execPath,['scripts/sync-version.mjs'],{cwd:new URL('../',import.meta.url),encoding:'utf8'});
  assert.equal(run.status,0,run.stderr);const version=packageJson.version;
- for(const file of ['index.html','app.js','core.js','drawing.js','drawing-model.js','teaching-guides.js','topics.js']){
+ for(const file of ['index.html','app.js','core.js','drawing.js','drawing-model.js','drawing-layouts.js','teaching-guides.js','topics.js']){
   const content=readFileSync(new URL('../site/'+file,import.meta.url),'utf8');
   for(const found of content.matchAll(/\?v=(\d+\.\d+\.\d+)/g))assert.equal(found[1],version,file);
   for(const found of content.matchAll(/\bv(\d+\.\d+\.\d+)\b/g))assert.equal(found[1],version,file);
