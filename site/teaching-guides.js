@@ -48,5 +48,20 @@ export const GUIDES={
  28:simply(4,8,16000,true),29:force(5,4,25000),
  30:guide(['先不看答案重做D28或D29最弱題；記錄是否真的能獨立畫模型、列方程、計算和驗算。','選D28時對照靜定梁參考；選D29時對照力法參考。此日沒有另一組固定數值答案。','結案說明範例：「我已能獨立畫受力圖及檢查平衡；位移相容仍要提示，所以下週優先重做有沉陷的支承懸臂。」請改寫成自己的真實狀態。'],'平衡是力要站得住，變形關係是構件受力後怎麼彎，相容是彎完仍符合支承和接點條件。能把這三件事接起來，才是恢復解題能力；看懂參考解答還不等於能獨立做出來。',['畫一頁自己的解題流程與最常錯的受力／變形圖，在旁註明已掌握與待補強。'])
 };
+// Keep references scoped to the exercise actually requested today.
+GUIDES[8]=guide(cantilever.worked.slice(0,3),'把彎矩與曲率連起來，兩次積分得到轉角和位移。固定端不移動也不轉動，這兩個條件用來決定積分常數。',cantilever.draw);
+GUIDES[10]=guide([cantilever.worked[0],cantilever.worked[3],'用真實彎矩與單位力彎矩的乘積積分，核對端部向下位移及單位。'],'單位力的位置與方向代表想量的位移；真實載重與虛擬單位力必須分開畫。',cantilever.draw);
+GUIDES[14].worked.push('W2b：簡支梁跨中 P=12 kN，L=6 m，EI=20000 kN·m²，兩反力各6 kN。',...GUIDES[11].worked);
+GUIDES[14].draw.push(...GUIDES[11].draw);
+GUIDES[14].plain+=' 簡支梁題則有兩端位移為零的條件；兩題支承不同，不能互套邊界。';
+GUIDES[15]=guide(['選 B 向上反力 R_B 為贅力，解除 B 的鉛直拘束，留下 A 固定的穩定懸臂。','定義 δ₀ 為原載重引起的向下端部位移，f 為向下單位力引起的正柔度。','向下位移為正，向上贅力使端部上移，因此相容式為 δ₀−fR_B=0。'],'把多出來的支承先拿掉，再用一股力恢復支承要求的位移。基本系統要穩定，位移與贅力方向要先說清楚。',['畫原結構與解除 B 後的基本系統。','分開標 δ₀ 向下、R_B 向上及其引起的位移方向。']);
+GUIDES[16]=guide(force(4,6,20000).worked.slice(0,2).concat('δ₀ 的單位為 mm，f 的單位為 mm/kN；兩者不能當作相同的位移量。'),'載重位移來自實際均佈載重；柔度則是在同一基本系統上施加單位力，量測對應方向的位移。',['分開畫載重系統與自由端向下單位力系統。','兩圖均保留 A 固定、B 自由的條件。']);
+GUIDES[20]=guide(['先確認自己選的是基本系統、柔度、沉陷或跨度變化哪一題，抄明完整條件。','依該條件重算相容式；選用沉陷或不同跨度时，不沿用無沉陷基準題數值。'.replace('时','時'),'以原題對應解答核對，標出第一個需要提示的步驟。'],'重做要找出自己在哪個條件上判斷錯誤，並用新的完整推導確認已理解。',['画所選原題與基本系統，標明沉陷量、載重及跨度。'.replace('画','畫')]);
+GUIDES[22].worked[3]='B 左右構件端彎矩互相平衡，不代表梁的 B 截面彎矩為零。';
+GUIDES[23].worked.push('W3：另以 L=3 m、q=8 kN/m、EI=20000 kN·m² 的支承懸臂作力法核對。',...force(3,8,20000).worked);
+GUIDES[23].draw.push(...force(3,8,20000).draw);
+GUIDES[23].plain+=' 支承懸臂則須先以位移相容解出贅力，再回到平衡求其餘反力。';
+GUIDES[30].worked[2]='結案說明範例：「我能獨立畫受力圖及檢查平衡；位移相容仍需提示。」請依本次原稿記錄已掌握與待補強項目。';
+
 // Normalize a few glyph variants in authored prose.
 for(const g of Object.values(GUIDES)){g.worked=g.worked.map(s=>s.replaceAll('双','雙'));g.plain=g.plain.replaceAll('两','兩');g.draw=g.draw.map(s=>s.replaceAll('额','額'));}

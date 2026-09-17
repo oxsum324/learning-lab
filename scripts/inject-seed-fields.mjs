@@ -1,6 +1,7 @@
 import {readFileSync,writeFileSync} from 'node:fs';
 import {fieldsForIds,readSeedFields} from './seed-fields.mjs';
 import {seedDay} from './seed-day-map.mjs';
+import {reviewedQuestion,addReviewedFields,applyEditorialReview} from './course-editorial.mjs';
 import {structuralDailyProblem} from './structural-daily-questions.mjs';
 
 // This local build step reads the approved Markdown banks.  The public JSON only
@@ -16,7 +17,9 @@ const configs=[
 const sourcePath=path=>new URL(path,workspace);
 const publicPath=path=>new URL('../'+path,import.meta.url);
 function parseQuestions(markdown){
- const questions=new Map(),questionPart=markdown.slice(0,markdown.search(/^## .*核對(?:欄位與驗算紀錄|答案與驗算紀錄)\s*$/m));
+ const questions=new Map(),end=markdown.search(/^## .*核對(?:欄位|答案).*$/m);
+ if(end<0)throw Error('Missing question/answer boundary.');
+ const questionPart=markdown.slice(0,end);
  for(const match of questionPart.matchAll(/^#{3,4}\s+([^\n]+)\n([\s\S]*?)(?=^#{1,4}\s|(?![\s\S]))/gm)){
   const id=(match[2].match(/ID：`([a-z][a-z0-9_]*)`/)?.[1]??match[1].match(/^\s*([A-Z][A-Z0-9_]*)\s*[｜|]/)?.[1])?.toLowerCase();
   if(!id)continue;
@@ -32,15 +35,17 @@ for(const config of configs){
  const markdown=readFileSync(sourcePath(config.bank),'utf8');
  const values=readSeedFields(sourcePath(config.fieldBank??config.bank)),questions=parseQuestions(markdown),course=JSON.parse(readFileSync(publicPath(config.curriculum),'utf8'));
  if((course.topicId??config.topicId)!==config.topicId||course.days.length!==30)throw Error('Invalid curriculum: '+config.curriculum);
+ addReviewedFields(values,config.topicId);
  course.days.forEach((day,index)=>{
   const mapping=seedDay(config.topicId,index+1),fields=fieldsForIds(values,mapping.fields,`${config.topicId} D${String(index+1).padStart(2,'0')}`);
   day.fields=fields;
   if(config.topicId==='structural-analysis'){day.problem=structuralDailyProblem(day.day,fields.length>0);return;}
-  const seedQuestions=mapping.questions.map(id=>questions.get(id)).filter(Boolean);
+  // Display today's exercise number; source IDs stay in the map and saved values.
+  const seedQuestions=mapping.questions.map((id,i)=>reviewedQuestion(config.topicId,id,questions.get(id)).replace(/^[^\n]*[｜|]/,`D${String(day.day).padStart(2,'0')}-${String.fromCharCode(65+i)}｜`));
   day.problem=day.problem.split('\n\n---\n\n本日核對短題（先完成，再填下方欄位）')[0];
   if(seedQuestions.length)day.problem+=`\n\n---\n\n本日核對短題（先完成，再填下方欄位）\n\n${seedQuestions.join('\n\n')}`;
  });
- course.version=course.version.replace(/-v[12]$/,'-v3');
+ applyEditorialReview(course,config.topicId);
  writeFileSync(publicPath(config.curriculum),JSON.stringify(course,null,2)+'\n');
  console.log(`${config.topicId}: ${course.days.filter(day=>day.fields.length).length} days received numeric checks.`);
 }

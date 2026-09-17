@@ -32,8 +32,8 @@ test('90 review tasks contain hints and diagnostics never reveal answers before 
  }
 });
 test('all five curricula expose only approved seed checks and pair every numeric check with its source short question',()=>{
- const seeded=new Set([1,2,3,4,5,6,7,14,23]);
  for(const id of ids){
+  const seeded=new Set([1,2,3,4,5,6,7,14,23,...(id==='steel-structures'?[11]:[])]);
   const c=JSON.parse(readFileSync(new URL('../site/'+TOPICS[id].curriculum,import.meta.url)));
   c.days.forEach(day=>{
    if(!seeded.has(day.day))assert.deepEqual(day.fields,[],`${id} D${day.day}`);
