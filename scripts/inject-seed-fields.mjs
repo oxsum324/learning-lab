@@ -1,9 +1,10 @@
 import {readFileSync,writeFileSync} from 'node:fs';
 import {fieldsForIds,readSeedFields} from './seed-fields.mjs';
 import {seedDay} from './seed-day-map.mjs';
+import {structuralDailyProblem} from './structural-daily-questions.mjs';
 
 // This local build step reads the approved Markdown banks.  The public JSON only
-// receives numeric checks; reference answers remain in the Markdown verification section.
+// receives numeric checks and scoped daily questions; reference answers remain separate.
 const workspace=new URL('../../',import.meta.url);
 const configs=[
  {topicId:'structural-analysis',bank:'結構學/題庫與核對答案.md',fieldBank:'結構學/平台啟用核對欄位.md',curriculum:'site/curriculum.json'},
@@ -16,7 +17,7 @@ const sourcePath=path=>new URL(path,workspace);
 const publicPath=path=>new URL('../'+path,import.meta.url);
 function parseQuestions(markdown){
  const questions=new Map(),questionPart=markdown.slice(0,markdown.search(/^## .*核對(?:欄位與驗算紀錄|答案與驗算紀錄)\s*$/m));
- for(const match of questionPart.matchAll(/^#{3,4}\s+([^\n]+)\n([\s\S]*?)(?=^#{3,4}\s|(?![\s\S]))/gm)){
+ for(const match of questionPart.matchAll(/^#{3,4}\s+([^\n]+)\n([\s\S]*?)(?=^#{1,4}\s|(?![\s\S]))/gm)){
   const id=(match[2].match(/ID：`([a-z][a-z0-9_]*)`/)?.[1]??match[1].match(/^\s*([A-Z][A-Z0-9_]*)\s*[｜|]/)?.[1])?.toLowerCase();
   if(!id)continue;
   const body=match[2].replace(/\s*核對欄位：[^\n]*(?:\n|$)/g,'\n').trim();
@@ -34,10 +35,12 @@ for(const config of configs){
  course.days.forEach((day,index)=>{
   const mapping=seedDay(config.topicId,index+1),fields=fieldsForIds(values,mapping.fields,`${config.topicId} D${String(index+1).padStart(2,'0')}`);
   day.fields=fields;
+  if(config.topicId==='structural-analysis'){day.problem=structuralDailyProblem(day.day,fields.length>0);return;}
   const seedQuestions=mapping.questions.map(id=>questions.get(id)).filter(Boolean);
   day.problem=day.problem.split('\n\n---\n\n本日核對短題（先完成，再填下方欄位）')[0];
   if(seedQuestions.length)day.problem+=`\n\n---\n\n本日核對短題（先完成，再填下方欄位）\n\n${seedQuestions.join('\n\n')}`;
  });
+ course.version=course.version.replace(/-v[12]$/,'-v3');
  writeFileSync(publicPath(config.curriculum),JSON.stringify(course,null,2)+'\n');
  console.log(`${config.topicId}: ${course.days.filter(day=>day.fields.length).length} days received numeric checks.`);
 }

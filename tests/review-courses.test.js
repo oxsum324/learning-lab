@@ -66,3 +66,28 @@ test('all curriculum builders share the verified seed-field parser',()=>{
 test('runtime modules use the package release version so cached legacy code cannot reject new topics',()=>{
  for(const file of ['app.js','core.js','drawing.js']){const code=readFileSync(new URL('../site/'+file,import.meta.url),'utf8');for(const match of code.matchAll(/from ['"]([^'"]+)['"]/g))assert.equal(match[1].split('?v=')[1],version);}
 });
+
+test('daily structural prompts separate load variants and weekly scopes',()=>{
+ const course=JSON.parse(readFileSync(new URL('../site/curriculum.json',import.meta.url),'utf8'));
+ const lesson=n=>course.days[n-1];
+ assert.doesNotMatch(lesson(1).problem,/D09|撓度|EI|僅用/);
+ for(const [day,q,L] of [[1,10,6],[4,8,6],[7,6,8]]){
+  const d=lesson(day);
+  assert.match(d.problem,new RegExp(`q＝${q} kN/m`));
+  assert.match(d.problem,new RegExp(`L＝${L} m`));
+  assert.equal(d.fields.find(f=>f.id==='ra').value,q*L/2);
+  assert.equal(d.fields.find(f=>f.id==='m_max').value,q*L*L/8);
+ }
+ assert.match(lesson(7).problem,/W1｜/);assert.doesNotMatch(lesson(7).problem,/W2|W3|W4/);
+ assert.match(lesson(14).problem,/W2b｜/);assert.doesNotMatch(lesson(14).problem,/W1|W3|W4/);
+ assert.match(lesson(23).problem,/J｜/);assert.match(lesson(23).problem,/W3｜/);
+ assert.match(lesson(28).problem,/W4a｜/);assert.doesNotMatch(lesson(28).problem,/W4b|W1|W2|W3/);
+ assert.match(lesson(29).problem,/W4b｜/);assert.doesNotMatch(lesson(29).problem,/W4a|W1|W2|W3/);
+ course.days.forEach(d=>assert.doesNotMatch(d.problem,/D\d{2}|留到|留待|下一輪/));
+});
+test('published short questions exclude staging headings from the following source section',()=>{
+ for(const topic of Object.values(TOPICS)){
+  const course=JSON.parse(readFileSync(new URL('../site/'+topic.curriculum,import.meta.url),'utf8'));
+  course.days.forEach(day=>assert.doesNotMatch(day.problem,/^## (?:後續|題目)/m));
+ }
+});

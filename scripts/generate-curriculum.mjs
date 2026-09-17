@@ -1,6 +1,7 @@
 import {existsSync,readFileSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {fieldsForDay,readSeedFields} from './seed-fields.mjs';
+import {structuralDailyProblem} from './structural-daily-questions.mjs';
 const root=process.argv[2];if(!root)throw Error('Provide the local curriculum folder.');
 const read=name=>readFileSync(join(root,name),'utf8').replace(/^---[\s\S]*?---\s*/,'');
 const plan=read('30天學習方案.md').replaceAll('画','畫');
@@ -16,6 +17,7 @@ const fields={1:[f('ra','A鉛直反力',30,'kN'),f('rb','B鉛直反力',30,'kN')
 days.forEach(d=>d.fields=fields[d.day]??[]); days[6].problem += "\n\n" + problems.S;
 const structuralSeedBank=join(root,'題庫與核對答案_v2.md'),structuralErrata=join(root,'題庫勘誤_2026-09-16.md');
 if(existsSync(structuralSeedBank)){const verified=readSeedFields(structuralSeedBank,structuralErrata);days.forEach(day=>day.fields=fieldsForDay(verified,'structural-analysis',day.day));}
-const data={version:'structural-2026-09-v2',days,reference:read('觀念速查.md'),answers:'核對答案'+bank.split('## 核對答案')[1]};
+days.forEach(day=>day.problem=structuralDailyProblem(day.day,day.fields.length>0));
+const data={version:'structural-2026-09-v3',days,reference:read('觀念速查.md'),answers:'核對答案'+bank.split('## 核對答案')[1]};
 writeFileSync(new URL('../site/curriculum.json',import.meta.url),JSON.stringify(data,null,2)+'\n');
 console.log('Generated 30 public lessons.');
