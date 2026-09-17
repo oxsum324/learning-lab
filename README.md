@@ -31,6 +31,10 @@ npm run build
 GitHub Pages由`gh-pages`分支根目錄發布；`main`保存程式與測試。只有`site/`可推送至發布分支。
 
 ```sh
+npm run inject-seed-fields
+npm test
+npm run build
+# 取得使用者同意後：
 git subtree push --prefix site origin gh-pages
 ```
 
