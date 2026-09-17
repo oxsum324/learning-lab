@@ -1,4 +1,4 @@
-import {SHEETS,COLORS,emptyDrawing,validDrawing,shape,moveShape,makeTemplate} from './drawing-model.js?v=0.5.0';
+import {SHEETS,COLORS,emptyDrawing,validDrawing,shape,moveShape,makeTemplate} from './drawing-model.js?v=0.6.0';
 const NS='http://www.w3.org/2000/svg';
 const svgNode=(tag,attrs={})=>{const n=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,String(v));return n;};
 function arrow(g,x1,y1,x2,y2,color){g.append(svgNode('line',{x1,y1,x2,y2,stroke:color,'stroke-width':3}));const a=Math.atan2(y2-y1,x2-x1),l=13;g.append(svgNode('path',{d:`M ${x2-l*Math.cos(a-.45)} ${y2-l*Math.sin(a-.45)} L ${x2} ${y2} L ${x2-l*Math.cos(a+.45)} ${y2-l*Math.sin(a+.45)}`,fill:'none',stroke:color,'stroke-width':3}));}
