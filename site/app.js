@@ -1,8 +1,8 @@
-import {TOPICS} from './topics.js?v=0.6.0';
-import {KEY,DAY_KEY,TOPIC_ID,SANDBOX,emptyState,assess,validateState,mergeStates,safeSave} from './core.js?v=0.6.0';
-import {DrawingEditor,renderDrawing} from './drawing.js?v=0.6.0';
-import {SHEETS,hasDrawing} from './drawing-model.js?v=0.6.0';
-import {GUIDES} from './teaching-guides.js?v=0.6.0';
+import {TOPICS} from './topics.js?v=0.7.0';
+import {KEY,DAY_KEY,TOPIC_ID,SANDBOX,emptyState,assess,validateState,mergeStates,safeSave} from './core.js?v=0.7.0';
+import {DrawingEditor,renderDrawing} from './drawing.js?v=0.7.0';
+import {SHEETS,hasDrawing} from './drawing-model.js?v=0.7.0';
+import {GUIDES} from './teaching-guides.js?v=0.7.0';
 const $=id=>document.getElementById(id);const now=()=>new Date().toISOString();
 let state=emptyState(),expected=null,writable=true,currentDay=1,tickFrom=null,course,editor;
 if(SANDBOX){document.querySelector('.notice').textContent='功能測試空間：測試紀錄與正式學習紀錄分開儲存。';document.querySelector('.version').textContent+=' · 功能測試';}
@@ -30,7 +30,7 @@ for(const id of ['answer-details','guide-details'])$(id).addEventListener('toggl
 $('practice-form').onsubmit=e=>{e.preventDefault();pause();const d=capture();if(!d.reasoning.trim()&&!d.explanation.trim()&&!Object.values(d.values).some(v=>v.trim())&&!hasDrawing(d.drawing)){$('result').textContent='請先畫圖或填寫答案、推導、白話解釋，再儲存作答。';return;}const hasNumeric=Object.values(d.values).some(v=>v.trim());const assessment=assess(hasNumeric?course.days[currentDay-1].fields:[],d.values,d.hint);if(hasDrawing(d.drawing))assessment.text='圖解已保留；'+assessment.text;const record={...structuredClone(d),id:crypto.randomUUID(),day:currentDay,submittedAt:now(),curriculumVersion:course.version,assessment};state.records.push(record);delete state.drafts[currentDay];const saved=persist();showDay(currentDay);$('result').textContent=(saved?'本次作答已存至瀏覽器。':'作答保留於本頁記憶體，請立即匯出備份。')+assessment.text;paintStats();};
 document.querySelectorAll('[data-tab]').forEach(el=>el.onclick=()=>showTab(el.dataset.tab));$('day-select').onchange=e=>{capture();persist();showDay(Number(e.target.value));};
 function download(value,name){const blob=new Blob([value],{type:'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-$('export').onclick=()=>{pause();const data={...state,exportedAt:now(),source:'learning-lab-browser-v0.6.0'};download(JSON.stringify(data,null,2),`learning-lab-${TOPIC_ID}-${new Date().toISOString().slice(0,10)}.json`);$('export-status').textContent='已交給瀏覽器下載，請確認檔案確實保存。紀錄尚未同步雲端。';};
+$('export').onclick=()=>{pause();const data={...state,exportedAt:now(),source:'learning-lab-browser-v0.7.0'};download(JSON.stringify(data,null,2),`learning-lab-${TOPIC_ID}-${new Date().toISOString().slice(0,10)}.json`);$('export-status').textContent='已交給瀏覽器下載，請確認檔案確實保存。紀錄尚未同步雲端。';};
 $('import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>20*1024*1024)throw Error('檔案超過20MB。');pause();const incoming=validateState(JSON.parse(await file.text()));const merged=mergeStates(state,incoming);state=merged;const saved=persist();showDay(currentDay);paintStats();$('import-status').textContent=saved?`已合併，共${state.records.length}筆作答。`:'已載入本頁，瀏覽器儲存失敗，請匯出合併後備份。';}catch(err){$('import-status').textContent='未匯入：'+err.message;}e.target.value='';};
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});window.addEventListener('pagehide',pause);window.addEventListener('storage',e=>{if(e.key===KEY&&e.newValue!==expected){writable=false;pause();storageMessage('另一個分頁已更新紀錄，本頁已停止覆寫。請匯出本頁資料，再重新整理合併。',true);}});
 setInterval(()=>{$('timer').textContent=timeText(elapsed());},250);setInterval(()=>{if(tickFrom!==null){bankTick();persist();paintStats();}},5000);
@@ -43,7 +43,7 @@ $('route-description').textContent=topic.route;
 $('backup-topic').textContent='目前主題：'+topic.name+'。匯出及還原僅處理這個主題；另一科請切換後另行備份。';
 for(const [id,item] of Object.entries(TOPICS)){const option=document.createElement('option');option.value=id;option.textContent=item.name+(id==='reinforced-concrete'?'（含預力）':'');$('topic-select').append(option);}
 $('topic-select').value=TOPIC_ID;
-$('topic-select').onchange=e=>{const next=e.target.value;if(course){pause();capture();if(!persist()){$('topic-select').value=TOPIC_ID;storageMessage('尚有未保存資料，請先匯出備份，再切換主題。',true);return;}}const url=new URL(location.href);url.searchParams.set('topic',next);url.searchParams.set('v','0.6.0');url.hash='';location.assign(url.href);};
+$('topic-select').onchange=e=>{const next=e.target.value;if(course){pause();capture();if(!persist()){$('topic-select').value=TOPIC_ID;storageMessage('尚有未保存資料，請先匯出備份，再切換主題。',true);return;}}const url=new URL(location.href);url.searchParams.set('topic',next);url.searchParams.set('v','0.7.0');url.hash='';location.assign(url.href);};
 if(TOPIC_ID!=='structural-analysis'){
  $('step-do').textContent='02 / 做什麼 · 17分鐘';$('step-check').textContent='03 / 怎麼驗收 · 5分鐘';
  $('rhythm-note').textContent='另留3分鐘閉卷提取。可加量至60分鐘；週測20分鐘作答＋10分鐘核對，歷屆題25分鐘作答＋5分鐘檢查。';

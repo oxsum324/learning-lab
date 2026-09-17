@@ -1,7 +1,7 @@
 import {existsSync,readFileSync} from 'node:fs';
 
 const numeric=/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]?\d+)?$/i;
-const excludedFieldId=/(?:_score|_pass|_flag|_mode|_region)$/;
+const excludedFieldId=/(?:^|_)(?:score|pass|flag|mode|region)$/;
 const answerSection=/^## .*核對(?:欄位與驗算紀錄|答案與驗算紀錄)\s*$/m;
 function defaultField(id,value,unit,label){return {id,label:label||'數值核對',value:Number(value),unit:unit.trim()||'無因次'};}
 function questionTitles(markdown){

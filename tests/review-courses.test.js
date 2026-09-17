@@ -37,10 +37,10 @@ test('all five curricula expose only approved seed checks and pair every numeric
   const c=JSON.parse(readFileSync(new URL('../site/'+TOPICS[id].curriculum,import.meta.url)));
   c.days.forEach(day=>{
    if(!seeded.has(day.day))assert.deepEqual(day.fields,[],`${id} D${day.day}`);
-   if(day.day===1)assert.deepEqual(day.fields,[],`${id} D01 is diagnostic-only`);
+   if(day.day===1&&id!=='structural-analysis')assert.deepEqual(day.fields,[],`${id} D01 is diagnostic-only`);
    assert.equal(new Set(day.fields.map(field=>field.id)).size,day.fields.length,`${id} D${day.day}`);
    day.fields.forEach(field=>{
-    assert.match(field.id,/^[a-z][a-z0-9_]*$/);assert.doesNotMatch(field.id,/(?:_score|_pass|_flag|_mode|_region)$/);assert.ok(field.label);assert.doesNotMatch(field.label,/\b[a-z][a-z0-9]*_[a-z0-9_]+\b/);assert.ok(Number.isFinite(field.value));assert.ok(field.unit);
+    assert.match(field.id,/^[a-z][a-z0-9_]*$/);assert.doesNotMatch(field.id,/(?:^|_)(?:score|pass|flag|mode|region)$/);assert.ok(field.label);assert.doesNotMatch(field.label,/\b[a-z][a-z0-9]*_[a-z0-9_]+\b/);assert.ok(Number.isFinite(field.value));assert.ok(field.unit);
    });
     if(day.fields.length){
     assert.match(day.problem,/本日核對短題（先完成，再填下方欄位）/);
@@ -52,6 +52,7 @@ test('all five curricula expose only approved seed checks and pair every numeric
 test('enabled maps use their corrected, topic-aligned checks',()=>{
  const read=id=>JSON.parse(readFileSync(new URL('../site/'+TOPICS[id].curriculum,import.meta.url)));
  const value=(course,day,id)=>course.days[day-1].fields.find(field=>field.id===id)?.value;
+ assert.equal(value(read('structural-analysis'),1,'ra'),30);assert.equal(value(read('structural-analysis'),1,'m_max'),45);
  assert.equal(value(read('structural-analysis'),2,'ra'),8);
  assert.equal(value(read('reinforced-concrete'),7,'as_req'),1256.959);assert.equal(value(read('reinforced-concrete'),7,'a'),73.939);
  assert.equal(value(read('structural-dynamics'),5,'dy_c05_amplitude'),0.112643);

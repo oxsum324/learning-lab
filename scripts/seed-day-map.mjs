@@ -1,6 +1,6 @@
 export const SEED_DAY_MAP={
  'structural-analysis':{
-  1:{questions:[],fields:[]},2:{questions:['b'],fields:['st_core_02']},3:{questions:['s'],fields:[]},4:{questions:['a'],fields:['st_core_04']},5:{questions:['t'],fields:['st_core_05']},6:{questions:['f'],fields:['st_core_06']},7:{questions:['w1','s'],fields:['st_week_07a']},14:{questions:['w2'],fields:['st_week_14a']},23:{questions:['j'],fields:['st_week_23a']}
+  1:{questions:['a'],fields:['st_core_01']},2:{questions:['b'],fields:['st_core_02']},3:{questions:['s'],fields:[]},4:{questions:['a'],fields:['st_core_04']},5:{questions:['t'],fields:['st_core_05']},6:{questions:['f'],fields:['st_core_06']},7:{questions:['w1','s'],fields:['st_week_07a']},14:{questions:['w2','w2b'],fields:['st_week_14a','st_week_14b']},23:{questions:['j','w3'],fields:['st_week_23a','st_week_23b']}
  },
  'reinforced-concrete':{
   1:{questions:[],fields:[]},2:{questions:['rc_core_01'],fields:['rc_core_01']},3:{questions:['rc_core_02'],fields:['rc_core_02']},4:{questions:['rc_core_04'],fields:['rc_core_04']},5:{questions:['rc_core_05'],fields:['rc_core_05']},6:{questions:['rc_core_03'],fields:['rc_core_03']},7:{questions:['rc_week_07a','rc_week_07b'],fields:['rc_week_07a','rc_week_07b']},14:{questions:['rc_week_14a','rc_week_14b'],fields:['rc_week_14a','rc_week_14b']},23:{questions:['rc_week_23a','rc_week_23b'],fields:['rc_week_23a','rc_week_23b']}
