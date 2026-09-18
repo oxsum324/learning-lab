@@ -99,3 +99,5 @@ fieldset{border:0;margin:0;padding:0;min-width:0}.topic-picker{display:flex;gap:
 }
 @media print{.drawing-controls{display:none}.drawing-board{overflow:visible;break-inside:auto}.drawing-board svg{width:100%!important}}
 @media(max-height:500px){.drawing-controls,#drawing-focus .drawing-controls{position:static}}
+
+.cloud-actions{display:flex;flex-wrap:wrap;gap:10px}.cloud-history-item{padding:12px 0;border-bottom:1px solid #d5e4df}.cloud-history-item button{margin:0 8px 8px 0}#cloud-indicator{margin-bottom:0;font-weight:600}

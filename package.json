@@ -1,12 +1,16 @@
 {
   "name": "learning-lab",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "private": true,
   "type": "module",
   "scripts": {
     "sync-version": "node scripts/sync-version.mjs",
     "inject-seed-fields": "node scripts/inject-seed-fields.mjs",
     "test": "npm run sync-version && node --test tests/*.test.js",
-    "build": "npm run sync-version && node scripts/check-public.mjs"
+    "build": "npm run sync-version && node scripts/check-public.mjs",
+    "build:backend": "esbuild backend/worker.js --bundle --format=esm --platform=browser --outfile=output/history-worker.mjs --minify"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
   }
 }

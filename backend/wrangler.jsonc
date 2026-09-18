@@ -1,0 +1,11 @@
+{
+  "name": "learning-lab-history",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-18",
+  "workers_dev": true,
+  "observability": { "enabled": false },
+  "vars": {
+    "ALLOWED_ORIGINS": "https://oxsum324.github.io",
+    "GOOGLE_CLIENT_ID": ""
+  }
+}
