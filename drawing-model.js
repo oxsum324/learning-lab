@@ -1,4 +1,4 @@
-import {LAYOUTS} from './drawing-layouts.js?v=0.10.0';
+import {LAYOUTS} from './drawing-layouts.js?v=0.11.0';
 export const SHEETS={force:'受力圖',internal:'剪力／彎矩圖',deformed:'變形圖'};
 export const TYPES=['line','arrow','udl','moment','pin','roller','fixed','text','pen','curve','rect','circle'];
 export const COLORS=['#173c36','#22746a','#b64b32','#285ca8'];
