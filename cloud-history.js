@@ -1,4 +1,4 @@
-import {validateState,mergeStates} from './core.js?v=0.11.0';
+import {validateState,mergeStates} from './core.js?v=0.12.0';
 
 // Public service address only. Access tokens never enter localStorage or exports.
 export const CLOUD_ENDPOINT='https://learning-lab-history.oxsum324-learning.workers.dev';
@@ -35,13 +35,13 @@ export class CloudHistory {
 
 export function mountCloudHistory({topicId,sandbox,getState,onMerge,download}){
  const $=id=>document.getElementById(id),client=new CloudHistory({endpoint:CLOUD_ENDPOINT,topicId});
- let tokenClient,folderUrl='',cursor=null,latestState='',pending=0,revision=0;
- const status=(text,bad=false)=>{for(const id of ['cloud-status','cloud-indicator']){$(id).textContent=text;$(id).classList.toggle('warning',bad);}};
- const controls=()=>{const connected=client.connected();$('cloud-backup').disabled=!connected;$('cloud-list').disabled=!connected;$('cloud-disconnect').hidden=!client.token;$('cloud-connect').disabled=!tokenClient;$('cloud-connect').textContent=client.token?'重新連接 Google':'連接 Google';};
+ let tokenClient,folderUrl='',cursor=null,latestState='',pending=0,revision=0,checking=false;
+ const status=(text,bad=false,brief)=>{$('cloud-status').textContent=text;$('cloud-status').classList.toggle('warning',bad);$('cloud-indicator').textContent=brief||(bad?'雲端需確認':client.connected()?'私人雲端已連接':'雲端未連線');$('cloud-indicator').classList.toggle('warning',bad);};
+ const controls=()=>{const connected=client.connected();$('cloud-backup').disabled=!connected;$('cloud-list').disabled=!connected;$('cloud-disconnect').hidden=!client.token;$('cloud-connect').disabled=!tokenClient;$('cloud-connect').textContent=client.token?'重新連接 Google':'連接 Google';$('cloud-retry').hidden=!!tokenClient;$('cloud-retry').disabled=checking;};
  function error(e){status(e instanceof TypeError||e.name==='TimeoutError'?'雲端連線失敗，請稍後重試；本機紀錄仍保留。':e.message||'雲端連線失敗，請稍後重試；本機紀錄仍保留。',true);controls();}
  async function backup(){
-  const snapshot=structuredClone(getState()),savedRevision=revision;pending++;status('雲端備份中，請保持本頁開啟…');
-  try{await client.backup(snapshot);latestState=JSON.stringify(snapshot);status('雲端歷史已保存 · '+new Date().toLocaleTimeString('zh-TW')+(savedRevision!==revision?'；其後的本機變更尚未備份。':''));}
+  const snapshot=structuredClone(getState()),savedRevision=revision;pending++;status('雲端備份中，請保持本頁開啟…',false,'雲端備份中');
+  try{await client.backup(snapshot);latestState=JSON.stringify(snapshot);status('雲端歷史已保存 · '+new Date().toLocaleTimeString('zh-TW')+(savedRevision!==revision?'；其後的本機變更尚未備份。':''),false,savedRevision!==revision?'本機有新變更':'雲端已備份');}
   catch(e){error(e);}finally{pending--;controls();}
  }
  async function history(append=false){
@@ -59,21 +59,22 @@ export function mountCloudHistory({topicId,sandbox,getState,onMerge,download}){
  $('cloud-disconnect').onclick=()=>{client.disconnect();folderUrl='';$('cloud-folder').hidden=true;$('cloud-history-list').replaceChildren();$('cloud-more').hidden=true;controls();status('已中斷本頁連線；雲端歷史保留，後續作答只存本機。');};
  $('cloud-connect').onclick=()=>tokenClient?.requestAccessToken({prompt:'select_account'});
  window.addEventListener('beforeunload',e=>{if(pending){e.preventDefault();e.returnValue='';}});
- if(sandbox){status('功能測試空間不連接私人雲端。');$('cloud-connect').disabled=true;return {changed(){},submitted(){}};}
+ if(sandbox){status('功能測試空間不連接私人雲端。',false,'測試空間 · 僅存本機');$('cloud-connect').disabled=true;$('cloud-retry').hidden=true;return {changed(){},submitted(){}};}
  async function init(){
   if(!CLOUD_ENDPOINT){status('雲端功能設定中；目前紀錄仍只存瀏覽器。');return;}
   const response=await fetch(CLOUD_ENDPOINT+'/config',{cache:'no-store',credentials:'omit',signal:AbortSignal.timeout(15000)});if(!response.ok)throw Error('雲端服務暫時無法連接。');
-  const config=await response.json();if(!config.ready){status('後端已連接，尚待 Google 登入設定；紀錄仍只存瀏覽器。');return;}
-  await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://accounts.google.com/gsi/client';script.async=true;script.onload=resolve;script.onerror=()=>reject(Error('Google 登入元件未載入，請重新整理。'));document.head.append(script);});
+  const config=await response.json();if(!config.ready){status('雲端尚未啟用：待完成 Google 登入設定。目前請先匯出完整 JSON 保存紀錄。',false,'雲端尚未啟用');return;}
+  if(!globalThis.google?.accounts?.oauth2)await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://accounts.google.com/gsi/client';script.async=true;script.onload=resolve;script.onerror=()=>{script.remove();reject(Error('Google 登入元件未載入，請重新檢查雲端設定。'));};document.head.append(script);});
   tokenClient=google.accounts.oauth2.initTokenClient({client_id:config.clientId,scope:'openid email https://www.googleapis.com/auth/drive.file',include_granted_scopes:false,error_callback:()=>status('Google 登入視窗未完成，請重試。',true),callback:async response=>{
    if(response.error){status('未完成 Google 授權，紀錄仍在本機。',true);return;}
    client.setToken(response.access_token,response.expires_in);controls();status('正在確認私人資料夾…');
    try{const session=await client.session();folderUrl=session.folderUrl;if(!/^https:\/\/drive\.google\.com\/drive\/folders\/[A-Za-z0-9_-]+$/.test(folderUrl))throw Error('雲端資料夾網址無效。');$('cloud-folder').href=folderUrl;$('cloud-folder').hidden=false;controls();status('私人雲端已連接。按「備份目前紀錄」上傳既有資料；之後提交作答會自動備份。');await history();}catch(e){client.disconnect();error(e);}
   }});controls();status('尚未連接 Google，紀錄仍只存瀏覽器。');
  }
- init().catch(error);
+ async function checkSetup(){if(checking||tokenClient)return;checking=true;controls();status('正在確認雲端設定…',false,'確認雲端狀態中');try{await init();}catch(e){error(e);}finally{checking=false;controls();}}
+ $('cloud-retry').onclick=checkSetup;void checkSetup();
  return {
-  changed(){revision++;if(client.token&&!pending&&JSON.stringify(getState())!==latestState)status(client.connected()?'本機有新變更；提交作答時自動備份，也可立即手動備份。':'Google 授權已過期；本機新變更尚未備份，請重新連接。');controls();},
-  submitted(){if(client.connected())void backup();else status('本次作答已留在本機；連接 Google 後可備份全部紀錄。');}
+  changed(){revision++;if(client.token&&!pending&&JSON.stringify(getState())!==latestState)status(client.connected()?'本機有新變更；提交作答時自動備份，也可立即手動備份。':'Google 授權已過期；本機新變更尚未備份，請重新連接。',false,'本機有新變更');controls();},
+  submitted(){if(client.connected())void backup();else if(tokenClient)status('本次作答已留在本機；連接 Google 後可備份全部紀錄。');}
  };
 }
