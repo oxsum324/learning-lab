@@ -6,6 +6,6 @@
   "observability": { "enabled": false },
   "vars": {
     "ALLOWED_ORIGINS": "https://oxsum324.github.io",
-    "GOOGLE_CLIENT_ID": ""
+    "GOOGLE_CLIENT_ID": "241580228285-68le8sgdkgta3btmajeak0fl868ni9u1.apps.googleusercontent.com"
   }
 }
