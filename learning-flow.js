@@ -1,4 +1,5 @@
-import {hasDrawing} from './drawing-model.js?v=0.12.0';
+import {hasDrawing} from './drawing-model.js?v=0.13.0';
+import {sessionPhases,sessionKind} from './session-phases.js?v=0.13.0';
 
 export const PHASES={
  'structural-analysis':['平衡與靜定分析','位移與能量方法','力法與靜不定','影響線與整合演練'],
@@ -37,16 +38,13 @@ export function lessonMode(lesson,topic){
  return {label:'圖解與推導',note:'依本頁要求留下圖形、方程或短答，再逐項核對驗收條件。'};
 }
 export function practiceBudget(minutes,day,topic){
- const target=[30,45,60].includes(minutes)?minutes:30;
- const exam=topic!=='structural-analysis'&&day>=24&&day<=27;
- const weekly=[7,14].includes(day)||(topic==='structural-analysis'&&[21,23,28,29].includes(day))||(['reinforced-concrete','steel-structures'].includes(topic)&&[23,29].includes(day));
- if(exam||weekly){const work=exam?25:20,check=30-work;return {text:`閉卷作答 ${work} 分 → 核對與記錄 ${check} 分`+(target>30?` → 訂正補強 ${target-30} 分`:'')+'。題目另訂限時時，以題目為準。',read:'閉卷前確認題目完整',practice:`閉卷作答 · ${work} 分鐘`,check:`核對與記錄 · ${check} 分鐘`};}
- return {text:`回想 3 分 → 閱讀 5 分 → 作答 ${target-15} 分 → 核對 5 分 → 記錄 2 分`,read:'看什麼 · 5 分鐘',practice:`做什麼 · ${target-15} 分鐘`,check:'怎麼驗收 · 5 分鐘'};
+ const phases=sessionPhases(minutes,day,topic),work=phases.find(p=>p.id==='work'),check=phases.find(p=>p.id==='check');
+ return {text:phases.map(p=>`${p.id==='read'?'閱讀':p.label} ${p.minutes} 分`).join(' → '),read:sessionKind(day,topic)==='ordinary'?'看什麼 · 5 分鐘':'閉卷前確認題目完整',practice:`${work.label} · ${work.minutes} 分鐘`,check:`${check.label} · ${check.minutes} 分鐘`};
 }
-export const DEFAULT_PREFS={minutes:30,largeText:false,reduceMotion:false,lastDays:{}};
+export const DEFAULT_PREFS={minutes:30,largeText:false,reduceMotion:false,startToday:true,lastDays:{}};
 export function normalizePrefs(input){
  const lastDays={};for(const [id,d] of Object.entries(input?.lastDays??{}))if(Object.hasOwn(PHASES,id)&&Number.isInteger(d)&&d>=1&&d<=30)lastDays[id]=d;
- return {minutes:[30,45,60].includes(input?.minutes)?input.minutes:30,largeText:input?.largeText===true,reduceMotion:input?.reduceMotion===true,lastDays};
+ return {minutes:[30,45,60].includes(input?.minutes)?input.minutes:30,largeText:input?.largeText===true,reduceMotion:input?.reduceMotion===true,startToday:input?.startToday!==false,lastDays};
 }
 export function coachSummary(state,name){
  const lines=[`# ${name}｜學習回顧`,'','此摘要供教練閱讀；完整圖形及可還原資料請另附 JSON。',`已提交 ${state.records.length} 筆；另有 ${Object.values(state.drafts).filter(meaningfulDraft).length} 課未完成草稿，草稿內容請見 JSON。`,''];
