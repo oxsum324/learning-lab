@@ -11,11 +11,37 @@ test('all 450 session schedules sum to their targets with continuous boundaries 
  for(const topic of Object.keys(TOPICS))for(let day=1;day<=30;day++)for(const target of [30,45,60]){
   const phases=sessionPhases(target,day,topic);assert.equal(phases.reduce((sum,p)=>sum+p.minutes,0),target);
   assert.equal(phases[0].startMs,0);phases.forEach((p,i)=>{assert.equal(p.endMs-p.startMs,p.minutes*60000);if(i)assert.equal(p.startMs,phases[i-1].endMs);});
-  const kind=sessionKind(day,topic);if(kind!=='ordinary'){assert.equal(phases[0].minutes,kind==='exam'?25:20);assert.equal(phases[1].endMs,30*60000);if(target>30)assert.equal(phases[2].id,'correction');}
+  const kind=sessionKind(day,topic);if(kind!=='ordinary'){assert.equal(phases[1].endMs,30*60000);if(target>30)assert.equal(phases[2].id,'correction');}
  }
  assert.deepEqual(sessionPhases(30,1,'structural-analysis').map(p=>p.minutes),[3,5,15,4,3]);
  assert.deepEqual(sessionPhases(30,1,'reinforced-concrete').map(p=>p.minutes),[3,5,17,5]);
  assert.equal(sessionKind(24,'structural-analysis'),'ordinary','structural day 24 is not an original-exam session');
+});
+test('structural weekly sessions include the existing D23 mixed test and keep 25 plus 5 at every preference',()=>{
+ const topic='structural-analysis';
+ assert.deepEqual(Array.from({length:30},(_,i)=>i+1).filter(d=>sessionKind(d,topic)==='weekly'),[7,14,21,23,28,29]);
+ for(const day of [7,14,21,23,28,29])for(const minutes of [30,45,60]){
+  const phases=sessionPhases(minutes,day,topic);
+  assert.deepEqual(phases.slice(0,2).map(p=>p.minutes),[25,5]);
+  assert.equal(referenceLocked(phases,1499999),true);assert.equal(referenceLocked(phases,1500000),false);
+  if(minutes>30)assert.deepEqual([phases[2].id,phases[2].minutes],['correction',minutes-30]);
+ }
+ const d23=JSON.parse(readFileSync(new URL('../site/curriculum.json',import.meta.url),'utf8')).days[22];
+ assert.match(d23.task,/J／W3.*週測/);assert.match(d23.problem,/J｜/);assert.match(d23.problem,/W3｜/);
+ for(const day of [22,24,25,26,27])assert.equal(sessionKind(day,topic),'ordinary');
+});
+test('structural D30 is a 20 plus 10 delayed retest; other subjects retain weekly and original-exam limits',()=>{
+ for(const minutes of [30,45,60]){
+  assert.equal(sessionKind(30,'structural-analysis'),'final');
+  const final=sessionPhases(minutes,30,'structural-analysis');
+  assert.deepEqual(final.slice(0,2).map(p=>[p.label,p.minutes]),[['閉卷重做',20],['結案整理',10]]);
+  assert.equal(referenceLocked(final,1199999),true);assert.equal(referenceLocked(final,1200000),false);
+  for(const topic of Object.keys(TOPICS).filter(t=>t!=='structural-analysis')){
+   assert.deepEqual(sessionPhases(minutes,7,topic).slice(0,2).map(p=>p.minutes),[20,10]);
+   for(const day of [24,25,26,27])assert.deepEqual(sessionPhases(minutes,day,topic).slice(0,2).map(p=>p.minutes),[25,5]);
+   assert.equal(sessionKind(30,topic),'ordinary');
+  }
+ }
 });
 test('phase boundaries and reference locks use active time, with submission unlocking immediately',()=>{
  const phases=sessionPhases(30,1,'structural-analysis');assert.equal(phaseAt(phases,179999),0);assert.equal(phaseAt(phases,180000),1);assert.equal(phaseAt(phases,1800000),-1);

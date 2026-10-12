@@ -3,5 +3,50 @@
     "type": "image/jpeg",
     "sha256": "b75523fa94754db9288fea27fda6359b40e89fb6cfcc5406552c5d676353823c",
     "purpose": "Generated decorative structural-study illustration; visually reviewed, no text, labels or personal content."
+  },
+  "site/assets/topic-structure-v1.jpg": {
+    "type": "image/jpeg",
+    "sha256": "a4161451c3cb12e792d6133ea26d56f5f88d7525140465303b7609afeb0acc1d",
+    "purpose": "目前科目的總覽與空白紀錄情境裝飾；已目視核對，無文字、數字、箭頭、公式或個資。"
+  },
+  "site/assets/topic-concrete-v1.jpg": {
+    "type": "image/jpeg",
+    "sha256": "6aeee9b9cf09e4ba2e82e293134e2adf01edac26b169240205f0dcddbccdbcc2",
+    "purpose": "目前科目的總覽與空白紀錄情境裝飾；已目視核對，無文字、數字、箭頭、公式或個資。"
+  },
+  "site/assets/topic-steel-v1.jpg": {
+    "type": "image/jpeg",
+    "sha256": "969093a2e8713548b6e735a65a7aae7a79f139780082d0364d8e4ada213326f9",
+    "purpose": "目前科目的總覽與空白紀錄情境裝飾；已目視核對，無文字、數字、箭頭、公式或個資。"
+  },
+  "site/assets/topic-dynamics-v1.jpg": {
+    "type": "image/jpeg",
+    "sha256": "de134a792f9b12e08016630d367c93e3ebfd37a948a133ef617aa770ebd9fdc2",
+    "purpose": "目前科目的總覽與空白紀錄情境裝飾；已目視核對，無文字、數字、箭頭、公式或個資。"
+  },
+  "site/assets/topic-soil-v1.jpg": {
+    "type": "image/jpeg",
+    "sha256": "6dbff6caf0b3a44f306370961a24f640af34d161a9ee1162632eb73fec4d96e2",
+    "purpose": "目前科目的總覽與空白紀錄情境裝飾；已目視核對，無文字、數字、箭頭、公式或個資。"
+  },
+  "site/assets/phase-balance-v1.jpg": {
+    "type": "image/jpeg",
+    "sha256": "535debd478b1881965c86f27e12f5c2c517a99950fc1fdcdef00572a4caf3bf4",
+    "purpose": "四階段卡共用裝飾小圖；已目視核對，無文字、數字、箭頭、公式或個資。"
+  },
+  "site/assets/phase-energy-v1.jpg": {
+    "type": "image/jpeg",
+    "sha256": "ce95345dcfee541071a1d86ffbc6da4226348be4ef9318023926dc95ec1f50b2",
+    "purpose": "四階段卡共用裝飾小圖；已目視核對，無文字、數字、箭頭、公式或個資。"
+  },
+  "site/assets/phase-compatibility-v1.jpg": {
+    "type": "image/jpeg",
+    "sha256": "85ba38b50297c5bf396314ddba1e5162749d19923689826d07703b5cc8b38f2d",
+    "purpose": "四階段卡共用裝飾小圖；已目視核對，無文字、數字、箭頭、公式或個資。"
+  },
+  "site/assets/phase-integration-v1.jpg": {
+    "type": "image/jpeg",
+    "sha256": "bcfa7aceecfac731f865f82bc7342d1d59f44a2b3cee4e423a83a3e5e36e8483",
+    "purpose": "四階段卡共用裝飾小圖；已目視核對，無文字、數字、箭頭、公式或個資。"
   }
 }

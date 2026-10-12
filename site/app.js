@@ -1,12 +1,13 @@
-import {TOPICS} from './topics.js?v=0.13.0';
-import {KEY,DAY_KEY,TOPIC_ID,SANDBOX,emptyState,assess,validateState,mergeStates,safeSave} from './core.js?v=0.13.0';
-import {DrawingEditor,renderAnswerDrawing} from './drawing.js?v=0.13.0';
-import {hasDrawing} from './drawing-model.js?v=0.13.0';
-import {GUIDES} from './teaching-guides.js?v=0.13.0';
-import {mountCloudHistory,mergeCloudRecords} from './cloud-history.js?v=0.13.0';
-import {PHASES,RANGES,RECALL,meaningfulDraft,dayStatus,nextLesson,lessonMode,practiceBudget,normalizePrefs,coachSummary} from './learning-flow.js?v=0.13.0';
-import {sessionPhases,phaseAt,referenceLocked,referenceAccess,recordHint} from './session-phases.js?v=0.13.0';
-import {normalizeNotes,mergeNotes,reviewDate,pendingReview,notesMarkdown} from './practice-notes.js?v=0.13.0';
+import {TOPICS} from './topics.js?v=0.13.1';
+import {KEY,DAY_KEY,TOPIC_ID,SANDBOX,emptyState,assess,validateState,mergeStates,safeSave} from './core.js?v=0.13.1';
+import {DrawingEditor,renderAnswerDrawing} from './drawing.js?v=0.13.1';
+import {hasDrawing} from './drawing-model.js?v=0.13.1';
+import {GUIDES} from './teaching-guides.js?v=0.13.1';
+import {mountCloudHistory,mergeCloudRecords} from './cloud-history.js?v=0.13.1';
+import {PHASES,RANGES,RECALL,meaningfulDraft,dayStatus,nextLesson,lessonMode,practiceBudget,normalizePrefs,coachSummary} from './learning-flow.js?v=0.13.1';
+import {sessionPhases,phaseAt,referenceLocked,referenceAccess,recordHint} from './session-phases.js?v=0.13.1';
+import {normalizeNotes,mergeNotes,reviewDate,pendingReview,notesMarkdown} from './practice-notes.js?v=0.13.1';
+import {TOPIC_ART,PHASE_ART,decorativeImage,loadPanelArt} from './illustrations.js?v=0.13.1';
 let cloud;
 const notesKey='learning-lab:'+(SANDBOX?'sandbox:':'')+TOPIC_ID+':practice-notes:v1';
 let notes=normalizeNotes(),notesExpected=null,notesWritable=true,lastSubmitted=null,phaseKey='',activePhase=-2,pendingReference='';
@@ -44,7 +45,7 @@ function paintStats(){
  const ms=state.records.reduce((n,r)=>n+r.activeMs,0)+Object.values(state.drafts).reduce((n,d)=>n+d.activeMs,0);
  $('minutes').textContent=(ms/60000).toFixed(1)+' 分鐘';$('draft-count').textContent=statuses.filter(d=>d.draft).length;$('review-count').textContent=statuses.filter(d=>d.review).length;
  if(!course)return;refreshDayOptions();const next=nextLesson(state);$('resume-title').textContent='D'+String(next.day).padStart(2,'0')+' · '+course.days[next.day-1].task;$('resume-reason').textContent=next.reason;$('resume').disabled=false;
- $('phase-overview').replaceChildren();RANGES.forEach(([a,b],index)=>{const card=el('article',undefined,'phase-card'),p=el('p','D'+String(a).padStart(2,'0')+'—D'+String(b).padStart(2,'0'),'eyebrow'),title=el('h3',PHASES[TOPIC_ID][index]),done=[...days].filter(d=>d>=a&&d<=b).length,progress=el('progress');progress.max=b-a+1;progress.value=done;progress.setAttribute('aria-label',PHASES[TOPIC_ID][index]+'已提交進度');card.append(p,title,progress,el('span',done+' / '+(b-a+1)+' 課已提交','muted'));$('phase-overview').append(card);});
+ $('phase-overview').replaceChildren();RANGES.forEach(([a,b],index)=>{const card=el('article',undefined,'phase-card'),p=el('p','D'+String(a).padStart(2,'0')+'—D'+String(b).padStart(2,'0'),'eyebrow'),title=el('h3',PHASES[TOPIC_ID][index]),done=[...days].filter(d=>d>=a&&d<=b).length,progress=el('progress');progress.max=b-a+1;progress.value=done;progress.setAttribute('aria-label',PHASES[TOPIC_ID][index]+'已提交進度');card.append(decorativeImage(PHASE_ART[index],'phase-art',96,96),p,title,progress,el('span',done+' / '+(b-a+1)+' 課已提交','muted'));$('phase-overview').append(card);});loadPanelArt('overview');
 }
 function paintLessonMeta(){
  if(!course)return;const lesson=course.days[currentDay-1],mode=lessonMode(lesson,TOPIC_ID),budget=practiceBudget(prefs.minutes,currentDay,TOPIC_ID),phase=RANGES.findIndex(([a,b])=>currentDay>=a&&currentDay<=b);
@@ -61,7 +62,7 @@ function showTab(name){
  if(!Object.hasOwn(labels,name))return;if(!course&&['today','route','history'].includes(name))return;
  document.querySelectorAll('.panel').forEach(n=>n.hidden=n.id!==name);document.querySelectorAll('[data-tab]').forEach(n=>{n.classList.toggle('active',n.dataset.tab===name);if(n.dataset.tab===name)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');});
  document.body.dataset.view=name;$('page-name').textContent=labels[name];if(name!=='today')pause();if(name==='history')renderHistory();if(name==='route')renderRoute();if(name==='overview')paintStats();
- history.replaceState(null,'','#'+name);window.scrollTo({top:0,behavior:'instant'});
+ loadPanelArt(name);history.replaceState(null,'','#'+name);window.scrollTo({top:0,behavior:'instant'});
 }
 function renderRoute(){
  const query=$('route-search').value.trim().toLowerCase(),filter=$('route-filter').value;let count=0;$('route-list').replaceChildren();
@@ -78,7 +79,7 @@ function renderHistory(){
  $('history-list').replaceChildren();const filter=$('history-filter').value,day=$('history-day').value;
  const records=[...state.records].filter(r=>(day==='all'||r.day===Number(day))&&(filter!=='review'||statusFor(r.day).review)).sort((a,b)=>b.submittedAt.localeCompare(a.submittedAt));
  $('history-count').textContent=records.length+' 筆作答 · 待重練依各課最近一次作答的提示、數值核對與錯因整理。';
- if(!records.length){$('history-list').append(el('div',state.records.length?'沒有符合的紀錄。':'尚未提交練習。從一題開始，留下你的第一份解題過程。','empty'));return;}
+ if(!records.length){const empty=el('div',undefined,'empty history-empty');if(!state.records.length)empty.append(decorativeImage(TOPIC_ART[TOPIC_ID],'empty-art',240,160));empty.append(el('p',state.records.length?'沒有符合的紀錄。':'尚未提交練習。從一題開始，留下你的第一份解題過程。'));$('history-list').append(empty);loadPanelArt('history');return;}
  for(const r of records){
   const card=el('article',undefined,'history-item'),head=el('div',undefined,'history-heading'),title=el('h3','D'+String(r.day).padStart(2,'0')+' · '+course.days[r.day-1].task),redo=el('button','重練這課','secondary');redo.onclick=()=>openLesson(r.day);head.append(title,redo);
   const info=el('p',new Date(r.submittedAt).toLocaleString('zh-TW')+' · '+(r.activeMs/60000).toFixed(1)+' 分鐘 · 提示 '+r.hint+' · '+r.errorType,'muted');const details=el('details'),summary=el('summary','查看原稿與圖解');details.append(summary);
@@ -157,7 +158,7 @@ document.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>{$(b.dataset.j
 for(const id of ['pref-minutes','pref-large','pref-motion','pref-today'])$(id).onchange=()=>{prefs.minutes=Number($('pref-minutes').value);prefs.largeText=$('pref-large').checked;prefs.reduceMotion=$('pref-motion').checked;prefs.startToday=$('pref-today').checked;applyPrefs();savePrefs(true);paintLessonMeta();};applyPrefs();
 function download(value,name){const blob=new Blob([value],{type:name.endsWith('.md')?'text/markdown;charset=utf-8':'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 const exportSummary=()=>{pause();download(coachSummary(state,TOPICS[TOPIC_ID].name)+notesMarkdown(notes,state.records),'learning-review-'+TOPIC_ID+'.md');$('export-status').textContent='已匯出教練回顧摘要；完整圖解請另附 JSON。';};$('export-summary').onclick=exportSummary;$('history-export').onclick=exportSummary;
-$('export').onclick=()=>{pause();const data={...state,exportedAt:now(),source:'learning-lab-browser-v0.13.0',localPracticeNotes:notes};download(JSON.stringify(data,null,2),`learning-lab-${TOPIC_ID}-${new Date().toISOString().slice(0,10)}.json`);$('export-status').textContent='已交給瀏覽器下載，請確認檔案確實保存。雲端保存狀態請見雲端歷史區。';};
+$('export').onclick=()=>{pause();const data={...state,exportedAt:now(),source:'learning-lab-browser-v0.13.1',localPracticeNotes:notes};download(JSON.stringify(data,null,2),`learning-lab-${TOPIC_ID}-${new Date().toISOString().slice(0,10)}.json`);$('export-status').textContent='已交給瀏覽器下載，請確認檔案確實保存。雲端保存狀態請見雲端歷史區。';};
 $('import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>20*1024*1024)throw Error('檔案超過20MB。');pause();const {localPracticeNotes,...raw}=JSON.parse(await file.text());const incoming=validateState(raw);const merged=mergeStates(state,incoming);state=merged;const saved=persist();notes=mergeNotes(notes,localPracticeNotes);const notesSaved=saveNotes();$('usage-feedback').value=notes.feedback;showDay(currentDay);paintStats();$('usage-feedback-status').textContent=notesSaved?'已合併本機補充註記。':'補充註記尚未保存，請匯出 JSON。';$('import-status').textContent=saved?`已合併，共${state.records.length}筆作答。`:'已載入本頁，瀏覽器儲存失敗，請匯出合併後備份。';}catch(err){$('import-status').textContent='未匯入：'+err.message;}e.target.value='';};
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});window.addEventListener('pagehide',pause);window.addEventListener('storage',e=>{if(e.key===KEY&&e.newValue!==expected){writable=false;pause();storageMessage('另一個分頁已更新紀錄，本頁已停止覆寫。請匯出本頁資料，再重新整理合併。',true);}});
 setInterval(()=>{const ms=elapsed();$('timer').textContent=timeText(ms);$('session-progress').value=Math.min(ms,prefs.minutes*60000);$('time-target').textContent=ms>=prefs.minutes*60000?'已達本次目標，可核對並記錄':'目標 '+prefs.minutes+' 分鐘';paintSession();},250);setInterval(()=>{if(tickFrom!==null){bankTick();persist();paintStats();}},5000);
@@ -170,7 +171,7 @@ $('route-description').textContent=topic.route;
 $('backup-topic').textContent='目前主題：'+topic.name+'。匯出及還原僅處理這個主題；另一科請切換後另行備份。';
 for(const [id,item] of Object.entries(TOPICS)){const option=document.createElement('option');option.value=id;option.textContent=item.name+(id==='reinforced-concrete'?'（含預力）':'');$('topic-select').append(option);}
 $('topic-select').value=TOPIC_ID;
-$('topic-select').onchange=e=>{const next=e.target.value;if(course){pause();const d=capture();if(!meaningfulDraft(d))delete state.drafts[currentDay];if(!persist()){$('topic-select').value=TOPIC_ID;storageMessage('尚有未保存資料，請先匯出備份，再切換主題。',true);return;}}const url=new URL(location.href);url.searchParams.set('topic',next);url.searchParams.set('v','0.13.0');url.hash='';location.assign(url.href);};
+$('topic-select').onchange=e=>{const next=e.target.value;if(course){pause();const d=capture();if(!meaningfulDraft(d))delete state.drafts[currentDay];if(!persist()){$('topic-select').value=TOPIC_ID;storageMessage('尚有未保存資料，請先匯出備份，再切換主題。',true);return;}}const url=new URL(location.href);url.searchParams.set('topic',next);url.searchParams.set('v','0.13.1');url.hash='';location.assign(url.href);};
 if(TOPIC_ID!=='structural-analysis'){
  $('step-do').textContent='02 / 做什麼 · 17分鐘';$('step-check').textContent='03 / 怎麼驗收 · 5分鐘';
  $('rhythm-note').textContent='另留3分鐘閉卷提取。可加量至60分鐘；週測20分鐘作答＋10分鐘核對，歷屆題25分鐘作答＋5分鐘檢查。';
@@ -212,4 +213,6 @@ cloud=mountCloudHistory({topicId:TOPIC_ID,sandbox:SANDBOX,getState:()=>state,dow
  const next=safeSave(localStorage,merged,expected);state=merged;expected=next;showDay(currentDay);paintStats();
 }});
 
+$('topic-art').append(decorativeImage(TOPIC_ART[TOPIC_ID],'topic-hero',960,640));
+matchMedia('(min-width: 601px)').addEventListener('change',()=>loadPanelArt(document.body.dataset.view));
 showTab(Object.hasOwn(labels,location.hash.slice(1))?location.hash.slice(1):(prefs.startToday?'today':'overview'));
