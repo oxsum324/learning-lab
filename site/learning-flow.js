@@ -1,5 +1,5 @@
-import {hasDrawing} from './drawing-model.js?v=0.13.1';
-import {sessionPhases,sessionKind} from './session-phases.js?v=0.13.1';
+import {hasDrawing} from './drawing-model.js?v=0.14.0';
+import {sessionPhases,sessionKind} from './session-phases.js?v=0.14.0';
 
 export const PHASES={
  'structural-analysis':['平衡與靜定分析','位移與能量方法','力法與靜不定','影響線與整合演練'],
@@ -16,8 +16,8 @@ export const RECALL={
  'structural-dynamics':'先不看公式：自由度、正方向與輸入量如何定義？',
  'soil-foundations':'先不看公式：水位、排水條件與應力種類如何決定？'
 };
-export function meaningfulDraft(d){return !!d&&(d.activeMs>0||d.answerViewed===true||d.hint>0||!['','未判定'].includes(d.errorType??'')||['reasoning','explanation','mistake'].some(k=>d[k]?.trim())||Object.values(d.values??{}).some(v=>String(v).trim())||hasDrawing(d.drawing));}
-export function needsReview(record){return !!record&&(record.hint>=2||record.answerViewed===true||(record.assessment?.total>0&&record.assessment.correct<record.assessment.total)||!['','未判定','無明顯錯誤'].includes(record.errorType??'')||!!record.mistake?.trim());}
+export function meaningfulDraft(d){return !!d&&(d.progressive?.selectedStage===true||d.activeMs>0||d.answerViewed===true||d.hint>0||!['','未判定'].includes(d.errorType??'')||['reasoning','explanation','mistake'].some(k=>d[k]?.trim())||Object.values(d.values??{}).some(v=>String(v).trim())||hasDrawing(d.drawing));}
+export function needsReview(record){return !!record&&((record.progressive&&record.progressive.stage!=='independent')||record.progressive?.assistance>0||record.hint>=2||record.answerViewed===true||(record.assessment?.total>0&&record.assessment.correct<record.assessment.total)||!['','未判定','無明顯錯誤'].includes(record.errorType??'')||!!record.mistake?.trim());}
 export function dayStatus(state,day){
  const records=state.records.filter(r=>r.day===day).sort((a,b)=>Date.parse(b.submittedAt)-Date.parse(a.submittedAt)||b.id.localeCompare(a.id));
  const latest=records[0],draft=meaningfulDraft(state.drafts[day]);
@@ -41,13 +41,13 @@ export function practiceBudget(minutes,day,topic){
  const phases=sessionPhases(minutes,day,topic),work=phases.find(p=>p.id==='work'),check=phases.find(p=>p.id==='check');
  return {text:phases.map(p=>`${p.id==='read'?'閱讀':p.label} ${p.minutes} 分`).join(' → '),read:sessionKind(day,topic)==='ordinary'?'看什麼 · 5 分鐘':'閉卷前確認題目完整',practice:`${work.label} · ${work.minutes} 分鐘`,check:`${check.label} · ${check.minutes} 分鐘`};
 }
-export const DEFAULT_PREFS={minutes:30,largeText:false,reduceMotion:false,startToday:true,lastDays:{}};
+export const DEFAULT_PREFS={minutes:30,largeText:false,reduceMotion:false,startToday:true,reviewMode:'progressive',lastDays:{}};
 export function normalizePrefs(input){
  const lastDays={};for(const [id,d] of Object.entries(input?.lastDays??{}))if(Object.hasOwn(PHASES,id)&&Number.isInteger(d)&&d>=1&&d<=30)lastDays[id]=d;
- return {minutes:[30,45,60].includes(input?.minutes)?input.minutes:30,largeText:input?.largeText===true,reduceMotion:input?.reduceMotion===true,startToday:input?.startToday!==false,lastDays};
+ return {minutes:[30,45,60].includes(input?.minutes)?input.minutes:30,largeText:input?.largeText===true,reduceMotion:input?.reduceMotion===true,startToday:input?.startToday!==false,reviewMode:input?.reviewMode==='advanced'?'advanced':'progressive',lastDays};
 }
 export function coachSummary(state,name){
  const lines=[`# ${name}｜學習回顧`,'','此摘要供教練閱讀；完整圖形及可還原資料請另附 JSON。',`已提交 ${state.records.length} 筆；另有 ${Object.values(state.drafts).filter(meaningfulDraft).length} 課未完成草稿，草稿內容請見 JSON。`,''];
- for(const r of [...state.records].sort((a,b)=>a.day-b.day||a.submittedAt.localeCompare(b.submittedAt))){lines.push(`## D${String(r.day).padStart(2,'0')}｜${r.submittedAt}`,`- 作答 ID：${r.id}`,`- 用時：${(r.activeMs/60000).toFixed(1)} 分鐘；提示：${r.hint}；錯因：${r.errorType}`,`- 填答數值（欄位代碼）：${Object.entries(r.values??{}).map(([key,value])=>key+' = '+value).join('；')||'未填'}`,`- 數值核對：${r.assessment.text}`,`- 圖解：${hasDrawing(r.drawing)?'有，請見完整 JSON':'未提供'}`,'',`推導：\n${r.reasoning||'未填'}`,`\n白話解釋：\n${r.explanation||'未填'}`,`\n訂正／問題：\n${r.mistake||'未填'}`,'');}
+ for(const r of [...state.records].sort((a,b)=>a.day-b.day||a.submittedAt.localeCompare(b.submittedAt))){lines.push(`## D${String(r.day).padStart(2,'0')}｜${r.submittedAt}`,`- 作答 ID：${r.id}`,`- 用時：${(r.activeMs/60000).toFixed(1)} 分鐘；提示：${r.hint}；錯因：${r.errorType}`,`- 填答數值（欄位代碼）：${Object.entries(r.values??{}).map(([key,value])=>key+' = '+value).join('；')||'未填'}`,`- 練習階段：${r.progressive?.stage??'舊版作答'}；候選 ${r.assessment.review?.checks?.map(c=>c.selected).join('；')??'無'}；最高協助 ${r.progressive?.assistance??r.hint}`,`- 數值核對：${r.assessment.text}`,`- 圖解：${hasDrawing(r.drawing)?'有，請見完整 JSON':'未提供'}`,'',`推導：\n${r.reasoning||'未填'}`,`\n白話解釋：\n${r.explanation||'未填'}`,`\n訂正／問題：\n${r.mistake||'未填'}`,'');}
  if(!state.records.length)lines.push('尚無已提交作答。');return lines.join('\n');
 }

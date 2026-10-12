@@ -27,7 +27,7 @@ test('after all days are submitted the oldest unresolved review comes first',()=
 });
 test('preferences accept only supported values and safe per-subject days',()=>{
  const p=normalizePrefs({minutes:999,largeText:'yes',reduceMotion:true,lastDays:{'structural-analysis':30,'soil-foundations':31,'steel-structures':1,unknown:9}});
- assert.deepEqual(p,{minutes:30,largeText:false,reduceMotion:true,startToday:true,lastDays:{'structural-analysis':30,'steel-structures':1}});
+ assert.deepEqual(p,{minutes:30,largeText:false,reduceMotion:true,startToday:true,reviewMode:'progressive',lastDays:{'structural-analysis':30,'steel-structures':1}});
  assert.equal(normalizePrefs({minutes:45}).minutes,45);assert.equal(normalizePrefs(null).minutes,30);
 });
 test('all 150 lessons have an honest task mode and schedules matching duration and real test days',()=>{
