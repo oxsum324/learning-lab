@@ -5,7 +5,7 @@ import {hasDrawing} from './drawing-model.js?v=0.13.0';
 import {GUIDES} from './teaching-guides.js?v=0.13.0';
 import {mountCloudHistory,mergeCloudRecords} from './cloud-history.js?v=0.13.0';
 import {PHASES,RANGES,RECALL,meaningfulDraft,dayStatus,nextLesson,lessonMode,practiceBudget,normalizePrefs,coachSummary} from './learning-flow.js?v=0.13.0';
-import {sessionPhases,phaseAt,referenceLocked,recordHint} from './session-phases.js?v=0.13.0';
+import {sessionPhases,phaseAt,referenceLocked,referenceAccess,recordHint} from './session-phases.js?v=0.13.0';
 import {normalizeNotes,mergeNotes,reviewDate,pendingReview,notesMarkdown} from './practice-notes.js?v=0.13.0';
 let cloud;
 const notesKey='learning-lab:'+(SANDBOX?'sandbox:':'')+TOPIC_ID+':practice-notes:v1';
@@ -98,19 +98,22 @@ function paintSession(){
  if(key!==phaseKey){phaseKey=key;activePhase=-2;$('phase-strip').replaceChildren();for(const p of phases){const part=el('div',undefined,'phase-segment phase-'+p.id);part.style.flexGrow=p.minutes;part.append(el('span',p.label),el('small',p.minutes+' 分'));$('phase-strip').append(part);}}
  [...$('phase-strip').children].forEach((part,i)=>{const p=phases[i],percent=Math.max(0,Math.min(100,(ms-p.startMs)/(p.endMs-p.startMs)*100));part.classList.toggle('is-current',i===index);part.classList.toggle('is-done',ms>=p.endMs);part.style.setProperty('--phase-progress',percent+'%');if(i===index)part.setAttribute('aria-current','step');else part.removeAttribute('aria-current');});
  if(index!==activePhase){activePhase=index;$('phase-hint').textContent=index<0?'本次時間已完成，請核對並留下紀錄。':phases[index].label+'｜'+phases[index].hint;}
- const locked=referenceLocked(phases,ms,!!lastSubmitted);$('answer-references').classList.toggle('is-locked',locked);$('reference-status').textContent=lastSubmitted?'本次已提交，可自由核對參考。':locked?'閉卷練習中 · 查看參考前會先記錄提示等級。':'已進入核對階段 · 查看完整參考仍會如實記錄已看答案。';
+ const locked=referenceLocked(phases,ms,!!lastSubmitted);$('answer-references').classList.toggle('is-locked',locked);
+ for(const id of ['concept-details','guide-details','answer-details'])$(id).classList.toggle('is-locked',currentReferenceAccess(id).locked);
+ $('reference-status').textContent=lastSubmitted?'本次已提交，可自由核對參考。':!currentReferenceAccess('concept-details').locked?'回想與讀題可自由查看觀念速查，不記提示；完整參考仍會記錄提示。':'已開始手算 · 重開觀念速查先選提示等級；完整答案會記錄已看答案。';
  $('mobile-timer').textContent=tickFrom===null?'▶ 計時':'Ⅱ 暫停';
  for(const b of document.querySelectorAll('[data-mobile-action]'))b.disabled=!editor?.[b.dataset.mobileAction==='undo'?'past':'future'].length;
 }
 function openReference(id,level){
- if(!lastSubmitted){recordHint(draft(),level);$('hint').value=String(draft().hint);capture();persist();refreshDayOptions();}
+ if(!lastSubmitted&&level>0){recordHint(draft(),level);$('hint').value=String(draft().hint);capture();persist();refreshDayOptions();}
  approvedReferences.add(id);$(id).open=true;
 }
+function currentReferenceAccess(id){const ms=elapsed();return referenceAccess(id,sessionPhases(prefs.minutes,currentDay,TOPIC_ID),ms,{started:!!state.drafts[currentDay]?.startedAt||ms>0,submitted:!!lastSubmitted});}
 function requestReference(id){
  if(!course)return;
- if(lastSubmitted){openReference(id,3);return;}
- if(referenceLocked(sessionPhases(prefs.minutes,currentDay,TOPIC_ID),elapsed())){pendingReference=id;$('hint-preview').textContent='';$('hint-dialog').showModal();$('hint-dialog').querySelector('button').focus();return;}
- openReference(id,id==='concept-details'?2:3);
+ const access=currentReferenceAccess(id);
+ if(access.locked){pendingReference=id;$('hint-preview').textContent='';const first=$('hint-dialog').querySelector('[data-hint-level="1"]');first.textContent=id==='concept-details'?'1 · 查看觀念速查（一般提醒）':'1 · 只看方向提醒';$('hint-dialog').showModal();first.focus();return;}
+ openReference(id,access.hint);
 }
 for(const id of ['concept-details','guide-details','answer-details']){
  $(id).querySelector('summary').addEventListener('click',e=>{e.preventDefault();if($(id).open){$(id).open=false;return;}requestReference(id);});
@@ -118,7 +121,7 @@ for(const id of ['concept-details','guide-details','answer-details']){
 }
 for(const b of document.querySelectorAll('[data-hint-level]'))b.onclick=()=>{
  const level=Number(b.dataset.hintLevel);recordHint(draft(),level);$('hint').value=String(draft().hint);capture();persist();refreshDayOptions();
- if(level===1){$('hint-preview').textContent=RECALL[TOPIC_ID]+'（已記錄方向提示；可返回作答。）';return;}
+ if(level===1&&pendingReference!=='concept-details'){$('hint-preview').textContent=RECALL[TOPIC_ID]+'（已記錄方向提示；可返回作答。）';return;}
  $('hint-dialog').close();openReference(level===2?'concept-details':pendingReference,level);$(level===2?'concept-details':pendingReference).scrollIntoView({block:'start'});
 };
 $('hint-close').onclick=()=>$('hint-dialog').close();
