@@ -49,19 +49,19 @@
       "fields": [
         {
           "id": "st_c02_area",
-          "label": "H 形斷面表回算（第1項）",
+          "label": "斷面積 A",
           "value": 5808,
           "unit": "mm²"
         },
         {
           "id": "st_c02_rx",
-          "label": "H 形斷面表回算（第2項）",
+          "label": "強軸迴轉半徑 rx",
           "value": 123.586,
           "unit": "mm"
         },
         {
           "id": "st_c02_sx",
-          "label": "H 形斷面表回算（第3項）",
+          "label": "強軸斷面模數 Sx",
           "value": 591394.56,
           "unit": "mm³"
         }
@@ -90,13 +90,13 @@
       "fields": [
         {
           "id": "st_c03_lrfd_strength",
-          "label": "ASD／LRFD 拉力桿同案例（第1項）",
+          "label": "LRFD 設計拉力強度 φRn",
           "value": 360,
           "unit": "kN"
         },
         {
           "id": "st_c03_asd_strength",
-          "label": "ASD／LRFD 拉力桿同案例（第2項）",
+          "label": "ASD 容許拉力強度",
           "value": 240,
           "unit": "kN"
         }
@@ -125,25 +125,25 @@
       "fields": [
         {
           "id": "st_c04_an",
-          "label": "有效淨斷面與剪力遲滯（第1項）",
+          "label": "淨斷面積 An",
           "value": 1626.667,
           "unit": "mm²"
         },
         {
           "id": "st_c04_ae",
-          "label": "有效淨斷面與剪力遲滯（第2項）",
+          "label": "有效淨斷面積 Ae",
           "value": 1382.667,
           "unit": "mm²"
         },
         {
           "id": "st_c04_yield_strength",
-          "label": "有效淨斷面與剪力遲滯（第3項）",
+          "label": "毛斷面降伏設計強度",
           "value": 450,
           "unit": "kN"
         },
         {
           "id": "st_c04_fracture_strength",
-          "label": "有效淨斷面與剪力遲滯（第4項）",
+          "label": "淨斷面斷裂設計強度",
           "value": 414.8,
           "unit": "kN"
         }
@@ -172,13 +172,13 @@
       "fields": [
         {
           "id": "st_c05_path_a_strength",
-          "label": "塊狀剪裂兩破壞路徑（第1項）",
+          "label": "A 路徑塊狀剪裂設計強度",
           "value": 322.5,
           "unit": "kN"
         },
         {
           "id": "st_c05_path_b_strength",
-          "label": "塊狀剪裂兩破壞路徑（第2項）",
+          "label": "B 路徑塊狀剪裂設計強度",
           "value": 328.5,
           "unit": "kN"
         }
@@ -207,25 +207,25 @@
       "fields": [
         {
           "id": "st_c06_slenderness_x",
-          "label": "雙軸壓桿屈曲（第1項）",
+          "label": "x 軸細長比 KL/rx",
           "value": 65.455,
           "unit": "—"
         },
         {
           "id": "st_c06_slenderness_y",
-          "label": "雙軸壓桿屈曲（第2項）",
+          "label": "y 軸細長比 KL/ry",
           "value": 102.857,
           "unit": "—"
         },
         {
           "id": "st_c06_strength_x",
-          "label": "雙軸壓桿屈曲（第3項）",
+          "label": "x 軸壓力設計強度",
           "value": 1075.724,
           "unit": "kN"
         },
         {
           "id": "st_c06_strength_y",
-          "label": "雙軸壓桿屈曲（第4項）",
+          "label": "y 軸壓力設計強度",
           "value": 770.497,
           "unit": "kN"
         }
@@ -254,25 +254,25 @@
       "fields": [
         {
           "id": "st_w07a_slenderness_y",
-          "label": "壓桿控制軸快判（第1項）",
+          "label": "y 軸細長比 KL/ry",
           "value": 120,
           "unit": "—"
         },
         {
           "id": "st_w07a_strength_y",
-          "label": "壓桿控制軸快判（第2項）",
+          "label": "y 軸壓力設計強度",
           "value": 629.242,
           "unit": "kN"
         },
         {
           "id": "st_w07b_yield_strength",
-          "label": "拉力破壞模式快判（第1項）",
+          "label": "毛斷面降伏設計強度",
           "value": 405,
           "unit": "kN"
         },
         {
           "id": "st_w07b_fracture_strength",
-          "label": "拉力破壞模式快判（第2項）",
+          "label": "淨斷面斷裂設計強度",
           "value": 369.75,
           "unit": "kN"
         }
@@ -675,25 +675,25 @@
       "fields": [
         {
           "id": "st_w23a_nominal_strength",
-          "label": "彎矩設計強度複測（第1項）",
+          "label": "名義彎矩強度 Mn",
           "value": 180,
           "unit": "kN-m"
         },
         {
           "id": "st_w23a_strength",
-          "label": "彎矩設計強度複測（第2項）",
+          "label": "設計彎矩強度 φbMn",
           "value": 162,
           "unit": "kN-m"
         },
         {
           "id": "st_w14b_nominal_strength",
-          "label": "螺栓群題設強度（第1項）",
+          "label": "螺栓群名義強度 Rn",
           "value": 240,
           "unit": "kN"
         },
         {
           "id": "st_w14b_strength",
-          "label": "螺栓群題設強度（第2項）",
+          "label": "螺栓群設計強度 φRn",
           "value": 180,
           "unit": "kN"
         }

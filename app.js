@@ -1,14 +1,14 @@
-import {STAGES,newReview,reviewMaterial,markSupport,recognitionResult,reviewOutcome,recommendedStage} from './progressive-review.js?v=0.14.1';
-import {TOPICS} from './topics.js?v=0.14.1';
-import {KEY,DAY_KEY,TOPIC_ID,SANDBOX,emptyState,assess,validateState,mergeStates,safeSave} from './core.js?v=0.14.1';
-import {DrawingEditor,renderAnswerDrawing,renderDrawing} from './drawing.js?v=0.14.1';
-import {hasDrawing} from './drawing-model.js?v=0.14.1';
-import {GUIDES} from './teaching-guides.js?v=0.14.1';
-import {mountCloudHistory,mergeCloudRecords} from './cloud-history.js?v=0.14.1';
-import {PHASES,RANGES,RECALL,meaningfulDraft,dayStatus,nextLesson,lessonMode,practiceBudget,normalizePrefs,coachSummary} from './learning-flow.js?v=0.14.1';
-import {sessionPhases,phaseAt,referenceLocked,referenceAccess,recordHint} from './session-phases.js?v=0.14.1';
-import {normalizeNotes,mergeNotes,reviewDate,pendingReview,notesMarkdown} from './practice-notes.js?v=0.14.1';
-import {TOPIC_ART,PHASE_ART,decorativeImage,loadPanelArt} from './illustrations.js?v=0.14.1';
+import {STAGES,newReview,reviewMaterial,availableMaterial,numericRecognitionNote,markSupport,recognitionResult,reviewOutcome,recommendedStage} from './progressive-review.js?v=0.14.2';
+import {TOPICS} from './topics.js?v=0.14.2';
+import {KEY,DAY_KEY,TOPIC_ID,SANDBOX,emptyState,assess,validateState,mergeStates,safeSave} from './core.js?v=0.14.2';
+import {DrawingEditor,renderAnswerDrawing,renderDrawing} from './drawing.js?v=0.14.2';
+import {hasDrawing} from './drawing-model.js?v=0.14.2';
+import {GUIDES} from './teaching-guides.js?v=0.14.2';
+import {mountCloudHistory,mergeCloudRecords} from './cloud-history.js?v=0.14.2';
+import {PHASES,RANGES,RECALL,meaningfulDraft,dayStatus,nextLesson,lessonMode,practiceBudget,normalizePrefs,coachSummary} from './learning-flow.js?v=0.14.2';
+import {sessionPhases,phaseAt,referenceLocked,referenceAccess,recordHint} from './session-phases.js?v=0.14.2';
+import {normalizeNotes,mergeNotes,reviewDate,pendingReview,notesMarkdown} from './practice-notes.js?v=0.14.2';
+import {TOPIC_ART,PHASE_ART,decorativeImage,loadPanelArt} from './illustrations.js?v=0.14.2';
 let cloud;
 const notesKey='learning-lab:'+(SANDBOX?'sandbox:':'')+TOPIC_ID+':practice-notes:v1';
 let notes=normalizeNotes(),notesExpected=null,notesWritable=true,lastSubmitted=null,phaseKey='',activePhase=-2,pendingReference='';
@@ -20,7 +20,7 @@ function noteSaveMessage(){return saveNotes()?'已存於目前瀏覽器。':'補
 const prefsKey='learning-lab:'+ (SANDBOX?'sandbox:':'')+'preferences:v1';
 let prefs=normalizePrefs();
 try{prefs=normalizePrefs(JSON.parse(localStorage.getItem(prefsKey)||'null'));}catch{}
-function applyPrefs(){document.documentElement.classList.toggle('large-text',prefs.largeText);document.documentElement.classList.toggle('reduce-motion',prefs.reduceMotion);$('pref-minutes').value=String(prefs.minutes);$('pref-large').checked=prefs.largeText;$('pref-motion').checked=prefs.reduceMotion;$('pref-today').checked=prefs.startToday;$('session-target').textContent='本次目標 '+prefs.minutes+' 分鐘';$('time-target').textContent='目標 '+prefs.minutes+' 分鐘';$('session-progress').max=prefs.minutes*60000;}
+function applyPrefs(){document.documentElement.classList.toggle('large-text',prefs.largeText);document.documentElement.classList.toggle('reduce-motion',prefs.reduceMotion);$('pref-minutes').value=String(prefs.minutes);$('pref-large').checked=prefs.largeText;$('pref-motion').checked=prefs.reduceMotion;$('pref-today').checked=prefs.startToday;$('pref-review-mode').value=prefs.reviewMode;$('session-target').textContent='本次目標 '+prefs.minutes+' 分鐘';$('time-target').textContent='目標 '+prefs.minutes+' 分鐘';$('session-progress').max=prefs.minutes*60000;}
 function savePrefs(announce=false){try{localStorage.setItem(prefsKey,JSON.stringify(prefs));if(announce)$('prefs-status').textContent='已保存於目前瀏覽器。';}catch{if(announce)$('prefs-status').textContent='偏好未能保存，本頁仍可使用；學習紀錄請另行備份。';}}
 const labels={overview:'學習總覽',today:'今日練習',route:'30天路線',history:'紀錄與重練',backup:'備份與還原',settings:'學習設定'};
 const el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
@@ -60,29 +60,38 @@ function showDay(day){pause();lastSubmitted=null;$('submission-feedback').hidden
  $('numeric-note').textContent=lesson.fields.length?'關鍵數值採相對誤差 1% 核對；欄位單位固定如標示。數值符合不代表推導已驗收。':'今天以觀念與推導練習為主，提交後標記待教練審閱。';for(const k of ['reasoning','explanation','mistake'])$(k).value=d[k];$('hint').value=String(d.hint);$('error-type').value=d.errorType;$('timer').textContent=timeText(d.activeMs);$('start').textContent=d.activeMs?'繼續計時':'開始計時';$('result').textContent='';editor?.set(d.drawing,TOPIC_ID,day);paintLessonMeta();paintReview();}
 function material(){const lesson=course.days[currentDay-1];return reviewMaterial(lesson,TOPIC_ID,lesson.guide??GUIDES[currentDay]);}
 function reviewDraft(){const d=draft();if(!d.progressive){d.progressive=newReview(prefs.reviewMode==='advanced'?'independent':(material().questions.length?recommendedStage(state.records,currentDay):'guided'));d.progressive.mode=prefs.reviewMode;}return d.progressive;}
+function inWorkPhase(){const phases=sessionPhases(prefs.minutes,currentDay,TOPIC_ID);return !lastSubmitted&&phases[phaseAt(phases,elapsed())]?.id==='work';}
+function currentMaterial(){return availableMaterial(material(),reviewDraft());}
+let reviewAccessKey='';
 function paintReview(){
- const p=reviewDraft(),m=material();
+ const p=reviewDraft(),m=currentMaterial(),allowed=inWorkPhase();
+ reviewAccessKey=String(allowed);
+ if(!allowed){$('candidate-zoom').close();$('candidate-zoom-content').replaceChildren();}
  $('review-mode').value=p.mode;$('review-stage').value=p.stage;
- const advanced=p.mode==='advanced',recognize=!advanced&&p.stage==='recognize',guided=!advanced&&p.stage==='guided';
+ const advanced=p.mode==='advanced',recognize=allowed&&!advanced&&p.stage==='recognize',guided=allowed&&!advanced&&p.stage==='guided';
  if(recognize)markSupport(p,1);if(guided)markSupport(p,2);
- $('review-stage').querySelector('[value=recognize]').disabled=!m.questions.length;$('check-recognition').disabled=!m.questions.length;$('load-scaffold').hidden=!m.scaffold;$('load-scaffold').disabled=!!p.scaffoldId;$('load-scaffold').textContent=p.scaffoldId?'半成品已加入（可在畫布復原）':'加入本課半成品圖（協助 2）';$('recognition-panel').hidden=!recognize;$('guided-panel').hidden=!guided;
+ $('review-stage').querySelector('[value=recognize]').disabled=!allowed||!m.questions.length;$('review-stage').querySelector('[value=guided]').disabled=!allowed;$('review-help').hidden=p.stage!=='independent';$('use-guided').disabled=!allowed;$('use-recognize').disabled=!allowed||!m.questions.length;$('review-phase-note').hidden=allowed;$('submit-numeric').hidden=!recognize||!material().questions.some(q=>q.id==='quantity')||!!p.numericSubmission;$('check-recognition').disabled=!m.questions.length;$('load-scaffold').hidden=!m.scaffold;$('load-scaffold').disabled=!!p.scaffoldId;$('load-scaffold').textContent=p.scaffoldId?'半成品已加入（可在畫布復原）':'加入本課半成品圖（協助 2）';$('recognition-panel').hidden=!recognize;$('guided-panel').hidden=!guided;
  $('review-instructions').textContent=advanced||p.stage==='independent'?'閉卷畫圖、計算並說明；需要時仍可開提示，協助程度會保留。':recognize?'先選候選，不需要從空白紙畫完整圖。選項未預先勾選；可先辨識，再寫一句理由。':'先補起式，再完成圖解或推導；不必一次做完整題。';
  textDoc($('recognition-problem'),course.days[currentDay-1].problem);$('recognition-questions').replaceChildren();
- for(const q of m.questions){const group=el('fieldset'),legend=el('legend',q.prompt);group.append(legend);for(const o of q.options){const label=el('label',undefined,'recognition-option'),input=el('input');input.type='radio';input.name='review-'+q.id;input.value=o.id;input.dataset.reviewQuestion=q.id;input.checked=p.selections[q.id]===o.id;input.onchange=()=>{beginNewAttempt();p.selections[q.id]=o.id;p.checked=false;$('recognition-status').textContent='選擇已保存，請核對候選。';capture();persist();};const body=el('span',undefined,'candidate-body');if(o.drawing){const svg=renderDrawing(o.drawing,'workspace');svg.setAttribute('viewBox','0 0 1000 480');svg.setAttribute('aria-label',o.alt+'；示意不按比例');svg.classList.add('candidate-diagram');body.append(svg);const zoom=el('button','放大圖像','secondary candidate-zoom-button');zoom.type='button';zoom.dataset.zoomDiagram=q.id+'-'+o.id;zoom.setAttribute('aria-label','放大：'+o.alt);zoom.onclick=e=>{e.preventDefault();e.stopPropagation();$('candidate-zoom-content').replaceChildren(svg.cloneNode(true));$('candidate-zoom').showModal();$('candidate-zoom-close').focus();};label._zoom=zoom;label.classList.add('image-option');group.classList.add('image-question');}body.append(el('span',o.text));label.append(input,body);if(label._zoom){const choice=el('div',undefined,'image-choice');choice.append(label,label._zoom);group.append(choice);}else group.append(label);}$('recognition-questions').append(group);}
+ for(const q of recognize?m.questions:[]){if(q.id==='quantity')p.quantitySeen=true;const group=el('fieldset'),legend=el('legend',q.prompt);group.append(legend);for(const o of q.options){const label=el('label',undefined,'recognition-option'),input=el('input');input.type='radio';input.name='review-'+q.id;input.value=o.id;input.dataset.reviewQuestion=q.id;input.checked=p.selections[q.id]===o.id;input.onchange=()=>{beginNewAttempt();p.selections[q.id]=o.id;p.checked=false;$('recognition-status').textContent='選擇已保存，請核對候選。';capture();persist();};const body=el('span',undefined,'candidate-body');if(o.drawing){const svg=renderDrawing(o.drawing,'workspace');svg.setAttribute('viewBox','0 0 1000 480');svg.setAttribute('aria-label',o.alt+'；示意不按比例');svg.classList.add('candidate-diagram');body.append(svg);const zoom=el('button','放大圖像','secondary candidate-zoom-button');zoom.type='button';zoom.dataset.zoomDiagram=q.id+'-'+o.id;zoom.setAttribute('aria-label','放大：'+o.alt);zoom.onclick=e=>{e.preventDefault();e.stopPropagation();$('candidate-zoom-content').replaceChildren(svg.cloneNode(true));$('candidate-zoom').showModal();$('candidate-zoom-close').focus();};label._zoom=zoom;label.classList.add('image-option');group.classList.add('image-question');}body.append(el('span',o.text));label.append(input,body);if(label._zoom){const choice=el('div',undefined,'image-choice');choice.append(label,label._zoom);group.append(choice);}else group.append(label);}$('recognition-questions').append(group);}
  $('recognition-status').textContent=p.checked?reviewOutcome(p,m).text:!m.questions.length?'本課未備可靠候選，請選補完或獨立作答。':'';
- $('review-scope').textContent=m.scope;$('guided-starter').hidden=!p.starterSeen;$('guided-starter').textContent=m.starter;
- $('guided-draw').textContent=p.starterSeen?m.draw:'';$('guided-task').textContent=m.complete;
+ $('review-scope').textContent=m.scope;$('guided-starter').hidden=!p.starterSeen;$('guided-starter').textContent=guided?m.starter:'';
+ $('guided-draw').textContent=guided&&p.starterSeen?m.draw:'';$('guided-task').textContent=guided?m.complete:'';
  $('show-starter').textContent=p.starterSeen?'起式提示已開啟（等級 2）':'開啟部分推導與圖解提示';
  $('hint').value=String(Math.max(draft().hint,p.assistance));
  // Stage selection itself is a meaningful draft and must survive reload.
  draft().hint=Math.max(draft().hint,p.assistance);persist();
 }
 $('candidate-zoom-close').onclick=()=>$('candidate-zoom').close();
-$('review-mode').onchange=()=>{beginNewAttempt();capture();const p=reviewDraft();p.selectedStage=true;p.mode=$('review-mode').value;prefs.reviewMode=p.mode;savePrefs();if(p.mode==='advanced')p.stage='independent';paintReview();};
-$('review-stage').onchange=()=>{beginNewAttempt();capture();const p=reviewDraft();p.selectedStage=true;p.stage=$('review-stage').value;p.mode='progressive';prefs.reviewMode='progressive';savePrefs();paintReview();};
-$('check-recognition').onclick=()=>{const p=reviewDraft(),r=recognitionResult(material(),p);if(!r.complete){$('recognition-status').textContent='請先選完每一組候選；沒有預先勾選的答案。';return;}p.checked=true;capture();persist();$('recognition-status').textContent=reviewOutcome(p,material()).text+' '+reviewOutcome(p,material()).checks.filter(c=>!c.ok).map(c=>'需訂正：'+c.reason).join(' ');};
-$('load-scaffold').onclick=()=>{beginNewAttempt();capture();const m=material(),p=reviewDraft();if(!m.scaffold||p.scaffoldId)return;markSupport(p,2);draft().hint=Math.max(draft().hint,2);const before=JSON.stringify(editor.get());editor.commit(()=>{editor.data.sheets.workspace.push(...structuredClone(m.scaffold.drawing.sheets.workspace));});if(before!==JSON.stringify(editor.get()))p.scaffoldId=m.scaffold.id;capture();paintReview();$('answer-workspace').scrollIntoView({block:'start'});};
-$('show-starter').onclick=()=>{beginNewAttempt();const p=reviewDraft();p.starterSeen=true;markSupport(p,2);draft().hint=Math.max(draft().hint,2);paintReview();};
+$('review-mode').onchange=()=>{beginNewAttempt();capture();const p=reviewDraft();p.selectedStage=true;p.mode=$('review-mode').value;prefs.reviewMode=p.mode;savePrefs();p.stage=p.mode==='advanced'?'independent':(material().questions.length?recommendedStage(state.records,currentDay):'guided');applyPrefs();paintReview();};
+function selectReviewStage(stage){if(stage!=='independent'&&!inWorkPhase())return;beginNewAttempt();capture();const p=reviewDraft();p.selectedStage=true;p.stage=stage;p.mode='progressive';paintReview();}
+$('review-stage').onchange=()=>selectReviewStage($('review-stage').value);
+$('use-guided').onclick=()=>selectReviewStage('guided');
+$('use-recognize').onclick=()=>selectReviewStage('recognize');
+$('submit-numeric').onclick=()=>{if(!inWorkPhase())return;const d=capture(),p=reviewDraft(),fields=course.days[currentDay-1].fields;if(p.numericSubmission)return;if(!fields.length||fields.some(f=>!d.values[f.id]?.trim()||!Number.isFinite(Number(d.values[f.id])))){$('recognition-status').textContent='請先填齊本課數值，再提交數值查看候選。';return;}p.numericSubmission=Object.fromEntries(fields.map(f=>[f.id,d.values[f.id]]));p.checked=false;paintReview();$('recognition-status').textContent='首次數值已保留，現在可辨識數值候選；本次不計閉卷。';};
+$('check-recognition').onclick=()=>{if(!inWorkPhase())return;const p=reviewDraft(),m=currentMaterial(),r=recognitionResult(m,p);if(!r.complete){$('recognition-status').textContent='請先選完每一組候選；沒有預先勾選的答案。';return;}p.checked=true;capture();persist();$('recognition-status').textContent=reviewOutcome(p,m).text+' '+reviewOutcome(p,m).checks.filter(c=>!c.ok).map(c=>'需訂正：'+c.reason).join(' ');};
+$('load-scaffold').onclick=()=>{if(!inWorkPhase())return;beginNewAttempt();capture();const m=material(),p=reviewDraft();if(!m.scaffold||p.scaffoldId)return;markSupport(p,2);draft().hint=Math.max(draft().hint,2);const before=JSON.stringify(editor.get());editor.commit(()=>{editor.data.sheets.workspace.push(...structuredClone(m.scaffold.drawing.sheets.workspace));});if(before!==JSON.stringify(editor.get()))p.scaffoldId=m.scaffold.id;capture();paintReview();$('answer-workspace').scrollIntoView({block:'start'});};
+$('show-starter').onclick=()=>{if(!inWorkPhase())return;beginNewAttempt();const p=reviewDraft();p.starterSeen=true;markSupport(p,2);draft().hint=Math.max(draft().hint,2);paintReview();};
 $('review-continue').onclick=()=>{$('submission-feedback').hidden=true;lastSubmitted=null;paintReview();$('review-stage').focus();};
 function localStorageSelection(day){try{sessionStorage.setItem(DAY_KEY,String(day));}catch{}prefs.lastDays[TOPIC_ID]=day;savePrefs();}
 function showTab(name){
@@ -129,6 +138,7 @@ function paintSession(){
  const locked=referenceLocked(phases,ms,!!lastSubmitted);$('answer-references').classList.toggle('is-locked',locked);
  for(const id of ['concept-details','guide-details','answer-details'])$(id).classList.toggle('is-locked',currentReferenceAccess(id).locked);
  $('reference-status').textContent=lastSubmitted?'本次已提交，可自由核對參考。':!currentReferenceAccess('concept-details').locked?'回想與讀題可自由查看觀念速查，不記提示；完整參考仍會記錄提示。':'已開始手算 · 重開觀念速查先選提示等級；完整答案會記錄已看答案。';
+ if(reviewAccessKey!==String(inWorkPhase()))paintReview();
  $('mobile-timer').textContent=tickFrom===null?'▶ 計時':'Ⅱ 暫停';
  for(const b of document.querySelectorAll('[data-mobile-action]'))b.disabled=!editor?.[b.dataset.mobileAction==='undo'?'past':'future'].length;
 }
@@ -155,7 +165,7 @@ for(const b of document.querySelectorAll('[data-hint-level]'))b.onclick=()=>{
 $('hint-close').onclick=()=>$('hint-dialog').close();
 function showFeedback(record){
  lastSubmitted=record;$('submission-feedback').hidden=false;$('feedback-title').textContent='D'+String(record.day).padStart(2,'0')+' · 本次練習已提交';
- $('feedback-metrics').textContent=(record.assessment.total?'數值符合 '+record.assessment.correct+'／'+record.assessment.total:'數值尚未核對，待教練審閱')+' · '+(record.progressive?STAGES[record.progressive.stage]:'舊版作答')+' · 提示等級 '+record.hint+' · 錯因：'+record.errorType;
+ $('feedback-metrics').textContent=(record.progressive?numericRecognitionNote(record.progressive):'')+(record.assessment.total?'數值符合 '+record.assessment.correct+'／'+record.assessment.total:'數值尚未核對，待教練審閱')+' · '+(record.progressive?STAGES[record.progressive.stage]:'舊版作答')+' · 提示等級 '+record.hint+' · 錯因：'+record.errorType;
  $('feedback-mistake').value=notes.mistakes[record.id]?.mistake??record.mistake;$('feedback-status').textContent='';$('feedback-next').disabled=record.day===30;paintSession();$('submission-feedback').scrollIntoView({block:'start'});$('feedback-title').focus({preventScroll:true});
 }
 $('feedback-mistake').addEventListener('input',()=>{if(!lastSubmitted)return;notes.mistakes[lastSubmitted.id]={mistake:$('feedback-mistake').value,updatedAt:now()};$('feedback-status').textContent=noteSaveMessage();paintStats();});
@@ -174,7 +184,7 @@ new ResizeObserver(()=>document.documentElement.style.setProperty('--session-clo
 
 $('start').onclick=()=>{if(!course)return;beginNewAttempt();const d=draft();if(!d.startedAt)d.startedAt=now();tickFrom=performance.now();$('start').disabled=true;$('pause').disabled=false;$('timer-note').textContent='計時中 · 離開分頁會自動暫停。';persist();};$('pause').onclick=pause;
 $('practice-form').addEventListener('input',()=>{beginNewAttempt();capture();persist();});$('practice-form').addEventListener('change',e=>{if(e.target.closest('#written-answer'))beginNewAttempt();capture();persist();});
-$('practice-form').onsubmit=e=>{e.preventDefault();pause();const d=capture();const p=reviewDraft(),m=material();if(p.stage==='recognize'&&p.mode==='progressive'){const r=recognitionResult(m,p);if(!r.complete){$('result').textContent='請先選完候選，再儲存辨識作答。';return;}p.checked=true;}if(p.stage!=='recognize'&&!d.reasoning.trim()&&!d.explanation.trim()&&!Object.values(d.values).some(v=>v.trim())&&!hasDrawing(d.drawing)){$('result').textContent='請先畫圖或填寫答案、推導、白話解釋，再儲存作答。';return;}const hasNumeric=Object.values(d.values).some(v=>v.trim());const assessment=assess(hasNumeric?course.days[currentDay-1].fields:[],d.values,d.hint);markSupport(p,d.hint);assessment.review=reviewOutcome(p,m,d.hint,d.answerViewed);assessment.text=assessment.review.text+' '+assessment.text;if(hasDrawing(d.drawing))assessment.text='圖解已保留；'+assessment.text;const record={...structuredClone(d),id:crypto.randomUUID(),day:currentDay,submittedAt:now(),curriculumVersion:course.version,assessment};state.records.push(record);delete state.drafts[currentDay];const saved=persist();showDay(currentDay);$('result').textContent=(saved?'本次作答已存至瀏覽器。':'作答保留於本頁記憶體，請立即匯出備份。')+assessment.text;paintStats();showFeedback(record);cloud?.submitted();};
+$('practice-form').onsubmit=e=>{e.preventDefault();pause();const d=capture();const p=reviewDraft(),m=currentMaterial();if(p.stage!=='independent'&&!inWorkPhase()&&p.assistance===0){$('result').textContent='請先在手算階段完成辨識或補完，再提交作答。';return;}if(p.stage==='recognize'&&p.mode==='progressive'){const r=recognitionResult(m,p);if(!r.complete){$('result').textContent='請先選完候選，再儲存辨識作答。';return;}p.checked=true;}if(p.stage!=='recognize'&&!d.reasoning.trim()&&!d.explanation.trim()&&!Object.values(d.values).some(v=>v.trim())&&!hasDrawing(d.drawing)){$('result').textContent='請先畫圖或填寫答案、推導、白話解釋，再儲存作答。';return;}const hasNumeric=Object.values(d.values).some(v=>v.trim());const assessment=assess(hasNumeric?course.days[currentDay-1].fields:[],d.values,d.hint);markSupport(p,d.hint);assessment.review=reviewOutcome(p,m,d.hint,d.answerViewed);assessment.text=numericRecognitionNote(p)+assessment.review.text+' '+assessment.text;if(hasDrawing(d.drawing))assessment.text='圖解已保留；'+assessment.text;const record={...structuredClone(d),id:crypto.randomUUID(),day:currentDay,submittedAt:now(),curriculumVersion:course.version,assessment};state.records.push(record);delete state.drafts[currentDay];const saved=persist();showDay(currentDay);$('result').textContent=(saved?'本次作答已存至瀏覽器。':'作答保留於本頁記憶體，請立即匯出備份。')+assessment.text;paintStats();showFeedback(record);cloud?.submitted();};
 document.querySelectorAll('[data-tab]').forEach(el=>el.onclick=()=>showTab(el.dataset.tab));$('day-select').onchange=e=>switchDay(Number(e.target.value));
 $('prev-day').onclick=()=>switchDay(currentDay-1);$('next-day').onclick=()=>switchDay(currentDay+1);
 $('resume').onclick=()=>openLesson(nextLesson(state).day);$('open-review').onclick=()=>{$('route-filter').value='review';$('route-search').value='';showTab('route');};
@@ -182,10 +192,11 @@ for(const id of ['route-filter','route-search'])$(id).addEventListener('input',r
 for(let d=1;d<=30;d++){const o=el('option','D'+String(d).padStart(2,'0'));o.value=d;$('history-day').append(o);}
 document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>showTab(b.dataset.open));document.querySelector('.brand').onclick=e=>{e.preventDefault();showTab('overview');};
 document.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>{$(b.dataset.jump).scrollIntoView({block:'start',behavior:prefs.reduceMotion?'instant':'smooth'});});
-for(const id of ['pref-minutes','pref-large','pref-motion','pref-today'])$(id).onchange=()=>{prefs.minutes=Number($('pref-minutes').value);prefs.largeText=$('pref-large').checked;prefs.reduceMotion=$('pref-motion').checked;prefs.startToday=$('pref-today').checked;applyPrefs();savePrefs(true);paintLessonMeta();};applyPrefs();
+for(const id of ['pref-minutes','pref-large','pref-motion','pref-today'])$(id).onchange=()=>{prefs.minutes=Number($('pref-minutes').value);prefs.largeText=$('pref-large').checked;prefs.reduceMotion=$('pref-motion').checked;prefs.startToday=$('pref-today').checked;applyPrefs();savePrefs(true);paintLessonMeta();};
+$('pref-review-mode').onchange=()=>{prefs.reviewMode=$('pref-review-mode').value;savePrefs(true);};applyPrefs();
 function download(value,name){const blob=new Blob([value],{type:name.endsWith('.md')?'text/markdown;charset=utf-8':'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 const exportSummary=()=>{pause();download(coachSummary(state,TOPICS[TOPIC_ID].name)+notesMarkdown(notes,state.records),'learning-review-'+TOPIC_ID+'.md');$('export-status').textContent='已匯出教練回顧摘要；完整圖解請另附 JSON。';};$('export-summary').onclick=exportSummary;$('history-export').onclick=exportSummary;
-$('export').onclick=()=>{pause();const data={...state,exportedAt:now(),source:'learning-lab-browser-v0.14.1',localPracticeNotes:notes};download(JSON.stringify(data,null,2),`learning-lab-${TOPIC_ID}-${new Date().toISOString().slice(0,10)}.json`);$('export-status').textContent='已交給瀏覽器下載，請確認檔案確實保存。雲端保存狀態請見雲端歷史區。';};
+$('export').onclick=()=>{pause();const data={...state,exportedAt:now(),source:'learning-lab-browser-v0.14.2',localPracticeNotes:notes};download(JSON.stringify(data,null,2),`learning-lab-${TOPIC_ID}-${new Date().toISOString().slice(0,10)}.json`);$('export-status').textContent='已交給瀏覽器下載，請確認檔案確實保存。雲端保存狀態請見雲端歷史區。';};
 $('import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>20*1024*1024)throw Error('檔案超過20MB。');pause();const {localPracticeNotes,...raw}=JSON.parse(await file.text());const incoming=validateState(raw);const merged=mergeStates(state,incoming);state=merged;const saved=persist();notes=mergeNotes(notes,localPracticeNotes);const notesSaved=saveNotes();$('usage-feedback').value=notes.feedback;showDay(currentDay);paintStats();$('usage-feedback-status').textContent=notesSaved?'已合併本機補充註記。':'補充註記尚未保存，請匯出 JSON。';$('import-status').textContent=saved?`已合併，共${state.records.length}筆作答。`:'已載入本頁，瀏覽器儲存失敗，請匯出合併後備份。';}catch(err){$('import-status').textContent='未匯入：'+err.message;}e.target.value='';};
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});window.addEventListener('pagehide',pause);window.addEventListener('storage',e=>{if(e.key===KEY&&e.newValue!==expected){writable=false;pause();storageMessage('另一個分頁已更新紀錄，本頁已停止覆寫。請匯出本頁資料，再重新整理合併。',true);}});
 setInterval(()=>{const ms=elapsed();$('timer').textContent=timeText(ms);$('session-progress').value=Math.min(ms,prefs.minutes*60000);$('time-target').textContent=ms>=prefs.minutes*60000?'已達本次目標，可核對並記錄':'目標 '+prefs.minutes+' 分鐘';paintSession();},250);setInterval(()=>{if(tickFrom!==null){bankTick();persist();paintStats();}},5000);
@@ -198,7 +209,7 @@ $('route-description').textContent=topic.route;
 $('backup-topic').textContent='目前主題：'+topic.name+'。匯出及還原僅處理這個主題；另一科請切換後另行備份。';
 for(const [id,item] of Object.entries(TOPICS)){const option=document.createElement('option');option.value=id;option.textContent=item.name+(id==='reinforced-concrete'?'（含預力）':'');$('topic-select').append(option);}
 $('topic-select').value=TOPIC_ID;
-$('topic-select').onchange=e=>{const next=e.target.value;if(course){pause();const d=capture();if(!meaningfulDraft(d))delete state.drafts[currentDay];if(!persist()){$('topic-select').value=TOPIC_ID;storageMessage('尚有未保存資料，請先匯出備份，再切換主題。',true);return;}}const url=new URL(location.href);url.searchParams.set('topic',next);url.searchParams.set('v','0.14.1');url.hash='';location.assign(url.href);};
+$('topic-select').onchange=e=>{const next=e.target.value;if(course){pause();const d=capture();if(!meaningfulDraft(d))delete state.drafts[currentDay];if(!persist()){$('topic-select').value=TOPIC_ID;storageMessage('尚有未保存資料，請先匯出備份，再切換主題。',true);return;}}const url=new URL(location.href);url.searchParams.set('topic',next);url.searchParams.set('v','0.14.2');url.hash='';location.assign(url.href);};
 if(TOPIC_ID!=='structural-analysis'){
  $('step-do').textContent='02 / 做什麼 · 17分鐘';$('step-check').textContent='03 / 怎麼驗收 · 5分鐘';
  $('rhythm-note').textContent='另留3分鐘閉卷提取。可加量至60分鐘；週測20分鐘作答＋10分鐘核對，歷屆題25分鐘作答＋5分鐘檢查。';

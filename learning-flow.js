@@ -1,5 +1,5 @@
-import {hasDrawing} from './drawing-model.js?v=0.14.1';
-import {sessionPhases,sessionKind} from './session-phases.js?v=0.14.1';
+import {hasDrawing} from './drawing-model.js?v=0.14.2';
+import {sessionPhases,sessionKind} from './session-phases.js?v=0.14.2';
 
 export const PHASES={
  'structural-analysis':['平衡與靜定分析','位移與能量方法','力法與靜不定','影響線與整合演練'],
@@ -41,10 +41,10 @@ export function practiceBudget(minutes,day,topic){
  const phases=sessionPhases(minutes,day,topic),work=phases.find(p=>p.id==='work'),check=phases.find(p=>p.id==='check');
  return {text:phases.map(p=>`${p.id==='read'?'閱讀':p.label} ${p.minutes} 分`).join(' → '),read:sessionKind(day,topic)==='ordinary'?'看什麼 · 5 分鐘':'閉卷前確認題目完整',practice:`${work.label} · ${work.minutes} 分鐘`,check:`${check.label} · ${check.minutes} 分鐘`};
 }
-export const DEFAULT_PREFS={minutes:30,largeText:false,reduceMotion:false,startToday:true,reviewMode:'progressive',lastDays:{}};
+export const DEFAULT_PREFS={minutes:30,largeText:false,reduceMotion:false,startToday:true,reviewMode:'advanced',lastDays:{}};
 export function normalizePrefs(input){
  const lastDays={};for(const [id,d] of Object.entries(input?.lastDays??{}))if(Object.hasOwn(PHASES,id)&&Number.isInteger(d)&&d>=1&&d<=30)lastDays[id]=d;
- return {minutes:[30,45,60].includes(input?.minutes)?input.minutes:30,largeText:input?.largeText===true,reduceMotion:input?.reduceMotion===true,startToday:input?.startToday!==false,reviewMode:input?.reviewMode==='advanced'?'advanced':'progressive',lastDays};
+ return {minutes:[30,45,60].includes(input?.minutes)?input.minutes:30,largeText:input?.largeText===true,reduceMotion:input?.reduceMotion===true,startToday:input?.startToday!==false,reviewMode:input?.reviewMode==='progressive'?'progressive':'advanced',lastDays};
 }
 export function coachSummary(state,name){
  const lines=[`# ${name}｜學習回顧`,'','此摘要供教練閱讀；完整圖形及可還原資料請另附 JSON。',`已提交 ${state.records.length} 筆；另有 ${Object.values(state.drafts).filter(meaningfulDraft).length} 課未完成草稿，草稿內容請見 JSON。`,''];

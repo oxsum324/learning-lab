@@ -57,19 +57,19 @@
       "fields": [
         {
           "id": "so_c02_dry_unit_weight",
-          "label": "相位關係與飽和度（第1項）",
+          "label": "乾單位重 γd",
           "value": 17.331,
           "unit": "kN/m³"
         },
         {
           "id": "so_c02_wet_unit_weight",
-          "label": "相位關係與飽和度（第2項）",
+          "label": "濕單位重 γ",
           "value": 19.064,
           "unit": "kN/m³"
         },
         {
           "id": "so_c02_saturation",
-          "label": "相位關係與飽和度（第3項）",
+          "label": "飽和度 S",
           "value": 0.53,
           "unit": "—"
         }
@@ -98,19 +98,19 @@
       "fields": [
         {
           "id": "so_c03_total_stress",
-          "label": "水位下有效應力（第1項）",
+          "label": "總垂直應力 σv",
           "value": 76,
           "unit": "kPa"
         },
         {
           "id": "so_c03_pore_pressure",
-          "label": "水位下有效應力（第2項）",
+          "label": "孔隙水壓 u",
           "value": 19.62,
           "unit": "kPa"
         },
         {
           "id": "so_c03_effective_stress",
-          "label": "水位下有效應力（第3項）",
+          "label": "有效垂直應力 σv′",
           "value": 56.38,
           "unit": "kPa"
         }
@@ -139,13 +139,13 @@
       "fields": [
         {
           "id": "so_c04_gradient",
-          "label": "Darcy 定律（第1項）",
+          "label": "水力坡降 i",
           "value": 0.2,
           "unit": "—"
         },
         {
           "id": "so_c04_discharge",
-          "label": "Darcy 定律（第2項）",
+          "label": "滲流量 Q",
           "value": 0.000012,
           "unit": "m³/s"
         }
@@ -180,13 +180,13 @@
         },
         {
           "id": "so_c05_critical_gradient",
-          "label": "流網與砂湧安全係數（第2項）",
+          "label": "臨界水力坡降 ic",
           "value": 1.038736,
           "unit": "—"
         },
         {
           "id": "so_c05_safety_factor",
-          "label": "流網與砂湧安全係數（第3項）",
+          "label": "砂湧安全係數 FS",
           "value": 1.29842,
           "unit": "—"
         }
@@ -215,13 +215,13 @@
       "fields": [
         {
           "id": "so_c06_dry_unit_weight",
-          "label": "夯實乾單位重控制（第1項）",
+          "label": "乾單位重 γd",
           "value": 16.203704,
           "unit": "kN/m³"
         },
         {
           "id": "so_c06_relative_compaction",
-          "label": "夯實乾單位重控制（第2項）",
+          "label": "相對夯實度 RC",
           "value": 0.953159,
           "unit": "—"
         }
@@ -250,31 +250,31 @@
       "fields": [
         {
           "id": "so_c07_effective_stress",
-          "label": "D07 週測：有效應力與滲流（第1項）",
+          "label": "有效垂直應力 σv′",
           "value": 56.38,
           "unit": "kPa"
         },
         {
           "id": "so_c07_discharge",
-          "label": "D07 週測：有效應力與滲流（第2項）",
+          "label": "滲流量 Q",
           "value": 0.000012,
           "unit": "m³/s"
         },
         {
           "id": "so_w07a_dry_unit_weight",
-          "label": "夯實複測（第1項）",
+          "label": "乾單位重 γd",
           "value": 16.363636,
           "unit": "kN/m³"
         },
         {
           "id": "so_w07a_relative_compaction",
-          "label": "夯實複測（第2項）",
+          "label": "相對夯實度 RC",
           "value": 0.962567,
           "unit": "—"
         },
         {
           "id": "so_w07b_discharge",
-          "label": "流網複測（第1項）",
+          "label": "每單位寬度滲流量 q",
           "value": 0.00001,
           "unit": "m²/s"
         }
@@ -435,13 +435,13 @@
       "fields": [
         {
           "id": "so_w23b_time_ratio",
-          "label": "一維壓密時間比（第1項）",
+          "label": "壓密時間比 t2/t1",
           "value": 4,
           "unit": "—"
         },
         {
           "id": "so_w23b_time_t2",
-          "label": "一維壓密時間比（第2項）",
+          "label": "壓密時間 t2",
           "value": 20,
           "unit": "day"
         },
