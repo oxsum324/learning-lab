@@ -13,6 +13,15 @@ export function sessionPhases(minutes,day,topic){
 }
 export function phaseAt(phases,ms){return phases.findIndex(p=>ms<p.endMs);}
 export function referenceLocked(phases,ms,submitted=false){return !submitted&&ms<(phases.find(p=>p.id==='work')?.endMs??0);}
+export function referenceAccess(id,phases,ms,{started=ms>0,submitted=false}={}){
+ if(submitted)return {locked:false,hint:0};
+ if(id==='concept-details'){
+  // Scheduled preparation is not assistance; pausing a started work phase is.
+  const preparation=!started||ms<(phases.find(p=>p.id==='work')?.startMs??0);
+  return {locked:!preparation,hint:preparation?0:1};
+ }
+ return {locked:referenceLocked(phases,ms),hint:3};
+}
 export function recordHint(draft,level){
  if(![1,2,3].includes(level))throw Error('請選擇提示等級。');
  draft.hint=Math.max(draft.answerViewed?3:draft.hint||0,level);

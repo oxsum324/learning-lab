@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {TOPICS} from '../site/topics.js';
-import {sessionKind,sessionPhases,phaseAt,referenceLocked,recordHint} from '../site/session-phases.js';
+import {sessionKind,sessionPhases,phaseAt,referenceLocked,referenceAccess,recordHint} from '../site/session-phases.js';
 import {normalizeNotes,mergeNotes,pendingReview,reviewDate,notesMarkdown} from '../site/practice-notes.js';
 import {normalizePrefs} from '../site/learning-flow.js';
 import {emptyState} from '../site/core.js';
@@ -25,6 +25,26 @@ test('phase boundaries and reference locks use active time, with submission unlo
 test('hint recording is monotonic, full answers imply level 3 and unsupported levels cannot unlock',()=>{
  const d={hint:0,answerViewed:false};recordHint(d,1);assert.equal(d.hint,1);assert.equal(d.answerViewed,false);recordHint(d,2);recordHint(d,1);assert.equal(d.hint,2);recordHint(d,3);recordHint(d,1);assert.equal(d.hint,3);assert.equal(d.answerViewed,true);assert.throws(()=>recordHint(d,0));
  assert.equal(recordHint({hint:0,answerViewed:true},2).hint,3);
+});
+test('concept preparation is free, work requires a default level 1 choice, and answer gates are unchanged',()=>{
+ for(const topic of Object.keys(TOPICS)){
+  const phases=sessionPhases(30,1,topic),draft={hint:0,answerViewed:false};
+  for(const ms of [0,120000,180000,479999]){
+   const access=referenceAccess('concept-details',phases,ms);
+   assert.deepEqual(access,{locked:false,hint:0});if(access.hint)recordHint(draft,access.hint);
+  }
+  assert.equal(draft.hint,0,'reading the scheduled concepts must not add a hint');assert.equal(draft.answerViewed,false);
+  const working=referenceAccess('concept-details',phases,480000,{started:true});
+  assert.deepEqual(working,{locked:true,hint:1});assert.equal(draft.hint,0,'opening or cancelling the selection must not itself record a hint');recordHint(draft,working.hint);assert.equal(draft.hint,1);
+  assert.deepEqual(referenceAccess('concept-details',phases,phases.at(-1).endMs),{locked:true,hint:1});
+  assert.deepEqual(referenceAccess('concept-details',phases,480000,{submitted:true}),{locked:false,hint:0});
+  for(const id of ['guide-details','answer-details']){
+   assert.deepEqual(referenceAccess(id,phases,0),{locked:true,hint:3});
+   assert.deepEqual(referenceAccess(id,phases,phases.find(p=>p.id==='work').endMs),{locked:false,hint:3});
+   assert.deepEqual(referenceAccess(id,phases,0,{submitted:true}),{locked:false,hint:0});
+  }
+ }
+ const weekly=sessionPhases(30,7,'structural-analysis');assert.equal(referenceAccess('concept-details',weekly,0,{started:false}).locked,false);assert.equal(referenceAccess('concept-details',weekly,0,{started:true}).locked,true);
 });
 test('local review reminders use calendar days, resolve on a later submission and preserve the original attempt',()=>{
  const s=emptyState();s.records=[{id:'original',day:1,submittedAt:'2026-10-11T01:00:00Z',mistake:'原稿'}];const before=structuredClone(s),n=normalizeNotes();n.reviews[1]={due:'2026-10-13',scheduledAt:'2026-10-11T02:00:00Z'};
