@@ -1,13 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {REVIEW_CONTENT,diagramDrawing} from '../site/review-content.js';
+import {validDrawing} from '../site/drawing-model.js';
 import {TOPICS} from '../site/topics.js';
 import {GUIDES} from '../site/teaching-guides.js';
 import {STAGES,newReview,validReview,reviewMaterial,markSupport,recognitionResult,reviewOutcome,recommendedStage} from '../site/progressive-review.js';
 import {emptyState,validateState,mergeStates,assess} from '../site/core.js';
 import {needsReview,meaningfulDraft,nextLesson,normalizePrefs} from '../site/learning-flow.js';
 
-test('all 150 lessons provide unselected text candidates and partial derivation from their own guide',()=>{
+test('all 150 lessons honestly distinguish authored recognition from guided-only coverage',()=>{
  for(const [topic,t] of Object.entries(TOPICS)){
   const course=JSON.parse(readFileSync(new URL('../site/'+t.curriculum,import.meta.url),'utf8'));
   for(const lesson of course.days){
@@ -15,7 +17,7 @@ test('all 150 lessons provide unselected text candidates and partial derivation 
    assert.equal(recognitionResult(m,p).complete,false);assert.equal(recognitionResult(m,p).passed,false);
    assert.equal(m.starter,guide.worked[0]);assert.ok(m.complete.includes(lesson.check));assert.equal(m.draw,guide.draw.map(line=>line.replace(/[-−+]?\d+(?:\.\d+)?/g,'＿＿')).join('\n'));
    for(const q of m.questions){assert.equal(new Set(q.options.map(o=>o.text)).size,3);assert.equal(q.options.filter(o=>o.id===q.correct).length,1);p.selections[q.id]=q.correct;}
-   assert.equal(reviewOutcome(p,m).kind,'recognized');assert.match(reviewOutcome(p,m).text,/不等於獨立掌握/);
+   if(m.questions.length){assert.equal(reviewOutcome(p,m).kind,'recognized');assert.match(reviewOutcome(p,m).text,/不等於獨立掌握/);}else{assert.equal(m.coverage,'guided-only');assert.equal(recognitionResult(m,p).passed,false);assert.equal(reviewOutcome(p,m).kind,'unsupported');}
    for(const stage of Object.keys(STAGES)){p.stage=stage;assert.ok(validReview(p));assert.ok(reviewOutcome(p,m).text);}
   }
  }
@@ -48,4 +50,32 @@ test('advanced preference survives normalization and an empty next independent a
  assert.equal(nextLesson(s).day,2);s.drafts[1].progressive.selectedStage=true;assert.equal(nextLesson(s).day,1);
  const attempts=[{id:'recent',day:1,submittedAt:'2026-10-12T00:00:00Z',progressive:newReview('guided')},{id:'older',day:1,submittedAt:'2026-10-01T00:00:00Z',progressive:newReview(),assessment:{review:{kind:'retry'}}}];
  assert.equal(recommendedStage(attempts,1),'independent');assert.equal(attempts[0].id,'recent');
+});
+
+test('every registered diagram has three distinguishable valid candidates and an incomplete editable scaffold',()=>{
+ let count=0;for(const [topic,t] of Object.entries(TOPICS)){const course=JSON.parse(readFileSync(new URL('../site/'+t.curriculum,import.meta.url),'utf8'));assert.ok(REVIEW_CONTENT[topic][2].visual,'all five D02 have physical models');for(const lesson of course.days){const m=reviewMaterial(lesson,topic,lesson.guide??GUIDES[lesson.day]);if(!m.scaffold)continue;count++;assert.ok(validDrawing(m.scaffold.drawing));const q=m.questions.find(q=>q.id==='diagram');assert.equal(q.options.length,3);assert.equal(new Set(q.options.map(o=>JSON.stringify(o.drawing))).size,3);for(const o of q.options){assert.ok(validDrawing(o.drawing));assert.ok(o.alt.length>=6);assert.ok(!/正確|錯誤/.test(o.alt),'alt text describes content without answer flags');}assert.notDeepEqual(m.scaffold.drawing,q.options.find(o=>o.id==='0').drawing);assert.ok(m.scaffold.task.includes('補'));}}assert.equal(count,22);
+});
+test('quantity distractors use exercise-specific error sources, and legacy IDs cannot fill new questions',()=>{
+ const expected={'structural-analysis':[6,4],'reinforced-concrete':[75,103.806],'steel-structures':[6000,4008],'structural-dynamics':[400,3.1831],'soil-foundations':[19.064,25.9965]};for(const [topic,t] of Object.entries(TOPICS)){const c=JSON.parse(readFileSync(new URL('../site/'+t.curriculum,import.meta.url),'utf8')),d=c.days[1],m=reviewMaterial(d,topic,d.guide??GUIDES[2]);const q=m.questions.find(q=>q.id==='quantity');assert.ok(q);assert.deepEqual(REVIEW_CONTENT[topic][2].quantity.wrong,expected[topic]);assert.equal(q.options.find(o=>o.id==='0').text.split(' ')[0],String(Number(d.fields.find(f=>f.id===REVIEW_CONTENT[topic][2].quantity.field).value.toPrecision(7))));for(const o of q.options.filter(o=>o.id!=='0'))assert.ok(o.reason.length>=6);const old=newReview();old.selections={model:'0',number:'0'};old.checked=true;assert.equal(validReview(old),true);assert.equal(recognitionResult(m,old).complete,false);assert.deepEqual(old.selections,{model:'0',number:'0'});}
+});
+test('primary five diagrams and candidate quantities agree with independently calculated exercise physics',()=>{
+ const quantities={
+  'structural-analysis':12*(6-2)/6,
+  'reinforced-concrete':1500*420/(.85*28*300),
+  'steel-structures':2*150*12+8*(300-2*12),
+  'structural-dynamics':Math.sqrt(400000/1000),
+  'soil-foundations':2.65*9.81/(1+.5)
+ };
+ for(const [topic,expected] of Object.entries(quantities)){
+  const c=JSON.parse(readFileSync(new URL('../site/'+TOPICS[topic].curriculum,import.meta.url),'utf8')),lesson=c.days[1],spec=REVIEW_CONTENT[topic][2],field=lesson.fields.find(f=>f.id===spec.quantity.field);
+  assert.ok(Math.abs(field.value-expected)<Math.max(expected*.00001,.00001),topic+' uses actual exercise quantity');
+  for(const wrong of spec.quantity.wrong)assert.ok(Math.abs(wrong-expected)>expected*.01,topic+' wrong candidates cannot pass numeric tolerance');
+ }
+ const beam=diagramDrawing(REVIEW_CONTENT['structural-analysis'][2].visual),load=beam.sheets.workspace.find(s=>s.type==='arrow');assert.equal(load.x1,380);assert.ok(load.y2>load.y1);assert.deepEqual(beam.sheets.workspace.filter(s=>['pin','roller'].includes(s.type)).map(s=>s.type),['pin','roller']);
+ const rc=reviewMaterial(JSON.parse(readFileSync(new URL('../site/rc-curriculum.json',import.meta.url))).days[1],'reinforced-concrete',{worked:['起式'],draw:['圖解']});assert.equal(rc.scaffold.drawing.sheets.workspace.filter(s=>s.type==='rect').length,1,'compression block is left for completion');
+ const phase=diagramDrawing(REVIEW_CONTENT['soil-foundations'][2].visual);assert.ok(phase.sheets.workspace.some(s=>s.type==='line'&&s.x1===650&&s.y1===60&&s.y2===260),'void bracket includes air and water, not solids');
+});
+
+test('option order is stable on restoration without a common five-subject correct-position shortcut',()=>{
+ const positions=new Set();for(const [topic,t] of Object.entries(TOPICS)){const d=JSON.parse(readFileSync(new URL('../site/'+t.curriculum,import.meta.url),'utf8')).days[1],g=d.guide??GUIDES[2],a=reviewMaterial(d,topic,g),b=reviewMaterial(d,topic,g);assert.deepEqual(a.questions,b.questions);positions.add(a.questions.find(q=>q.id==='diagram').options.findIndex(o=>o.id==='0'));}assert.ok(positions.size>1);
 });
