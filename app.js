@@ -1,13 +1,14 @@
-import {TOPICS} from './topics.js?v=0.13.1';
-import {KEY,DAY_KEY,TOPIC_ID,SANDBOX,emptyState,assess,validateState,mergeStates,safeSave} from './core.js?v=0.13.1';
-import {DrawingEditor,renderAnswerDrawing} from './drawing.js?v=0.13.1';
-import {hasDrawing} from './drawing-model.js?v=0.13.1';
-import {GUIDES} from './teaching-guides.js?v=0.13.1';
-import {mountCloudHistory,mergeCloudRecords} from './cloud-history.js?v=0.13.1';
-import {PHASES,RANGES,RECALL,meaningfulDraft,dayStatus,nextLesson,lessonMode,practiceBudget,normalizePrefs,coachSummary} from './learning-flow.js?v=0.13.1';
-import {sessionPhases,phaseAt,referenceLocked,referenceAccess,recordHint} from './session-phases.js?v=0.13.1';
-import {normalizeNotes,mergeNotes,reviewDate,pendingReview,notesMarkdown} from './practice-notes.js?v=0.13.1';
-import {TOPIC_ART,PHASE_ART,decorativeImage,loadPanelArt} from './illustrations.js?v=0.13.1';
+import {STAGES,newReview,reviewMaterial,markSupport,recognitionResult,reviewOutcome,recommendedStage} from './progressive-review.js?v=0.14.0';
+import {TOPICS} from './topics.js?v=0.14.0';
+import {KEY,DAY_KEY,TOPIC_ID,SANDBOX,emptyState,assess,validateState,mergeStates,safeSave} from './core.js?v=0.14.0';
+import {DrawingEditor,renderAnswerDrawing} from './drawing.js?v=0.14.0';
+import {hasDrawing} from './drawing-model.js?v=0.14.0';
+import {GUIDES} from './teaching-guides.js?v=0.14.0';
+import {mountCloudHistory,mergeCloudRecords} from './cloud-history.js?v=0.14.0';
+import {PHASES,RANGES,RECALL,meaningfulDraft,dayStatus,nextLesson,lessonMode,practiceBudget,normalizePrefs,coachSummary} from './learning-flow.js?v=0.14.0';
+import {sessionPhases,phaseAt,referenceLocked,referenceAccess,recordHint} from './session-phases.js?v=0.14.0';
+import {normalizeNotes,mergeNotes,reviewDate,pendingReview,notesMarkdown} from './practice-notes.js?v=0.14.0';
+import {TOPIC_ART,PHASE_ART,decorativeImage,loadPanelArt} from './illustrations.js?v=0.14.0';
 let cloud;
 const notesKey='learning-lab:'+(SANDBOX?'sandbox:':'')+TOPIC_ID+':practice-notes:v1';
 let notes=normalizeNotes(),notesExpected=null,notesWritable=true,lastSubmitted=null,phaseKey='',activePhase=-2,pendingReference='';
@@ -35,7 +36,7 @@ function timeText(ms){const seconds=Math.floor(ms/1000);return `${String(Math.fl
 function elapsed(){return (state.drafts[currentDay]?.activeMs??0)+(tickFrom===null?0:Math.max(0,performance.now()-tickFrom));}
 function bankTick(){if(tickFrom!==null){draft().activeMs+=Math.max(0,performance.now()-tickFrom);tickFrom=performance.now();draft().updatedAt=now();}}
 function pause(){if(tickFrom===null)return;bankTick();tickFrom=null;$('timer-note').textContent='已暫停。按繼續計時才會累計時間。';$('start').disabled=false;$('pause').disabled=true;$('start').textContent='繼續計時';persist();paintStats();}
-function capture(){const d=draft();for(const k of ['reasoning','explanation','mistake'])d[k]=$(k).value;d.hint=d.answerViewed?3:Number($('hint').value);$('hint').value=String(d.hint);d.errorType=$('error-type').value;document.querySelectorAll('[data-answer]').forEach(el=>d.values[el.dataset.answer]=el.value);d.drawing=editor?.get();d.updatedAt=now();return d;}
+function capture(){const d=draft();for(const k of ['reasoning','explanation','mistake'])d[k]=$(k).value;d.hint=Math.max(d.hint??0,d.answerViewed?3:0,Number($('hint').value),d.progressive?.assistance??0);$('hint').value=String(d.hint);d.errorType=$('error-type').value;document.querySelectorAll('[data-answer]').forEach(el=>d.values[el.dataset.answer]=el.value);d.drawing=editor?.get();d.updatedAt=now();return d;}
 function textDoc(container,text){container.replaceChildren();for(const line of text.split('\n')){if(!line.trim())continue;let tag='p',value=line;const heading=line.match(/^#{1,4}\s+(.*)/);if(heading){tag='h3';value=heading[1];}else if(line.startsWith('---'))continue;const el=document.createElement(tag);el.textContent=value.replace(/\*\*/g,'');container.append(el);}}
 function statusFor(day){const result=dayStatus(state,day),planned=pendingReview(notes,state,day),note=result.latest&&notes.mistakes[result.latest.id]?.mistake;return {...result,review:result.review||!!planned||!!note?.trim(),label:result.draft?'有草稿':planned?'待重練 · '+planned.due:(result.review||note?.trim())?'待重練':result.label};}
 function refreshDayOptions(){if(!course)return;for(const option of $('day-select').options){const day=Number(option.value),status=statusFor(day),phase=RANGES.findIndex(([a,b])=>day>=a&&day<=b);option.textContent=`${status.draft?'✎':status.review?'↻':status.latest?'✓':'○'} D${String(day).padStart(2,'0')} · ${status.label} · ${PHASES[TOPIC_ID][phase]} · ${course.days[day-1].task.slice(0,30)}`;}}
@@ -56,7 +57,31 @@ function switchDay(day){if(!course||day<1||day>30)return;pause();const d=capture
 function openLesson(day){switchDay(day);showTab('today');$('day-title').focus({preventScroll:true});}
 
 function showDay(day){pause();lastSubmitted=null;$('submission-feedback').hidden=true;approvedReferences.clear();$('concept-details').open=false;phaseKey='';currentDay=day;localStorageSelection(day);$('day-select').value=String(day);const lesson=course.days[day-1],d=state.drafts[day]??blank();$('day-title').textContent=`D${String(day).padStart(2,'0')} · ${lesson.task}`;$('workspace-lesson').textContent=$('day-title').textContent;$('read-task').textContent=lesson.read;$('do-task').textContent=lesson.activity??lesson.task;$('check-task').textContent=lesson.check;textDoc($('problem'),lesson.problem);$('beam-diagram').hidden=TOPIC_ID!=='structural-analysis'||day!==1;$('answer-details').open=false;$('guide-details').open=false;const guide=lesson.guide??GUIDES[day];textDoc($('guide-worked'),guide.worked.join('\n'));$('guide-plain').textContent=guide.plain;textDoc($('guide-draw'),guide.draw.join('\n'));$('numeric-fields').replaceChildren();for(const f of lesson.fields){const label=document.createElement('label');label.textContent=f.label;const input=document.createElement('input');input.type='text';input.inputMode='decimal';input.dataset.answer=f.id;input.setAttribute('aria-label',f.label);input.maxLength=100;input.value=d.values[f.id]??'';const unit=el('span',f.unit,'input-unit'),wrap=el('span',undefined,'numeric-input');wrap.append(input,unit);input.setAttribute('aria-label',f.label+'（'+f.unit+'）');label.append(wrap);$('numeric-fields').append(label);}
- $('numeric-note').textContent=lesson.fields.length?'關鍵數值採相對誤差 1% 核對；欄位單位固定如標示。數值符合不代表推導已驗收。':'今天以觀念與推導練習為主，提交後標記待教練審閱。';for(const k of ['reasoning','explanation','mistake'])$(k).value=d[k];$('hint').value=String(d.hint);$('error-type').value=d.errorType;$('timer').textContent=timeText(d.activeMs);$('start').textContent=d.activeMs?'繼續計時':'開始計時';$('result').textContent='';editor?.set(d.drawing,TOPIC_ID,day);paintLessonMeta();}
+ $('numeric-note').textContent=lesson.fields.length?'關鍵數值採相對誤差 1% 核對；欄位單位固定如標示。數值符合不代表推導已驗收。':'今天以觀念與推導練習為主，提交後標記待教練審閱。';for(const k of ['reasoning','explanation','mistake'])$(k).value=d[k];$('hint').value=String(d.hint);$('error-type').value=d.errorType;$('timer').textContent=timeText(d.activeMs);$('start').textContent=d.activeMs?'繼續計時':'開始計時';$('result').textContent='';editor?.set(d.drawing,TOPIC_ID,day);paintLessonMeta();paintReview();}
+function material(){const lesson=course.days[currentDay-1];return reviewMaterial(lesson,TOPIC_ID,lesson.guide??GUIDES[currentDay]);}
+function reviewDraft(){const d=draft();if(!d.progressive){d.progressive=newReview(prefs.reviewMode==='advanced'?'independent':recommendedStage(state.records,currentDay));d.progressive.mode=prefs.reviewMode;}return d.progressive;}
+function paintReview(){
+ const p=reviewDraft(),m=material();
+ $('review-mode').value=p.mode;$('review-stage').value=p.stage;
+ const advanced=p.mode==='advanced',recognize=!advanced&&p.stage==='recognize',guided=!advanced&&p.stage==='guided';
+ if(recognize)markSupport(p,1);if(guided)markSupport(p,2);
+ $('recognition-panel').hidden=!recognize;$('guided-panel').hidden=!guided;
+ $('review-instructions').textContent=advanced||p.stage==='independent'?'閉卷畫圖、計算並說明；需要時仍可開提示，協助程度會保留。':recognize?'先選候選，不需要從空白紙畫完整圖。選項未預先勾選；可先辨識，再寫一句理由。':'先補起式，再完成圖解或推導；不必一次做完整題。';
+ textDoc($('recognition-problem'),course.days[currentDay-1].problem);$('recognition-questions').replaceChildren();
+ for(const q of m.questions){const group=el('fieldset'),legend=el('legend',q.prompt);group.append(legend);for(const o of q.options){const label=el('label',undefined,'recognition-option'),input=el('input');input.type='radio';input.name='review-'+q.id;input.value=o.id;input.dataset.reviewQuestion=q.id;input.checked=p.selections[q.id]===o.id;input.onchange=()=>{beginNewAttempt();p.selections[q.id]=o.id;p.checked=false;$('recognition-status').textContent='選擇已保存，請核對候選。';capture();persist();};label.append(input,el('span',o.text));group.append(label);}$('recognition-questions').append(group);}
+ $('recognition-status').textContent=p.checked?reviewOutcome(p,m).text:'';
+ $('review-scope').textContent=m.scope;$('guided-starter').hidden=!p.starterSeen;$('guided-starter').textContent=m.starter;
+ $('guided-draw').textContent=p.starterSeen?m.draw:'';$('guided-task').textContent=m.complete;
+ $('show-starter').textContent=p.starterSeen?'起式提示已開啟（等級 2）':'開啟部分推導與圖解提示';
+ $('hint').value=String(Math.max(draft().hint,p.assistance));
+ // Stage selection itself is a meaningful draft and must survive reload.
+ draft().hint=Math.max(draft().hint,p.assistance);persist();
+}
+$('review-mode').onchange=()=>{beginNewAttempt();capture();const p=reviewDraft();p.selectedStage=true;p.mode=$('review-mode').value;prefs.reviewMode=p.mode;savePrefs();if(p.mode==='advanced')p.stage='independent';paintReview();};
+$('review-stage').onchange=()=>{beginNewAttempt();capture();const p=reviewDraft();p.selectedStage=true;p.stage=$('review-stage').value;p.mode='progressive';prefs.reviewMode='progressive';savePrefs();paintReview();};
+$('check-recognition').onclick=()=>{const p=reviewDraft(),r=recognitionResult(material(),p);if(!r.complete){$('recognition-status').textContent='請先選完每一組候選；沒有預先勾選的答案。';return;}p.checked=true;capture();persist();$('recognition-status').textContent=reviewOutcome(p,material()).text;};
+$('show-starter').onclick=()=>{beginNewAttempt();const p=reviewDraft();p.starterSeen=true;markSupport(p,2);draft().hint=Math.max(draft().hint,2);paintReview();};
+$('review-continue').onclick=()=>{$('submission-feedback').hidden=true;lastSubmitted=null;paintReview();$('review-stage').focus();};
 function localStorageSelection(day){try{sessionStorage.setItem(DAY_KEY,String(day));}catch{}prefs.lastDays[TOPIC_ID]=day;savePrefs();}
 function showTab(name){
  if(!Object.hasOwn(labels,name))return;if(!course&&['today','route','history'].includes(name))return;
@@ -82,8 +107,8 @@ function renderHistory(){
  if(!records.length){const empty=el('div',undefined,'empty history-empty');if(!state.records.length)empty.append(decorativeImage(TOPIC_ART[TOPIC_ID],'empty-art',240,160));empty.append(el('p',state.records.length?'沒有符合的紀錄。':'尚未提交練習。從一題開始，留下你的第一份解題過程。'));$('history-list').append(empty);loadPanelArt('history');return;}
  for(const r of records){
   const card=el('article',undefined,'history-item'),head=el('div',undefined,'history-heading'),title=el('h3','D'+String(r.day).padStart(2,'0')+' · '+course.days[r.day-1].task),redo=el('button','重練這課','secondary');redo.onclick=()=>openLesson(r.day);head.append(title,redo);
-  const info=el('p',new Date(r.submittedAt).toLocaleString('zh-TW')+' · '+(r.activeMs/60000).toFixed(1)+' 分鐘 · 提示 '+r.hint+' · '+r.errorType,'muted');const details=el('details'),summary=el('summary','查看原稿與圖解');details.append(summary);
-  const pre=el('pre','數值：'+(Object.entries(r.values).map(([k,v])=>k+'='+v).join('，')||'未填')+'\n推導：'+(r.reasoning||'未填')+'\n白話解釋：'+(r.explanation||'未填')+'\n錯因／問題：'+(r.mistake||'未填'));details.append(pre);if(Object.hasOwn(notes.mistakes,r.id))details.append(el('p','提交後錯因卡：'+(notes.mistakes[r.id].mistake||'（已清空補充；原稿保留）'),'annotation-note'));
+  const info=el('p',new Date(r.submittedAt).toLocaleString('zh-TW')+' · '+(r.activeMs/60000).toFixed(1)+' 分鐘 · '+(r.progressive?STAGES[r.progressive.stage]:'舊版作答')+' · 提示 '+r.hint+' · '+r.errorType,'muted');const details=el('details'),summary=el('summary','查看原稿與圖解');details.append(summary);
+  const pre=el('pre','數值：'+(Object.entries(r.values).map(([k,v])=>k+'='+v).join('，')||'未填')+'\n推導：'+(r.reasoning||'未填')+'\n白話解釋：'+(r.explanation||'未填')+'\n錯因／問題：'+(r.mistake||'未填'));details.append(pre);for(const c of r.assessment.review?.checks??[])details.append(el('p',c.prompt+'：'+c.selected+'（'+(c.ok?'辨識符合':'待重練')+'）'));if(Object.hasOwn(notes.mistakes,r.id))details.append(el('p','提交後錯因卡：'+(notes.mistakes[r.id].mistake||'（已清空補充；原稿保留）'),'annotation-note'));
   // Render tall drawings only when their original record is opened.
   if(hasDrawing(r.drawing))details.addEventListener('toggle',()=>{if(details.open&&!details.dataset.rendered){details.append(renderAnswerDrawing(r.drawing));details.dataset.rendered='1';}});
   const remove=el('button','刪除此筆紀錄','text-button danger-text');remove.onclick=async()=>{const dialog=$('delete-dialog');dialog.returnValue='cancel';dialog.showModal();dialog.querySelector('button[value="cancel"]').focus();const value=await new Promise(resolve=>dialog.addEventListener('close',()=>resolve(dialog.returnValue),{once:true}));if(value!=='delete')return;state.records=state.records.filter(x=>x.id!==r.id);persist();paintStats();renderHistory();};
@@ -128,7 +153,7 @@ for(const b of document.querySelectorAll('[data-hint-level]'))b.onclick=()=>{
 $('hint-close').onclick=()=>$('hint-dialog').close();
 function showFeedback(record){
  lastSubmitted=record;$('submission-feedback').hidden=false;$('feedback-title').textContent='D'+String(record.day).padStart(2,'0')+' · 本次練習已提交';
- $('feedback-metrics').textContent=(record.assessment.total?'數值符合 '+record.assessment.correct+'／'+record.assessment.total:'數值尚未核對，待教練審閱')+' · 提示等級 '+record.hint+' · 錯因：'+record.errorType;
+ $('feedback-metrics').textContent=(record.assessment.total?'數值符合 '+record.assessment.correct+'／'+record.assessment.total:'數值尚未核對，待教練審閱')+' · '+(record.progressive?STAGES[record.progressive.stage]:'舊版作答')+' · 提示等級 '+record.hint+' · 錯因：'+record.errorType;
  $('feedback-mistake').value=notes.mistakes[record.id]?.mistake??record.mistake;$('feedback-status').textContent='';$('feedback-next').disabled=record.day===30;paintSession();$('submission-feedback').scrollIntoView({block:'start'});$('feedback-title').focus({preventScroll:true});
 }
 $('feedback-mistake').addEventListener('input',()=>{if(!lastSubmitted)return;notes.mistakes[lastSubmitted.id]={mistake:$('feedback-mistake').value,updatedAt:now()};$('feedback-status').textContent=noteSaveMessage();paintStats();});
@@ -147,7 +172,7 @@ new ResizeObserver(()=>document.documentElement.style.setProperty('--session-clo
 
 $('start').onclick=()=>{if(!course)return;beginNewAttempt();const d=draft();if(!d.startedAt)d.startedAt=now();tickFrom=performance.now();$('start').disabled=true;$('pause').disabled=false;$('timer-note').textContent='計時中 · 離開分頁會自動暫停。';persist();};$('pause').onclick=pause;
 $('practice-form').addEventListener('input',()=>{beginNewAttempt();capture();persist();});$('practice-form').addEventListener('change',e=>{if(e.target.closest('#written-answer'))beginNewAttempt();capture();persist();});
-$('practice-form').onsubmit=e=>{e.preventDefault();pause();const d=capture();if(!d.reasoning.trim()&&!d.explanation.trim()&&!Object.values(d.values).some(v=>v.trim())&&!hasDrawing(d.drawing)){$('result').textContent='請先畫圖或填寫答案、推導、白話解釋，再儲存作答。';return;}const hasNumeric=Object.values(d.values).some(v=>v.trim());const assessment=assess(hasNumeric?course.days[currentDay-1].fields:[],d.values,d.hint);if(hasDrawing(d.drawing))assessment.text='圖解已保留；'+assessment.text;const record={...structuredClone(d),id:crypto.randomUUID(),day:currentDay,submittedAt:now(),curriculumVersion:course.version,assessment};state.records.push(record);delete state.drafts[currentDay];const saved=persist();showDay(currentDay);$('result').textContent=(saved?'本次作答已存至瀏覽器。':'作答保留於本頁記憶體，請立即匯出備份。')+assessment.text;paintStats();showFeedback(record);cloud?.submitted();};
+$('practice-form').onsubmit=e=>{e.preventDefault();pause();const d=capture();const p=reviewDraft(),m=material();if(p.stage==='recognize'&&p.mode==='progressive'){const r=recognitionResult(m,p);if(!r.complete){$('result').textContent='請先選完候選，再儲存辨識作答。';return;}p.checked=true;}if(p.stage!=='recognize'&&!d.reasoning.trim()&&!d.explanation.trim()&&!Object.values(d.values).some(v=>v.trim())&&!hasDrawing(d.drawing)){$('result').textContent='請先畫圖或填寫答案、推導、白話解釋，再儲存作答。';return;}const hasNumeric=Object.values(d.values).some(v=>v.trim());const assessment=assess(hasNumeric?course.days[currentDay-1].fields:[],d.values,d.hint);markSupport(p,d.hint);assessment.review=reviewOutcome(p,m,d.hint,d.answerViewed);assessment.text=assessment.review.text+' '+assessment.text;if(hasDrawing(d.drawing))assessment.text='圖解已保留；'+assessment.text;const record={...structuredClone(d),id:crypto.randomUUID(),day:currentDay,submittedAt:now(),curriculumVersion:course.version,assessment};state.records.push(record);delete state.drafts[currentDay];const saved=persist();showDay(currentDay);$('result').textContent=(saved?'本次作答已存至瀏覽器。':'作答保留於本頁記憶體，請立即匯出備份。')+assessment.text;paintStats();showFeedback(record);cloud?.submitted();};
 document.querySelectorAll('[data-tab]').forEach(el=>el.onclick=()=>showTab(el.dataset.tab));$('day-select').onchange=e=>switchDay(Number(e.target.value));
 $('prev-day').onclick=()=>switchDay(currentDay-1);$('next-day').onclick=()=>switchDay(currentDay+1);
 $('resume').onclick=()=>openLesson(nextLesson(state).day);$('open-review').onclick=()=>{$('route-filter').value='review';$('route-search').value='';showTab('route');};
@@ -158,7 +183,7 @@ document.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>{$(b.dataset.j
 for(const id of ['pref-minutes','pref-large','pref-motion','pref-today'])$(id).onchange=()=>{prefs.minutes=Number($('pref-minutes').value);prefs.largeText=$('pref-large').checked;prefs.reduceMotion=$('pref-motion').checked;prefs.startToday=$('pref-today').checked;applyPrefs();savePrefs(true);paintLessonMeta();};applyPrefs();
 function download(value,name){const blob=new Blob([value],{type:name.endsWith('.md')?'text/markdown;charset=utf-8':'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 const exportSummary=()=>{pause();download(coachSummary(state,TOPICS[TOPIC_ID].name)+notesMarkdown(notes,state.records),'learning-review-'+TOPIC_ID+'.md');$('export-status').textContent='已匯出教練回顧摘要；完整圖解請另附 JSON。';};$('export-summary').onclick=exportSummary;$('history-export').onclick=exportSummary;
-$('export').onclick=()=>{pause();const data={...state,exportedAt:now(),source:'learning-lab-browser-v0.13.1',localPracticeNotes:notes};download(JSON.stringify(data,null,2),`learning-lab-${TOPIC_ID}-${new Date().toISOString().slice(0,10)}.json`);$('export-status').textContent='已交給瀏覽器下載，請確認檔案確實保存。雲端保存狀態請見雲端歷史區。';};
+$('export').onclick=()=>{pause();const data={...state,exportedAt:now(),source:'learning-lab-browser-v0.14.0',localPracticeNotes:notes};download(JSON.stringify(data,null,2),`learning-lab-${TOPIC_ID}-${new Date().toISOString().slice(0,10)}.json`);$('export-status').textContent='已交給瀏覽器下載，請確認檔案確實保存。雲端保存狀態請見雲端歷史區。';};
 $('import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>20*1024*1024)throw Error('檔案超過20MB。');pause();const {localPracticeNotes,...raw}=JSON.parse(await file.text());const incoming=validateState(raw);const merged=mergeStates(state,incoming);state=merged;const saved=persist();notes=mergeNotes(notes,localPracticeNotes);const notesSaved=saveNotes();$('usage-feedback').value=notes.feedback;showDay(currentDay);paintStats();$('usage-feedback-status').textContent=notesSaved?'已合併本機補充註記。':'補充註記尚未保存，請匯出 JSON。';$('import-status').textContent=saved?`已合併，共${state.records.length}筆作答。`:'已載入本頁，瀏覽器儲存失敗，請匯出合併後備份。';}catch(err){$('import-status').textContent='未匯入：'+err.message;}e.target.value='';};
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});window.addEventListener('pagehide',pause);window.addEventListener('storage',e=>{if(e.key===KEY&&e.newValue!==expected){writable=false;pause();storageMessage('另一個分頁已更新紀錄，本頁已停止覆寫。請匯出本頁資料，再重新整理合併。',true);}});
 setInterval(()=>{const ms=elapsed();$('timer').textContent=timeText(ms);$('session-progress').value=Math.min(ms,prefs.minutes*60000);$('time-target').textContent=ms>=prefs.minutes*60000?'已達本次目標，可核對並記錄':'目標 '+prefs.minutes+' 分鐘';paintSession();},250);setInterval(()=>{if(tickFrom!==null){bankTick();persist();paintStats();}},5000);
@@ -171,7 +196,7 @@ $('route-description').textContent=topic.route;
 $('backup-topic').textContent='目前主題：'+topic.name+'。匯出及還原僅處理這個主題；另一科請切換後另行備份。';
 for(const [id,item] of Object.entries(TOPICS)){const option=document.createElement('option');option.value=id;option.textContent=item.name+(id==='reinforced-concrete'?'（含預力）':'');$('topic-select').append(option);}
 $('topic-select').value=TOPIC_ID;
-$('topic-select').onchange=e=>{const next=e.target.value;if(course){pause();const d=capture();if(!meaningfulDraft(d))delete state.drafts[currentDay];if(!persist()){$('topic-select').value=TOPIC_ID;storageMessage('尚有未保存資料，請先匯出備份，再切換主題。',true);return;}}const url=new URL(location.href);url.searchParams.set('topic',next);url.searchParams.set('v','0.13.1');url.hash='';location.assign(url.href);};
+$('topic-select').onchange=e=>{const next=e.target.value;if(course){pause();const d=capture();if(!meaningfulDraft(d))delete state.drafts[currentDay];if(!persist()){$('topic-select').value=TOPIC_ID;storageMessage('尚有未保存資料，請先匯出備份，再切換主題。',true);return;}}const url=new URL(location.href);url.searchParams.set('topic',next);url.searchParams.set('v','0.14.0');url.hash='';location.assign(url.href);};
 if(TOPIC_ID!=='structural-analysis'){
  $('step-do').textContent='02 / 做什麼 · 17分鐘';$('step-check').textContent='03 / 怎麼驗收 · 5分鐘';
  $('rhythm-note').textContent='另留3分鐘閉卷提取。可加量至60分鐘；週測20分鐘作答＋10分鐘核對，歷屆題25分鐘作答＋5分鐘檢查。';

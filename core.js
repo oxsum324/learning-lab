@@ -1,5 +1,6 @@
-import {validDrawing} from './drawing-model.js?v=0.13.1';
-import {TOPICS,resolveTopic,storageKey,dayKey} from './topics.js?v=0.13.1';
+import {validReview} from './progressive-review.js?v=0.14.0';
+import {validDrawing} from './drawing-model.js?v=0.14.0';
+import {TOPICS,resolveTopic,storageKey,dayKey} from './topics.js?v=0.14.0';
 export const SANDBOX=typeof location!=='undefined'&&new URLSearchParams(location.search).get('sandbox')==='1';
 export const TOPIC_ID=resolveTopic(typeof location!=='undefined'?location.search:'');
 export const KEY=storageKey(TOPIC_ID,SANDBOX);
@@ -13,7 +14,7 @@ export function assess(fields,values,hint=0){
 }
 const isObj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const str=(v,max=12000)=>typeof v==='string'&&v.length<=max;
-function draftOK(d){return isObj(d)&&Number.isFinite(d.activeMs)&&d.activeMs>=0&&d.activeMs<=86400000&&str(d.reasoning??'')&&str(d.explanation??'',8000)&&str(d.mistake??'',8000)&&[0,1,2,3].includes(d.hint??0)&&str(d.errorType??'',60)&&isObj(d.values??{})&&Object.keys(d.values??{}).length<=20&&Object.entries(d.values??{}).every(([k,v])=>/^[a-zA-Z0-9_]{1,40}$/.test(k)&&str(v,100))&&str(d.startedAt??'',50)&&str(d.updatedAt??'',50);}
+function draftOK(d){return isObj(d)&&validReview(d.progressive)&&Number.isFinite(d.activeMs)&&d.activeMs>=0&&d.activeMs<=86400000&&str(d.reasoning??'')&&str(d.explanation??'',8000)&&str(d.mistake??'',8000)&&[0,1,2,3].includes(d.hint??0)&&str(d.errorType??'',60)&&isObj(d.values??{})&&Object.keys(d.values??{}).length<=20&&Object.entries(d.values??{}).every(([k,v])=>/^[a-zA-Z0-9_]{1,40}$/.test(k)&&str(v,100))&&str(d.startedAt??'',50)&&str(d.updatedAt??'',50);}
 export function validateState(s,topicId=TOPIC_ID){
  if(isObj(s)&&s.topicId!==topicId)throw Error('備份主題不同，請先切換至對應主題再匯入。');
  if(!isObj(s)||s.schemaVersion!==1||!Object.hasOwn(TOPICS,s.topicId)||!Array.isArray(s.records)||s.records.length>2000||!isObj(s.drafts))throw Error('備份格式或版本不支援。');
