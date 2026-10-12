@@ -63,8 +63,11 @@ function applyCorrections(values,markdown){
  return values;
 }
 export function readSeedFields(bankPath,correctionPath){
- const values=parseTable(readFileSync(bankPath,'utf8'));
+ const markdown=readFileSync(bankPath,'utf8'),values=parseTable(markdown);
  if(correctionPath&&existsSync(correctionPath))applyCorrections(values,readFileSync(correctionPath,'utf8'));
+ const labels=markdown.match(/^## 平台欄位名稱\s*\r?\n([\s\S]*?)(?=^## |(?![\s\S]))/m)?.[1]??'';
+ const names=new Map([...labels.matchAll(/^\|\s*`([a-z][a-z0-9_]*)`\s*\|\s*([^|]+?)\s*\|/gm)].map(m=>[m[1],m[2].trim()]));
+ for(const fields of values.values())for(const field of fields)if(names.has(field.id))field.label=names.get(field.id);
  return values;
 }
 export function fieldsForIds(values,ids,context='seed checks'){

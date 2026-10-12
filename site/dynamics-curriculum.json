@@ -53,19 +53,19 @@
       "fields": [
         {
           "id": "dy_c02_omega",
-          "label": "基底激振相對座標（第1項）",
+          "label": "自然圓頻率 ωn",
           "value": 20,
           "unit": "rad/s"
         },
         {
           "id": "dy_c02_period",
-          "label": "基底激振相對座標（第2項）",
+          "label": "自然週期 Tn",
           "value": 0.31416,
           "unit": "s"
         },
         {
           "id": "dy_c02_damping_ratio",
-          "label": "基底激振相對座標（第3項）",
+          "label": "阻尼比 ζ",
           "value": 0.05,
           "unit": "—"
         }
@@ -94,19 +94,19 @@
       "fields": [
         {
           "id": "dy_c03_omega",
-          "label": "無阻尼自由振動（第1項）",
+          "label": "自然圓頻率 ωn",
           "value": 20,
           "unit": "rad/s"
         },
         {
           "id": "dy_c03_period",
-          "label": "無阻尼自由振動（第2項）",
+          "label": "自然週期 Tn",
           "value": 0.31416,
           "unit": "s"
         },
         {
           "id": "dy_c03_quarter_displacement",
-          "label": "無阻尼自由振動（第3項）",
+          "label": "四分之一週期位移 u(Tn/4)",
           "value": 0,
           "unit": "m"
         }
@@ -135,7 +135,7 @@
       "fields": [
         {
           "id": "dy_c04_log_decrement",
-          "label": "對數遞減率反算阻尼（第1項）",
+          "label": "對數遞減率 δ",
           "value": 0.356675,
           "unit": "—"
         },
@@ -170,19 +170,19 @@
       "fields": [
         {
           "id": "dy_c05_frequency_ratio",
-          "label": "諧和受迫振動穩態反應（第1項）",
+          "label": "頻率比 r",
           "value": 0.75,
           "unit": "—"
         },
         {
           "id": "dy_c05_dynamic_factor",
-          "label": "諧和受迫振動穩態反應（第2項）",
+          "label": "動態放大係數",
           "value": 2.252851,
           "unit": "—"
         },
         {
           "id": "dy_c05_amplitude",
-          "label": "諧和受迫振動穩態反應（第3項）",
+          "label": "穩態位移振幅",
           "value": 0.112643,
           "unit": "m"
         }
@@ -211,19 +211,19 @@
       "fields": [
         {
           "id": "dy_c06_static_displacement",
-          "label": "無阻尼階躍反應（第1項）",
+          "label": "靜態位移 P0/k",
           "value": 0.05,
           "unit": "m"
         },
         {
           "id": "dy_c06_displacement_t010",
-          "label": "無阻尼階躍反應（第2項）",
+          "label": "0.10 秒位移 u(0.10)",
           "value": 0.070807,
           "unit": "m"
         },
         {
           "id": "dy_c06_max_displacement",
-          "label": "無阻尼階躍反應（第3項）",
+          "label": "最大位移 umax",
           "value": 0.1,
           "unit": "m"
         }
@@ -252,19 +252,19 @@
       "fields": [
         {
           "id": "dy_c07_omega",
-          "label": "D07 週測：自由振動與基底激振（第1項）",
+          "label": "自然圓頻率 ωn",
           "value": 20,
           "unit": "rad/s"
         },
         {
           "id": "dy_c07_damping_ratio",
-          "label": "D07 週測：自由振動與基底激振（第2項）",
+          "label": "阻尼比 ζ",
           "value": 0.05,
           "unit": "—"
         },
         {
           "id": "dy_w07a_amplitude",
-          "label": "阻尼週期衰減（第1項）",
+          "label": "指定週期後振幅",
           "value": 15.571,
           "unit": "mm"
         }
@@ -425,25 +425,25 @@
       "fields": [
         {
           "id": "dy_w14a_component_ratio",
-          "label": "SRSS 組合（第1項）",
+          "label": "振態反應分量比",
           "value": 1.333333,
           "unit": "—"
         },
         {
           "id": "dy_w14a_response",
-          "label": "SRSS 組合（第2項）",
+          "label": "SRSS 組合位移",
           "value": 25,
           "unit": "mm"
         },
         {
           "id": "dy_w14b_omega",
-          "label": "黏滯阻尼係數（第1項）",
+          "label": "自然圓頻率 ωn",
           "value": 10,
           "unit": "rad/s"
         },
         {
           "id": "dy_w14b_damping_coefficient",
-          "label": "黏滯阻尼係數（第2項）",
+          "label": "黏滯阻尼係數 c",
           "value": 10000,
           "unit": "N-s/m"
         }
@@ -648,25 +648,25 @@
       "fields": [
         {
           "id": "dy_w23a_frequency_ratio",
-          "label": "頻率比與共振判讀（第1項）",
+          "label": "頻率比 r",
           "value": 1,
           "unit": "—"
         },
         {
           "id": "dy_w23a_natural_period",
-          "label": "頻率比與共振判讀（第2項）",
+          "label": "自然週期 Tn",
           "value": 0.314159,
           "unit": "s"
         },
         {
           "id": "dy_w23b_stiffness_displacement_term",
-          "label": "隔震等效阻尼題設式（第1項）",
+          "label": "剛度位移平方項 KeffD²",
           "value": 108,
           "unit": "kN-m"
         },
         {
           "id": "dy_w23b_damping_ratio",
-          "label": "隔震等效阻尼題設式（第2項）",
+          "label": "等效阻尼比 ζeff",
           "value": 0.066315,
           "unit": "—"
         }

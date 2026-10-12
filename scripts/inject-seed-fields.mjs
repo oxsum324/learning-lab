@@ -1,4 +1,6 @@
 import {readFileSync,writeFileSync} from 'node:fs';
+import {resolve,sep} from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {fieldsForIds,readSeedFields} from './seed-fields.mjs';
 import {seedDay} from './seed-day-map.mjs';
 import {reviewedQuestion,addReviewedFields,applyEditorialReview} from './course-editorial.mjs';
@@ -6,7 +8,7 @@ import {structuralDailyProblem} from './structural-daily-questions.mjs';
 
 // This local build step reads the approved Markdown banks.  The public JSON only
 // receives numeric checks and scoped daily questions; reference answers remain separate.
-const workspace=new URL('../../',import.meta.url);
+const workspace=process.env.LEARNING_WORKSPACE_ROOT?pathToFileURL(resolve(process.env.LEARNING_WORKSPACE_ROOT)+sep):new URL('../../',import.meta.url);
 const configs=[
  {topicId:'structural-analysis',bank:'結構學/題庫與核對答案.md',fieldBank:'結構學/平台啟用核對欄位.md',curriculum:'site/curriculum.json'},
  {topicId:'reinforced-concrete',bank:'鋼筋混凝土/題庫與核對答案.md',curriculum:'site/rc-curriculum.json'},
