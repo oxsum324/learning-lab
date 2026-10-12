@@ -1,4 +1,4 @@
-import {validateState,mergeStates} from './core.js?v=0.13.0';
+import {validateState,mergeStates} from './core.js?v=0.13.1';
 
 // Public service address only. Access tokens never enter localStorage or exports.
 export const CLOUD_ENDPOINT='https://learning-lab-history.oxsum324-learning.workers.dev';
