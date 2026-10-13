@@ -1,6 +1,6 @@
-import {validReview} from './review-state.js?v=0.14.2';
-import {validDrawing} from './drawing-model.js?v=0.14.2';
-import {TOPICS,resolveTopic,storageKey,dayKey} from './topics.js?v=0.14.2';
+import {validReview} from './review-state.js?v=0.15.0';
+import {validDrawing} from './drawing-model.js?v=0.15.0';
+import {TOPICS,resolveTopic,storageKey,dayKey} from './topics.js?v=0.15.0';
 export const SANDBOX=typeof location!=='undefined'&&new URLSearchParams(location.search).get('sandbox')==='1';
 export const TOPIC_ID=resolveTopic(typeof location!=='undefined'?location.search:'');
 export const KEY=storageKey(TOPIC_ID,SANDBOX);
@@ -14,13 +14,14 @@ export function assess(fields,values,hint=0){
 }
 const isObj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const str=(v,max=12000)=>typeof v==='string'&&v.length<=max;
+const reviewContextOK=(d,topic,day)=>d.progressive?.version!==2||(d.progressive.topic===topic&&d.progressive.day===day);
 function draftOK(d){return isObj(d)&&validReview(d.progressive)&&Number.isFinite(d.activeMs)&&d.activeMs>=0&&d.activeMs<=86400000&&str(d.reasoning??'')&&str(d.explanation??'',8000)&&str(d.mistake??'',8000)&&[0,1,2,3].includes(d.hint??0)&&str(d.errorType??'',60)&&isObj(d.values??{})&&Object.keys(d.values??{}).length<=20&&Object.entries(d.values??{}).every(([k,v])=>/^[a-zA-Z0-9_]{1,40}$/.test(k)&&str(v,100))&&str(d.startedAt??'',50)&&str(d.updatedAt??'',50);}
 export function validateState(s,topicId=TOPIC_ID){
  if(isObj(s)&&s.topicId!==topicId)throw Error('備份主題不同，請先切換至對應主題再匯入。');
  if(!isObj(s)||s.schemaVersion!==1||!Object.hasOwn(TOPICS,s.topicId)||!Array.isArray(s.records)||s.records.length>2000||!isObj(s.drafts))throw Error('備份格式或版本不支援。');
  const ids=new Set();
- for(const r of s.records){if(!isObj(r)||!str(r.id,100)||!r.id||ids.has(r.id)||!Number.isInteger(r.day)||r.day<1||r.day>30||!draftOK(r)||!validDrawing(r.drawing)||!str(r.submittedAt,50)||!Number.isFinite(Date.parse(r.submittedAt))||!str(r.curriculumVersion,40)||!isObj(r.assessment)||!str(r.assessment.text,500))throw Error('備份含無效或重複的作答紀錄。');ids.add(r.id);}
- if(Object.keys(s.drafts).length>30||Object.entries(s.drafts).some(([k,v])=>!/^([1-9]|[12][0-9]|30)$/.test(k)||!draftOK(v)||!validDrawing(v.drawing)))throw Error('備份草稿資料無效。');
+ for(const r of s.records){if(!isObj(r)||!str(r.id,100)||!r.id||ids.has(r.id)||!Number.isInteger(r.day)||r.day<1||r.day>30||!draftOK(r)||!reviewContextOK(r,s.topicId,r.day)||!validDrawing(r.drawing)||!str(r.submittedAt,50)||!Number.isFinite(Date.parse(r.submittedAt))||!str(r.curriculumVersion,40)||!isObj(r.assessment)||!str(r.assessment.text,500))throw Error('備份含無效或重複的作答紀錄。');ids.add(r.id);}
+ if(Object.keys(s.drafts).length>30||Object.entries(s.drafts).some(([k,v])=>!/^([1-9]|[12][0-9]|30)$/.test(k)||!draftOK(v)||!reviewContextOK(v,s.topicId,Number(k))||!validDrawing(v.drawing)))throw Error('備份草稿資料無效。');
  return s;
 }
 export function mergeStates(a,b){

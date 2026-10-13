@@ -1,0 +1,20 @@
+async page=>{
+ const base='http://127.0.0.1:4195/?sandbox=1&topic=structural-analysis',errors=[];page.on('pageerror',e=>errors.push(String(e)));const ok=(v,m)=>{if(!v)throw Error(m);};
+ const ready=()=>page.locator('#day-select:not([disabled])').waitFor({state:'attached'});
+ const state=()=>page.evaluate(()=>Object.values(localStorage).map(v=>{try{return JSON.parse(v);}catch{return null;}}).find(v=>v?.schemaVersion===1&&v.topicId==='structural-analysis'));
+ const level=async n=>{await page.locator('.graded-tools').evaluate(e=>e.open=true);await page.locator(`[data-graded-level="${n}"]`).click();};
+ await page.goto(base+'#today');await ready();await page.evaluate(()=>{for(const k of Object.keys(localStorage))if(k.includes('sandbox'))localStorage.removeItem(k);sessionStorage.clear();});await page.reload();await ready();await page.setViewportSize({width:390,height:844});await page.locator('#day-select').selectOption('2');await page.locator('[data-start-level="A"]').click();await page.locator('#start').click();await page.clock.fastForward(360010);
+ await page.getByRole('button',{name:'另做一題數值變式',exact:true}).click();await page.locator('#graded-numeric-input').fill('00123.450');const first=(await state()).drafts[2].progressive.current;
+ await level(1);await level(3);ok(await page.locator('#graded-numeric-input').inputValue()==='00123.450','numeric draft after level switch');ok((await state()).drafts[2].progressive.current.id===first.id,'same numeric parameters after switch');
+ await page.reload();await ready();ok(await page.locator('#graded-numeric-input').inputValue()==='00123.450','numeric draft reload');
+ await page.locator('#graded-numeric-input').fill('0x10');await page.getByRole('button',{name:'保留首次數值，再看選項',exact:true}).click();ok(!(await state()).drafts[2].progressive.current.numericInitial,'invalid decimal not accepted');
+ await page.locator('#graded-numeric-input').fill('00123.450');await page.getByRole('button',{name:'保留首次數值，再看選項',exact:true}).click();const p=(await state()).drafts[2].progressive;ok(p.current.numericInitial.value==='00123.450','raw first answer');ok(p.levelStartedMs>=360000,'new numeric level starts at actual elapsed time');ok(await page.locator('[data-graded-limit]').isHidden(),'L1 elapsed not assigned to L3');
+ await page.getByRole('button',{name:'目前不知道',exact:true}).click();await level(5);await page.context().setOffline(true);await page.locator('#reasoning').fill('離線測試原稿保留。');await page.locator('#practice-form button[type="submit"]').click();const saved=await state();ok(saved.records.length===1,'offline record saved');ok(saved.records[0].progressive.attempts[0].question.numericDraft==='00123.450','numeric draft frozen');await page.context().setOffline(false);
+ await page.locator('#review-continue').click();ok((await state()).drafts[2].progressive.assistance>=saved.records[0].progressive.assistance,'same-day help retained');
+ // Unknown local version must remain byte-for-byte available, rather than exporting an empty state.
+ const raw='{\n  "schemaVersion": 99, "topicId": "structural-analysis", "unread": "原始資料不可覆蓋", "values": [3, 2, 1]\n}\n';
+ await page.evaluate(async raw=>{const {storageKey}=await import('./topics.js?v=0.15.0');localStorage.setItem(storageKey('structural-analysis',true),raw);},raw);await page.reload();await ready();await page.locator('[data-tab="backup"]').click();ok(await page.locator('#export-original').isVisible(),'raw export available');
+ const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#export-original').click()]);await download.saveAs('output/graded-qa/unknown-local-original.json');
+ ok(await page.evaluate(async raw=>{const {storageKey}=await import('./topics.js?v=0.15.0');return localStorage.getItem(storageKey('structural-analysis',true))===raw;},raw),'unknown local untouched');ok(errors.length===0,errors.join('\n'));
+ return {phase:'integration-boundaries',numericDraft:true,numericClock:true,decimalGuard:true,offline:true,sameDay:true,unknownRaw:true,errors};
+}

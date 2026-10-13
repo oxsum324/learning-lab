@@ -101,3 +101,16 @@ fieldset{border:0;margin:0;padding:0;min-width:0}.topic-picker{display:flex;gap:
 @media(max-height:500px){.drawing-controls,#drawing-focus .drawing-controls{position:static}}
 
 .cloud-actions{display:flex;flex-wrap:wrap;gap:10px}.cloud-history-item{padding:12px 0;border-bottom:1px solid #d5e4df}.cloud-history-item button{margin:0 8px 8px 0}#cloud-indicator{margin-bottom:0;font-weight:600}
+/* Progressive question controls share the lesson workspace and stay touch-sized. */
+.graded-practice,.start-level-setup{font-size:16px;min-width:0;border:1px solid #c9d8d3;border-radius:16px;padding:18px;margin:18px 0;background:#f7fbf9}
+.graded-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.graded-heading h3{margin:0;font-size:1.15rem}.graded-support{font-size:14px;color:#28574f}.graded-summary{margin:10px 0}
+.graded-practice button,.graded-practice select,.graded-practice input:not([type=radio]):not([type=checkbox]),.start-level-setup button,#pref-start-level{min-height:44px;font-size:16px;max-width:100%}
+.graded-practice button,.start-level-setup button{white-space:normal;overflow-wrap:anywhere}.graded-practice summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
+.graded-tools{margin:8px 0}.graded-levels,.graded-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.graded-levels button[aria-pressed=true]{background:#28574f;color:#fff;border-color:#28574f}
+.graded-question{margin-top:14px;padding:14px;border-radius:12px;background:#fff;border:1px solid #c9d8d3;min-width:0}.graded-question h4{font-size:17px;line-height:1.65;margin:8px 0;white-space:pre-line;overflow-wrap:anywhere}
+.graded-question fieldset{border:0;margin:0;padding:0;min-width:0}.graded-question legend{font-weight:600;margin:10px 0}
+.graded-question,.graded-tools{scroll-margin-top:160px;scroll-margin-bottom:100px}
+.graded-options{display:grid;gap:8px}.graded-option{display:flex!important;align-items:flex-start;gap:10px;min-height:44px;padding:10px;border:1px solid #ccd9d6;border-radius:9px;cursor:pointer;font-size:16px;line-height:1.6;margin:0!important;overflow-wrap:anywhere}.graded-option input{width:22px;height:22px;min-width:22px;margin:2px 0 0;accent-color:#28574f}.graded-option span{min-width:0}.graded-option:has(input:checked){border-color:#28574f;background:#edf6f2}
+.graded-question label:not(.graded-option){display:grid;gap:6px;margin:12px 0}.graded-question select{width:100%;white-space:normal}.graded-order{padding-left:24px}.graded-order li{padding:10px 0;border-bottom:1px solid #dde5e2;overflow-wrap:anywhere}.graded-order-actions{display:flex;gap:8px;margin-top:8px}.graded-order-actions button{min-width:52px}.graded-status{font-size:16px;line-height:1.7}.graded-status p{margin:8px 0}.graded-message,.graded-retreat{padding:12px;border-left:4px solid #947345;background:#fff7e8}.graded-starter{white-space:pre-line}.graded-source,.graded-summary,.graded-first-answer{color:#3d5751}.graded-source{font-size:14px}.graded-source p{overflow-wrap:anywhere}
+@media(max-width:600px){.graded-practice,.start-level-setup{padding:12px}.graded-question{padding:10px}.graded-actions button,.graded-levels button{flex:1 1 130px}.graded-support{font-size:14px}.graded-question .eyebrow{font-size:12px}.graded-levels{gap:6px}}

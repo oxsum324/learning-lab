@@ -1,0 +1,21 @@
+async page=>{
+ const base='http://127.0.0.1:4195/',errors=[],results=[];page.on('pageerror',e=>errors.push(String(e)));const ok=(v,m)=>{if(!v)throw Error(m);};
+ const ready=()=>page.locator('#day-select:not([disabled])').waitFor({state:'attached'});
+ const state=()=>page.evaluate(()=>{const topic=new URL(location.href).searchParams.get('topic');return Object.values(localStorage).map(v=>{try{return JSON.parse(v);}catch{return null;}}).find(v=>v?.schemaVersion===1&&v.topicId===topic);});
+ await page.goto(base+'?sandbox=1&topic=structural-analysis#today');await ready();
+ const cases=await page.evaluate(async()=>{const {QUESTION_BANK}=await import('./graded-bank.js?v=0.15.0');return ['single','boolean','multi','match','order','error','fill'].map(type=>{const q=QUESTION_BANK.find(q=>q.day===2&&q.type===type);return {type,topic:q.topic,id:q.id};});});
+ for(const item of cases){
+  await page.goto(base+'?sandbox=1&topic='+item.topic+'#today');await ready();await page.evaluate(()=>{for(const k of Object.keys(localStorage))if(k.includes('sandbox'))localStorage.removeItem(k);sessionStorage.clear();});await page.reload();await ready();await page.setViewportSize({width:320,height:900});await page.locator('#day-select').selectOption('2');await page.locator('[data-start-level="A"]').click();
+  // Inject one valid sandbox question snapshot to deterministically cover each component.
+  await page.evaluate(async item=>{const {QUESTION_BANK}=await import('./graded-bank.js?v=0.15.0'),{createPractice,selectQuestion}=await import('./graded-practice.js?v=0.15.0'),{storageKey}=await import('./topics.js?v=0.15.0');const key=storageKey(item.topic,true),s=JSON.parse(localStorage.getItem(key)),q=QUESTION_BANK.find(q=>q.id===item.id),p=createPractice('A',{topic:item.topic,day:2});selectQuestion([q],p,{level:q.level});s.drafts[2].progressive=p;s.drafts[2].hint=p.assistance;localStorage.setItem(key,JSON.stringify(s));},item);await page.reload();await ready();let q=(await state()).drafts[2].progressive.current;
+  if(item.type==='multi'){await page.locator(`[name="graded-answer"][value="${q.answer[0]}"]`).check();await page.reload();await ready();ok(await page.locator(`[name="graded-answer"][value="${q.answer[0]}"]`).isChecked(),'multi partial reload');}
+  if(item.type==='order'){const moved=q.options[1].id;await page.locator(`[data-order-item="${moved}"]`).getByRole('button',{name:/上移/}).focus();await page.keyboard.press('Alt+ArrowUp');const expected=(await state()).drafts[2].progressive.current.response;await page.reload();await ready();ok(JSON.stringify((await state()).drafts[2].progressive.current.response)===JSON.stringify(expected),'keyboard order reload');}
+  if(['single','error'].includes(q.type))await page.locator(`[name="graded-answer"][value="${q.answer}"]`).check();
+  if(q.type==='multi')for(const o of q.options)await page.locator(`[name="graded-answer"][value="${o.id}"]`).setChecked(q.answer.includes(o.id));
+  if(q.type==='boolean'){await page.locator(`[name="graded-boolean"][value="${q.answer.choice}"]`).check();await page.locator(`[name="graded-reason"][value="${q.answer.reason}"]`).check();}
+  if(['match','fill'].includes(q.type))for(const [id,value] of Object.entries(q.answer))await page.locator(`[data-graded-field="${id}"]`).selectOption(value);
+  if(q.type==='order')for(let i=0;i<q.answer.length;i++){const ids=await page.locator('[data-order-item]').evaluateAll(es=>es.map(e=>e.dataset.orderItem));for(let j=ids.indexOf(q.answer[i]);j>i;j--)await page.locator(`[data-order-item="${q.answer[i]}"]`).getByRole('button',{name:/上移/}).click();}
+  await page.getByRole('button',{name:'核對本題',exact:true}).click();const p=(await state()).drafts[2].progressive;ok(p.attempts.length===1&&p.attempts[0].result.correct,item.type+' correct');await page.getByText('查看逐項核對與錯因',{exact:true}).click();await page.locator('#graded-practice').screenshot({path:'output/playwright/graded-type-'+item.type+'-320.png'});ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow '+item.type);results.push(item.type);
+ }
+ ok(errors.length===0,errors.join('\n'));return {phase:'seven-typed-components',passed:results.length,types:results,errors};
+}

@@ -64,7 +64,7 @@ export function createWorker(net=fetch){
  }
  async function handle(request,env){
   const url=new URL(request.url);
-  if(request.method==='GET'&&url.pathname==='/config')return json({ready:!!(env.GOOGLE_CLIENT_ID&&env.ALLOWED_EMAIL),clientId:env.GOOGLE_CLIENT_ID||'',maxBytes:MAX_BYTES});
+  if(request.method==='GET'&&url.pathname==='/config')return json({ready:!!(env.GOOGLE_CLIENT_ID&&env.ALLOWED_EMAIL),clientId:env.GOOGLE_CLIENT_ID||'',maxBytes:MAX_BYTES,schemaVersions:[1],reviewVersions:[1,2],recordRestore:true,draftResume:false});
   if(!['GET','POST'].includes(request.method))fail(405,'不支援此操作。');
   const user=await auth(request,env);
   if(url.pathname==='/session'&&request.method==='POST'){
