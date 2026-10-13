@@ -1,5 +1,5 @@
-import {hasDrawing} from './drawing-model.js?v=0.14.2';
-import {sessionPhases,sessionKind} from './session-phases.js?v=0.14.2';
+import {hasDrawing} from './drawing-model.js?v=0.15.0';
+import {sessionPhases,sessionKind} from './session-phases.js?v=0.15.0';
 
 export const PHASES={
  'structural-analysis':['平衡與靜定分析','位移與能量方法','力法與靜不定','影響線與整合演練'],
@@ -16,7 +16,7 @@ export const RECALL={
  'structural-dynamics':'先不看公式：自由度、正方向與輸入量如何定義？',
  'soil-foundations':'先不看公式：水位、排水條件與應力種類如何決定？'
 };
-export function meaningfulDraft(d){return !!d&&(d.progressive?.selectedStage===true||d.activeMs>0||d.answerViewed===true||d.hint>0||!['','未判定'].includes(d.errorType??'')||['reasoning','explanation','mistake'].some(k=>d[k]?.trim())||Object.values(d.values??{}).some(v=>String(v).trim())||hasDrawing(d.drawing));}
+export function meaningfulDraft(d){return !!d&&(d.progressive?.selectedStage===true||d.progressive?.attempts?.length>0||d.activeMs>0||d.answerViewed===true||d.hint>0||!['','未判定'].includes(d.errorType??'')||['reasoning','explanation','mistake'].some(k=>d[k]?.trim())||Object.values(d.values??{}).some(v=>String(v).trim())||hasDrawing(d.drawing));}
 export function needsReview(record){return !!record&&((record.progressive&&record.progressive.stage!=='independent')||record.progressive?.assistance>0||record.hint>=2||record.answerViewed===true||(record.assessment?.total>0&&record.assessment.correct<record.assessment.total)||!['','未判定','無明顯錯誤'].includes(record.errorType??'')||!!record.mistake?.trim());}
 export function dayStatus(state,day){
  const records=state.records.filter(r=>r.day===day).sort((a,b)=>Date.parse(b.submittedAt)-Date.parse(a.submittedAt)||b.id.localeCompare(a.id));
@@ -46,8 +46,19 @@ export function normalizePrefs(input){
  const lastDays={};for(const [id,d] of Object.entries(input?.lastDays??{}))if(Object.hasOwn(PHASES,id)&&Number.isInteger(d)&&d>=1&&d<=30)lastDays[id]=d;
  return {minutes:[30,45,60].includes(input?.minutes)?input.minutes:30,largeText:input?.largeText===true,reduceMotion:input?.reduceMotion===true,startToday:input?.startToday!==false,reviewMode:input?.reviewMode==='progressive'?'progressive':'advanced',lastDays};
 }
+export function gradedAnswerText(q,answer){
+ if(answer?.unknown===true)return '目前不知道';
+ const label=(options,id)=>options?.find(o=>o.id===id)?.text??String(id??'未填');
+ if(['single','error'].includes(q.type))return label(q.options,answer);
+ if(q.type==='multi')return (answer??[]).map(id=>label(q.options,id)).join('；');
+ if(q.type==='order')return (answer??[]).map((id,i)=>`${i+1}. ${label(q.options,id)}`).join(' → ');
+ if(q.type==='boolean')return `${label(q.options,answer?.choice)}；理由：${label(q.reasonOptions,answer?.reason)}`;
+ if(['match','fill'].includes(q.type))return q.fields.map(f=>`${f.label}：${label(f.options,answer?.[f.id])}`).join('；');
+ return JSON.stringify(answer);
+}
 export function coachSummary(state,name){
  const lines=[`# ${name}｜學習回顧`,'','此摘要供教練閱讀；完整圖形及可還原資料請另附 JSON。',`已提交 ${state.records.length} 筆；另有 ${Object.values(state.drafts).filter(meaningfulDraft).length} 課未完成草稿，草稿內容請見 JSON。`,''];
  for(const r of [...state.records].sort((a,b)=>a.day-b.day||a.submittedAt.localeCompare(b.submittedAt))){lines.push(`## D${String(r.day).padStart(2,'0')}｜${r.submittedAt}`,`- 作答 ID：${r.id}`,`- 用時：${(r.activeMs/60000).toFixed(1)} 分鐘；提示：${r.hint}；錯因：${r.errorType}`,`- 填答數值（欄位代碼）：${Object.entries(r.values??{}).map(([key,value])=>key+' = '+value).join('；')||'未填'}`,`- 練習階段：${r.progressive?.stage??'舊版作答'}；候選 ${r.assessment.review?.checks?.map(c=>c.selected).join('；')??'無'}；最高協助 ${r.progressive?.assistance??r.hint}`,`- 數值核對：${r.assessment.text}`,`- 圖解：${hasDrawing(r.drawing)?'有，請見完整 JSON':'未提供'}`,'',`推導：\n${r.reasoning||'未填'}`,`\n白話解釋：\n${r.explanation||'未填'}`,`\n訂正／問題：\n${r.mistake||'未填'}`,'');}
+ for(const r of state.records.filter(r=>r.progressive?.version===2)){lines.push(`### D${String(r.day).padStart(2,'0')} 漸進練習原答`, `- 作答 ID：${r.id}；練習期間：${r.progressive.sessionId}；起點 ${r.progressive.startLevel}；最高協助 ${r.progressive.assistance}`);for(const a of r.progressive.attempts){lines.push(`- ${a.question.id} v${a.question.version}｜${a.question.prompt}`,`  原答：${gradedAnswerText(a.question,a.answer)}；${a.result.correct?'本題核對符合':'需訂正'}；協助 ${a.assistance}`,`  題目依據：${a.question.source?.label??'原紀錄未提供'}｜${a.question.source?.locator??''}`);if(a.question.numericInitial)lines.push(`  首次數值：${a.question.numericInitial.status==='unknown'?'目前不知道':a.question.numericInitial.value+' '+(a.question.numericMeta?.unit??'')}`);for(const message of a.result.feedback??[])lines.push(`  核對：${message}`);}lines.push('');}
  if(!state.records.length)lines.push('尚無已提交作答。');return lines.join('\n');
 }

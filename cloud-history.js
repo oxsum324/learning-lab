@@ -1,4 +1,4 @@
-import {validateState,mergeStates} from './core.js?v=0.14.2';
+import {validateState,mergeStates} from './core.js?v=0.15.0';
 
 // Public service address only. Access tokens never enter localStorage or exports.
 export const CLOUD_ENDPOINT='https://learning-lab-history.oxsum324-learning.workers.dev';
@@ -20,17 +20,28 @@ export class CloudHistory {
   if(!response.ok){if(response.status===401)this.disconnect();throw Error(result.error||'雲端存取失敗，請稍後重試。');}return result;
  }
  async session(){return this.request('/session',{method:'POST'});}
+ async assertFormatSupport(state){
+  const versions=[...new Set([...state.records,...Object.values(state.drafts)].map(r=>r.progressive?.version).filter(v=>v>1))];
+  if(!versions.length)return;
+  const response=await this.fetcher(this.endpoint+'/config',{cache:'no-store',credentials:'omit',signal:AbortSignal.timeout(15000)});
+  if(!response.ok)throw Error('尚無法確認雲端格式支援；新版答案仍保留本機，請先匯出完整 JSON。');
+  const config=await response.json();
+  if(!Array.isArray(config.reviewVersions)||versions.some(v=>!config.reviewVersions.includes(v)))throw Error('雲端尚未支援這份新版作答；未上傳或降級資料，請先匯出完整 JSON。');
+ }
  backup(state){
   const snapshot=structuredClone(validateState(state,this.topicId)),generation=this.generation;
   const job=this.queue.catch(()=>{}).then(async()=>{
    if(generation!==this.generation)throw Error('連線已中斷；請重新連接後備份本機紀錄。');
    if(new TextEncoder().encode(JSON.stringify(snapshot)).length>4*1024*1024)throw Error('雲端單份備份上限 4 MB，請先匯出完整 JSON。');
+   await this.assertFormatSupport(snapshot);
+   if(generation!==this.generation)throw Error('連線已中斷；新版答案仍保留本機。');
    return this.request('/snapshots?topic='+this.topicId,{method:'POST',data:snapshot});
   });
   this.queue=job;return job;
  }
  list(cursor){return this.request('/snapshots?topic='+this.topicId+(cursor?'&cursor='+encodeURIComponent(cursor):''));}
- async read(id){if(!/^[A-Za-z0-9_-]{1,200}$/.test(id))throw Error('備份編號無效。');return validateState(await this.request('/snapshots/'+id+'?topic='+this.topicId),this.topicId);}
+ async readRaw(id){if(!/^[A-Za-z0-9_-]{1,200}$/.test(id))throw Error('備份編號無效。');return this.request('/snapshots/'+id+'?topic='+this.topicId);}
+ async read(id){const raw=await this.readRaw(id);try{return validateState(raw,this.topicId);}catch(e){throw Error(e.message+' 原始雲端檔案未更動；可下載完整版本，更新頁面後再試。');}}
 }
 
 export function mountCloudHistory({topicId,sandbox,getState,onMerge,download}){
@@ -49,7 +60,7 @@ export function mountCloudHistory({topicId,sandbox,getState,onMerge,download}){
    for(const file of page.files){
     const row=document.createElement('article');row.className='cloud-history-item';const label=document.createElement('p');label.textContent=`${new Date(file.createdTime).toLocaleString('zh-TW')} · ${file.recordCount} 筆作答 · ${file.draftCount} 份草稿`;
     const merge=document.createElement('button');merge.className='secondary';merge.textContent='合併作答';merge.onclick=async()=>{merge.disabled=true;try{const remote=await client.read(file.id);await onMerge(remote);status('已合併雲端作答；目前草稿保留不變。');}catch(e){error(e);}finally{merge.disabled=false;}};
-    const save=document.createElement('button');save.className='secondary';save.textContent='下載完整版本';save.onclick=async()=>{save.disabled=true;try{const remote=await client.read(file.id);download(JSON.stringify(remote,null,2),`learning-lab-${topicId}-${file.id}.json`);status('完整版本已交給瀏覽器下載，包含當時草稿。');}catch(e){error(e);}finally{save.disabled=false;}};
+    const save=document.createElement('button');save.className='secondary';save.textContent='下載完整版本';save.onclick=async()=>{save.disabled=true;try{const remote=await client.readRaw(file.id);download(JSON.stringify(remote,null,2),`learning-lab-${topicId}-${file.id}.json`);status('原始完整版本已交給瀏覽器下載，包含當時草稿；未重新評分或降級。');}catch(e){error(e);}finally{save.disabled=false;}};
     row.append(label,merge,save);$('cloud-history-list').append(row);
    }
    cursor=page.nextPageToken;$('cloud-more').hidden=!cursor;if(!append&&!page.files.length)$('cloud-history-list').textContent='這一科尚無雲端歷史。';
