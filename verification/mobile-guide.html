@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex"><title>手機與平板實機驗證｜學習工作室</title>
+  <link rel="icon" href="../favicon.svg">
+  <style>
+    :root{font-family:system-ui,sans-serif;color:#193d37;background:#f4f5f1;line-height:1.8}
+    *{box-sizing:border-box}body{max-width:880px;margin:auto;padding:24px 18px 60px}
+    h1{font-size:clamp(26px,5vw,38px);line-height:1.35}h2{font-size:22px;margin-top:0}
+    .eyebrow{letter-spacing:.12em;font-size:13px;color:#57756c}.intro{font-size:18px}
+    section,details{background:white;border:1px solid #d4ded8;border-radius:16px;padding:22px;margin:18px 0}
+    .notice{border-left:5px solid #a77537;background:#fffaf0;padding:14px 18px;border-radius:8px}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+    .button{display:block;padding:16px;background:#205b52;color:white;text-align:center;text-decoration:none;border-radius:12px;font-weight:650;min-height:52px}
+    .button.secondary{background:#e6efe9;color:#193d37}.tag{display:inline-block;background:#e6efe9;border-radius:16px;padding:2px 12px;font-size:14px}
+    summary{cursor:pointer;font-size:19px;font-weight:650;min-height:44px}a{color:#20685a;overflow-wrap:anywhere}
+    li{margin:12px 0}ol,ul{padding-left:24px}code{overflow-wrap:anywhere;font-size:.95em;background:#f2f5f2;padding:2px 5px;border-radius:4px}
+    .pass{color:#215d3e;font-weight:650}.small{font-size:14px;color:#527066}footer{margin-top:28px;font-size:14px}
+    @media(max-width:520px){.actions{grid-template-columns:1fr}section,details{padding:18px}body{padding:18px 12px 40px}}
+    @media print{body{max-width:none}.button{color:#193d37;background:none;border:1px solid}details{break-inside:avoid}}
+  </style>
+</head>
+<body>
+  <p class="eyebrow">LEARNING LAB · 實體裝置驗證</p>
+  <h1>把備份帶到手機，<br>再帶回來。</h1>
+  <p class="intro">先在 iPhone／Safari 操作，再以另一台平板重做。每台各用自己的測試連結；成功訊息與收據是驗收依據。</p>
+  <p class="notice"><strong>這裡是隔離測試。</strong>請確認學習頁頂端顯示「功能測試空間」。模擬資料不匯入正式學習空間；既有草稿若衝突，停止並回報，不刪除舊資料。</p>
+  <section aria-labelledby="entry-title">
+    <span class="tag">先從手機開始</span><h2 id="entry-title">選擇目前手上的裝置</h2>
+    <div class="actions">
+      <a class="button" href="./?run=20261014-phone02" target="_blank" rel="noopener">① iPhone 測試入口</a>
+      <a class="button secondary" href="./?run=20261014-tablet02" target="_blank" rel="noopener">② 平板測試入口</a>
+    </div>
+    <p>請用 Safari 一般分頁開啟，並使用原本連接平台的同一個 Google 帳戶。若平板是 iPad，也用 Safari；其他平板請一併記下系統與瀏覽器。</p>
+    <p class="small">手機批次：20261014-phone02；平板批次：20261014-tablet02。兩批不能互換。請保留本指南分頁，測試入口會另開分頁。</p>
+  </section>
+  <details open>
+    <summary>1．連接 Google，讀回五科並回存</summary>
+    <ol>
+      <li>在對應入口按「連接 Google」，完成裝置上的帳戶選擇。看到<strong>「私人驗證空間已連接」</strong>後繼續。</li>
+      <li><strong>手機：</strong>兩份版本已由電腦準備，直接按<strong>「B：還原並回存」</strong>。<br><strong>平板：</strong>首次先按<strong>「A：寫入兩版」</strong>，等完成後再按<strong>「B：還原並回存」</strong>；這會直接測試平板新增備份，之後由電腦回讀驗收。</li>
+      <li>保持分頁開啟，等到<strong>「B 還原並回存完成；詳細結果見下方收據。」</strong>。此步自動核對五科，並新增第三版。</li>
+      <li>先按「下載驗證收據」留一份。畫面若顯示「未通過」，保留訊息並回報，不當作已完成。</li>
+    </ol>
+    <p class="pass">本階段通過：五科均有 B-restore-return、pass: true；不能只以登入成功當作備份成功。</p>
+  </details>
+  <details>
+    <summary>2．下載一科，完整還原到學習畫面</summary>
+    <ol>
+      <li>在「核對圖解與匯入」選「結構學」，按<strong>「下載已讀回的第二版 JSON」</strong>。</li>
+      <li>按同一區的<strong>「開啟功能測試空間」</strong>。新分頁上方必須顯示「功能測試空間」。</li>
+      <li>在「備份與還原」點<strong>「還原或合併備份」</strong>，從檔案選取器挑剛下載、包含目前批次及科目名稱的 JSON。</li>
+      <li>應顯示<strong>「已合併，共2筆作答。」</strong>。若不是 2 筆或出現草稿衝突，先停止並回報完整訊息。</li>
+    </ol>
+    <p>iPhone／iPad 的下載檔可在「檔案」App 的「下載項目」找到；Safari 也有下載項目按鈕。實際儲存位置依您的設定而定。<a href="https://support.apple.com/zh-tw/102440" target="_blank" rel="noopener">Apple 官方操作說明</a></p>
+    <p class="small">請選 JSON 檔，不要把畫面文字複製成另一個檔案。下載名稱通常為 verification-批次-科目.json。</p>
+  </details>
+  <details>
+    <summary>3．查看原稿、圖形與草稿</summary>
+    <ul>
+      <li>進入「紀錄與重練」，確認有 D01、D02 兩筆，逐一展開<strong>「查看原稿與圖解」</strong>。</li>
+      <li>D01 舊圖應保留原受力圖、原剪力／彎矩圖及原變形圖；D02 應看到該科的新版圖紙、箭頭、載重、支承、曲線與「驗證標註」。</li>
+      <li>展開 D02 的數值題，確認<strong>首次數值 -17.25</strong>仍在，而且與後續原答／訂正分開列出。</li>
+      <li>進入「今日練習」，選 D02。確認「尚未提交的驗證草稿」、原圖及約 00:12 計時；先不修改此份原草稿。C 模式的協助依學習階段收合，屬正常行為。</li>
+      <li>直式、橫式各看一次，確認功能鍵可點、文字可讀、圖形沒有被工具列遮住。這是實機觀察，不由電腦模擬替代。</li>
+    </ul>
+  </details>
+  <details>
+    <summary>4．再匯出、逐欄核對，五科都做一次</summary>
+    <ol>
+      <li>回到「備份與還原」，按<strong>「匯出完整紀錄 JSON」</strong>，確認新檔已下載。</li>
+      <li>切回<strong>原本的驗證分頁</strong>，科目仍選同一科；在「核對從學習平台再匯出的 JSON」選剛匯出的 learning-lab-科目-日期.json。</li>
+      <li>必須看到<strong>「通過：原始作答、圖解、提示與草稿全部一致。」</strong>。保留這個畫面。</li>
+      <li>依序改選鋼筋混凝土、鋼結構、耐震設計及結構動力、土壤力學及大地工程，重做第 2～4 步。每次用驗證頁的「開啟功能測試空間」進入正確科目。</li>
+      <li>五科完成後，再下載一次<strong>「驗證收據」</strong>。以最後下載的版本為準，應有五個 platform-export-match 通過項目。</li>
+    </ol>
+    <p class="small">若 Safari 在分頁切換後重新載入驗證頁，請重新連接 Google 並按 B。已存在的相同快照會去重；先前未下載的畫面收據可能已重置，請重做並保存所需核對。</p>
+  </details>
+  <details>
+    <summary>5．觸控繪圖補測（與原稿分開）</summary>
+    <p>先完成並下載第 4 步收據，再以<strong>結構學 D03 的空白測試草稿</strong>操作。若 D03 已有資料，保留並回報，不清空。</p>
+    <ol>
+      <li>選「自由筆」畫一條曲線，再畫箭頭、矩形及圓形；確認矩形、圓形有實際寬高。</li>
+      <li>試一次復原／重做，再選「捲動／瀏覽」移動畫面。平板若使用觸控筆，記下筆款及是否正常。</li>
+      <li>匯出完整 JSON，再交回結構學的核對欄；原 D01、D02 及 D02 草稿仍須通過。</li>
+      <li>將新增觸控圖的 JSON 與截圖另外交回教練。本項驗證觸控及本機匯出保全，<strong>不宣稱新增筆跡已回存雲端</strong>；雲端往返由第 1 步獨立驗證。</li>
+    </ol>
+  </details>
+  <section>
+    <h2>完成後交回什麼？</h2>
+    <ul>
+      <li>裝置型號、iOS／iPadOS 版本、瀏覽器；平板請確認確實使用另一台裝置。</li>
+      <li>最後下載的 cloud-verification-對應批次.json 收據，以及一張圖解或核對成功畫面。</li>
+      <li>若做了觸控補測：附新增筆跡的完整 JSON。遇到問題：附科目、步驟、錯誤原文。</li>
+    </ul>
+    <p>請回到原對話附上檔案。教練再從電腦回讀第三版、核對完整資料與正式歷史，才完成該裝置驗收。<strong>尚未收到實機證據前，狀態維持「待實機操作」。</strong></p>
+  </section>
+  <footer>這份指南不收集裝置資訊、不上傳作答，也不新增 Google 權限。登入與雲端寫入只在您點入的驗證頁進行。<br>學習工作室 · v0.15.0 實機驗證指南 · 2026-10-14</footer>
+</body>
+</html>
