@@ -1,0 +1,33 @@
+{
+  "project": "Open Chinese Convert (OpenCC)",
+  "version": "ver.1.1.9",
+  "upstream": "https://github.com/BYVoid/OpenCC",
+  "license": "Apache-2.0",
+  "sources": [
+    {
+      "file": "STCharacters.txt",
+      "url": "https://raw.githubusercontent.com/BYVoid/OpenCC/ver.1.1.9/data/dictionary/STCharacters.txt",
+      "sha256": "ed1d268e0ad028511dcf5b0089faed0a980ad332449ec11d481ceefde6879f41"
+    },
+    {
+      "file": "TSCharacters.txt",
+      "url": "https://raw.githubusercontent.com/BYVoid/OpenCC/ver.1.1.9/data/dictionary/TSCharacters.txt",
+      "sha256": "6b5a0a799bea2bb22c001f635eaa3fc2904310f0c08addbff275477a80ecf09a"
+    },
+    {
+      "file": "TWVariants.txt",
+      "url": "https://raw.githubusercontent.com/BYVoid/OpenCC/ver.1.1.9/data/dictionary/TWVariants.txt",
+      "sha256": "30e6f8395edbfdd74e293fd8b9c62105d787c849fbb208d2a7832eac696734d7"
+    },
+    {
+      "file": "LICENSE",
+      "url": "https://raw.githubusercontent.com/BYVoid/OpenCC/ver.1.1.9/LICENSE",
+      "sha256": "b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308"
+    },
+    {
+      "file": "AUTHORS",
+      "url": "https://raw.githubusercontent.com/BYVoid/OpenCC/ver.1.1.9/AUTHORS",
+      "sha256": "cb34e252fa994679bcbfc8355581e821ceda44bd857875e2cfe15b7ec4eec006"
+    }
+  ]
+}

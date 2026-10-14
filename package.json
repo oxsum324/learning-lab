@@ -11,6 +11,7 @@
     "build:backend": "esbuild backend/worker.js --bundle --format=esm --platform=browser --outfile=output/history-worker.mjs --minify"
   },
   "devDependencies": {
+    "acorn": "8.15.0",
     "esbuild": "^0.28.2"
   }
 }
