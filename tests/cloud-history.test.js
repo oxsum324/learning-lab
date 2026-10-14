@@ -91,3 +91,20 @@ test('cloud merging preserves active drafts and rejects conflicting historical r
  const result=mergeCloudRecords(local,remote);assert.equal(result.records.length,1);assert.deepEqual(result.drafts,local.drafts);assert.equal(local.records.length,0);
  const bad=structuredClone(remote);bad.records[0].reasoning='conflict';assert.throws(()=>mergeCloudRecords(result,bad),/衝突/);assert.equal(result.records[0].reasoning,'test only');
 });
+
+test('verification namespace isolates folders, lists, writes and direct reads in both directions',async()=>{
+ const f=fixture(),state=emptyState();state.records.push(attempt());
+ const learning=await (await f.call('/snapshots?topic='+topic,'POST',state)).json();
+ const verifying=await (await f.call('/snapshots?topic='+topic+'&space=verification','POST',state)).json();
+ assert.notEqual(learning.id,verifying.id);
+ assert.deepEqual((await (await f.call('/snapshots?topic='+topic)).json()).files.map(x=>x.id),[learning.id]);
+ assert.deepEqual((await (await f.call('/snapshots?topic='+topic+'&space=verification')).json()).files.map(x=>x.id),[verifying.id]);
+ assert.equal((await f.call('/snapshots/'+verifying.id+'?topic='+topic)).status,403);
+ assert.equal((await f.call('/snapshots/'+learning.id+'?topic='+topic+'&space=verification')).status,403);
+ assert.deepEqual(await (await f.call('/snapshots/'+verifying.id+'?topic='+topic+'&space=verification')).json(),JSON.parse(JSON.stringify(state)));
+ const folders=[...f.files.values()].filter(x=>x.mimeType==='application/vnd.google-apps.folder');
+ assert.deepEqual(folders.map(x=>x.name),['Learning Lab 私人學習歷史','Learning Lab 私人雲端驗證']);
+ assert.equal(new Set(folders.map(x=>x.appProperties.app)).size,2);
+ for(const path of ['/config?space=other','/session?space=','/config?space=verification&space=verification'])assert.equal((await f.call(path)).status,400);
+ const c=await (await f.call('/config?space=verification')).json();assert.equal(c.storageSpace,'verification');assert.equal(c.verificationSpace,true);
+});

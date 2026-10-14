@@ -4,6 +4,7 @@ import {TOPICS} from '../site/topics.js';
 const DRIVE='https://www.googleapis.com/drive/v3';
 export const MAX_BYTES=4*1024*1024;
 const APP='learning-lab-history-v1';
+const VERIFY_APP='learning-lab-verification-v1';
 class Failure extends Error {constructor(status,message){super(message);this.status=status;}}
 const fail=(status,message)=>{throw new Failure(status,message);};
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
@@ -46,13 +47,13 @@ export function createWorker(net=fetch){
  }
  async function metadata(user,id){return (await api(user,'/files/'+id+'?fields=id,name,mimeType,parents,ownedByMe,trashed,permissions(type,role),appProperties,size,createdTime')).json();}
  async function folders(user,create=false){
-  const q=`trashed=false and 'me' in owners and mimeType='application/vnd.google-apps.folder' and ${prop('app',APP)} and ${prop('owner',user.sub)}`;
+  const q=`trashed=false and 'me' in owners and mimeType='application/vnd.google-apps.folder' and ${prop('app',user.app)} and ${prop('owner',user.sub)}`;
   const found=await list(user,q,'id',null,'createdTime');
   if(found.nextPageToken||found.files.length>10)fail(409,'學習資料夾數量異常，請由管理者檢查。');
   let items=await Promise.all(found.files.map(f=>metadata(user,f.id)));
   if(!items.length&&create){
    // No parents: create under My Drive, never inside the publicly shared folder.
-   const f=await (await api(user,'/files?fields=id',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Learning Lab 私人學習歷史',mimeType:'application/vnd.google-apps.folder',appProperties:{app:APP,owner:user.sub}})})).json();
+   const f=await (await api(user,'/files?fields=id',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:user.app===VERIFY_APP?'Learning Lab 私人雲端驗證':'Learning Lab 私人學習歷史',mimeType:'application/vnd.google-apps.folder',appProperties:{app:user.app,owner:user.sub}})})).json();
    items=[await metadata(user,f.id)];
   }
   for(const f of items)assertPrivate(f);return items;
@@ -60,13 +61,16 @@ export function createWorker(net=fetch){
  const topic=url=>{const id=url.searchParams.get('topic');if(!Object.hasOwn(TOPICS,id??''))fail(400,'學習主題無效。');return id;};
  function belongs(file,user,folderIds,topicId){
   assertPrivate(file);
-  if(file.mimeType!=='application/json'||file.appProperties?.app!==APP||file.appProperties?.owner!==user.sub||file.appProperties?.topic!==topicId||!file.parents?.some(p=>folderIds.includes(p)))fail(403,'這不是本帳戶與主題的學習備份。');
+  if(file.mimeType!=='application/json'||file.appProperties?.app!==user.app||file.appProperties?.owner!==user.sub||file.appProperties?.topic!==topicId||!file.parents?.some(p=>folderIds.includes(p)))fail(403,'這不是本帳戶與主題的學習備份。');
  }
  async function handle(request,env){
   const url=new URL(request.url);
-  if(request.method==='GET'&&url.pathname==='/config')return json({ready:!!(env.GOOGLE_CLIENT_ID&&env.ALLOWED_EMAIL),clientId:env.GOOGLE_CLIENT_ID||'',maxBytes:MAX_BYTES,schemaVersions:[1],reviewVersions:[1,2],recordRestore:true,draftResume:false});
+  const space=url.searchParams.get('space');
+  if(url.searchParams.getAll('space').length>1||space!==null&&space!=='verification')fail(400,'雲端空間參數無效。');
+  if(request.method==='GET'&&url.pathname==='/config')return json({ready:!!(env.GOOGLE_CLIENT_ID&&env.ALLOWED_EMAIL),clientId:env.GOOGLE_CLIENT_ID||'',maxBytes:MAX_BYTES,schemaVersions:[1],reviewVersions:[1,2],recordRestore:true,draftResume:false,verificationSpace:true,storageSpace:space??'learning'});
   if(!['GET','POST'].includes(request.method))fail(405,'不支援此操作。');
   const user=await auth(request,env);
+  user.app=space==='verification'?VERIFY_APP:APP;
   if(url.pathname==='/session'&&request.method==='POST'){
    const fs=await folders(user,true);return json({folderUrl:'https://drive.google.com/drive/folders/'+fs[0].id});
   }
@@ -74,7 +78,7 @@ export function createWorker(net=fetch){
    const topicId=topic(url),fs=await folders(user,request.method==='POST'),folderIds=fs.map(f=>f.id);
    if(!fs.length)return json({files:[],nextPageToken:null});
    const parentQuery='('+folderIds.map(id=>`'${id}' in parents`).join(' or ')+')';
-   const q=`trashed=false and 'me' in owners and ${parentQuery} and ${prop('app',APP)} and ${prop('owner',user.sub)} and ${prop('topic',topicId)}`;
+   const q=`trashed=false and 'me' in owners and ${parentQuery} and ${prop('app',user.app)} and ${prop('owner',user.sub)} and ${prop('topic',topicId)}`;
    if(request.method==='GET'){
     const cursor=url.searchParams.get('cursor');if(cursor&&cursor.length>2048)fail(400,'分頁參數無效。');
     const data=await list(user,q,'id,name,createdTime,size,appProperties',cursor,'createdTime desc');
@@ -85,7 +89,7 @@ export function createWorker(net=fetch){
    const content=JSON.stringify({schemaVersion:1,topicId,records:state.records,drafts:state.drafts}),hash=await digest(content);
    const existing=await list(user,q+' and '+prop('sha256',hash),'id');
    if(existing.files.length){const f=await metadata(user,existing.files[0].id);belongs(f,user,folderIds,topicId);const saved=await limitedText(await api(user,'/files/'+f.id+'?alt=media'));if(await digest(saved)!==hash)fail(409,'既有雲端版本已被修改，未視為備份成功；請保留原檔供檢查。');return json({id:f.id,duplicate:true});}
-   const file={name:`${topicId}-${new Date().toISOString().replaceAll(':','-')}.json`,mimeType:'application/json',parents:[fs[0].id],appProperties:{app:APP,owner:user.sub,topic:topicId,sha256:hash,recordCount:String(state.records.length),draftCount:String(Object.keys(state.drafts).length)}};
+   const file={name:`${topicId}-${new Date().toISOString().replaceAll(':','-')}.json`,mimeType:'application/json',parents:[fs[0].id],appProperties:{app:user.app,owner:user.sub,topic:topicId,sha256:hash,recordCount:String(state.records.length),draftCount:String(Object.keys(state.drafts).length)}};
    const boundary='learning_'+crypto.randomUUID();
    const body=`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(file)}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${content}\r\n--${boundary}--`;
    const r=await net('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{Authorization:'Bearer '+user.token,'Content-Type':'multipart/related; boundary='+boundary},body,signal:AbortSignal.timeout(30000)});
