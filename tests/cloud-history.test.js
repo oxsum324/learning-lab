@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {createWorker,MAX_BYTES} from '../backend/worker.js';
 import {CloudHistory,mergeCloudRecords} from '../site/cloud-history.js';
 import {emptyState,assess} from '../site/core.js';
+import {newReceipt,RECEIPT_MAX_BYTES} from '../site/verification/receipt-model.js';
 
 const topic='structural-analysis',origin='https://oxsum324.github.io';
 const env={GOOGLE_CLIENT_ID:'test.apps.googleusercontent.com',ALLOWED_EMAIL:'learner@example.test',ALLOWED_ORIGINS:origin};
@@ -107,4 +108,37 @@ test('verification namespace isolates folders, lists, writes and direct reads in
  assert.equal(new Set(folders.map(x=>x.appProperties.app)).size,2);
  for(const path of ['/config?space=other','/session?space=','/config?space=verification&space=verification'])assert.equal((await f.call(path)).status,400);
  const c=await (await f.call('/config?space=verification')).json();assert.equal(c.storageSpace,'verification');assert.equal(c.verificationSpace,true);
+});
+
+const receipt=()=>newReceipt({run:'receipt-test01',device:'desktop',browser:'Unit test',sessionId:'session-receipt-01',now:'2026-10-20T00:00:00.000Z'});
+test('private verification receipts append checkpoints, deduplicate retries, read back and stay out of learning snapshots',async()=>{
+ const f=fixture(),data=receipt(),p='/verification-receipts?space=verification&run='+data.run;
+ assert.equal((await f.call('/verification-receipts?run='+data.run,'POST',data)).status,403);
+ const saved=await f.call(p,'POST',data);assert.equal(saved.status,201);const a=await saved.json();assert.equal(a.duplicate,false);
+ assert.deepEqual(await (await f.call('/verification-receipts/'+a.id+'?space=verification&run='+data.run)).json(),data);
+ const again=await (await f.call(p,'POST',data)).json();assert.equal(again.id,a.id);assert.equal(again.duplicate,true);
+ const next=structuredClone(data);next.updatedAt='2026-10-20T00:01:00.000Z';const b=await (await f.call(p,'POST',next)).json();assert.notEqual(a.id,b.id);
+ const list=await (await f.call(p)).json();assert.equal(list.files.length,2);assert.equal(list.files[0].device,'desktop');
+ assert.equal((await (await f.call('/snapshots?topic='+topic+'&space=verification')).json()).files.length,0);
+ assert.equal((await (await f.call('/snapshots?topic='+topic)).json()).files.length,0);
+ assert.equal((await f.call('/verification-receipts/'+a.id+'?space=verification&run=other-test01')).status,403);
+ assert.equal((await f.call('/verification-receipts/'+a.id+'?run='+data.run)).status,403);
+ assert.equal((await f.call('/snapshots/'+a.id+'?topic='+topic+'&space=verification')).status,403);
+ assert.equal((await f.call('/verification-receipts/'+a.id+'?space=verification&run='+data.run,'POST',next)).status,405);
+});
+test('receipt schema rejects credentials, arbitrary answer payloads, oversized bodies and mismatched batches',async()=>{
+ const f=fixture(),data=receipt(),p='/verification-receipts?space=verification&run='+data.run;
+ for(const bad of [{...data,token:'a-secret'},{...data,records:[]},{...data,syncErrors:[{at:data.startedAt,error:'Bearer test-secret'}]},{...data,run:'different-run'}])assert.equal((await f.call(p,'POST',bad)).status,400);
+ assert.equal((await f.call(p,'POST',{...data,extra:'x'.repeat(RECEIPT_MAX_BYTES)})).status,413);
+ assert.equal((await f.call('/verification-receipts?space=verification&run=x','POST',data)).status,400);
+ assert.equal((await f.call(p+'&run='+data.run,'POST',data)).status,400);
+ assert.equal((await f.call(p,'POST',data,{headers:{'Content-Type':'text/plain'}})).status,415);
+});
+test('receipt reads and duplicate acknowledgments refuse sharing, moving, foreign owners and content tampering',async()=>{
+ const f=fixture(),data=receipt(),p='/verification-receipts?space=verification&run='+data.run;
+ const {id}=await (await f.call(p,'POST',data)).json(),file=f.files.get(id),read='/verification-receipts/'+id+'?space=verification&run='+data.run;
+ file.permissions.push({type:'anyone',role:'reader'});assert.equal((await f.call(read)).status,409);file.permissions.pop();
+ const parents=file.parents;file.parents=['elsewhere'];assert.equal((await f.call(read)).status,403);file.parents=parents;
+ file.appProperties.owner='foreign';assert.equal((await f.call(read)).status,403);file.appProperties.owner='12345';
+ file.content=file.content.replace('Unit test','Tampered');assert.equal((await f.call(read)).status,409);assert.equal((await f.call(p,'POST',data)).status,409);
 });

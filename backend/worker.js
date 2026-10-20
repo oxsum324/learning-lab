@@ -1,5 +1,6 @@
 import {validateState} from '../site/core.js';
 import {TOPICS} from '../site/topics.js';
+import {validateReceipt,receiptProgress,RECEIPT_MAX_BYTES,validRun} from '../site/verification/receipt-model.js';
 
 const DRIVE='https://www.googleapis.com/drive/v3';
 export const MAX_BYTES=4*1024*1024;
@@ -8,11 +9,11 @@ const VERIFY_APP='learning-lab-verification-v1';
 class Failure extends Error {constructor(status,message){super(message);this.status=status;}}
 const fail=(status,message)=>{throw new Failure(status,message);};
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
-export async function limitedText(response,limit=MAX_BYTES){
- if(Number(response.headers.get('content-length'))>limit)fail(413,'雲端單份備份上限為 4 MB，請先匯出本機 JSON。');
+export async function limitedText(response,limit=MAX_BYTES,message='雲端單份備份上限為 4 MB，請先匯出本機 JSON。'){
+ if(Number(response.headers.get('content-length'))>limit)fail(413,message);
  const reader=response.body?.getReader();if(!reader)return '';
  const chunks=[];let size=0;
- while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>limit){await reader.cancel();fail(413,'雲端單份備份上限為 4 MB，請先匯出本機 JSON。');}chunks.push(value);}
+ while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>limit){await reader.cancel();fail(413,message);}chunks.push(value);}
  const bytes=new Uint8Array(size);let offset=0;for(const c of chunks){bytes.set(c,offset);offset+=c.length;}return new TextDecoder().decode(bytes);
 }
 const digest=async text=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))),x=>x.toString(16).padStart(2,'0')).join('');
@@ -67,10 +68,32 @@ export function createWorker(net=fetch){
   const url=new URL(request.url);
   const space=url.searchParams.get('space');
   if(url.searchParams.getAll('space').length>1||space!==null&&space!=='verification')fail(400,'雲端空間參數無效。');
-  if(request.method==='GET'&&url.pathname==='/config')return json({ready:!!(env.GOOGLE_CLIENT_ID&&env.ALLOWED_EMAIL),clientId:env.GOOGLE_CLIENT_ID||'',maxBytes:MAX_BYTES,schemaVersions:[1],reviewVersions:[1,2],recordRestore:true,draftResume:false,verificationSpace:true,storageSpace:space??'learning'});
+  if(request.method==='GET'&&url.pathname==='/config')return json({ready:!!(env.GOOGLE_CLIENT_ID&&env.ALLOWED_EMAIL),clientId:env.GOOGLE_CLIENT_ID||'',maxBytes:MAX_BYTES,schemaVersions:[1],reviewVersions:[1,2],recordRestore:true,draftResume:false,verificationSpace:true,storageSpace:space??'learning',receiptVersions:[2],receiptMaxBytes:RECEIPT_MAX_BYTES});
   if(!['GET','POST'].includes(request.method))fail(405,'不支援此操作。');
   const user=await auth(request,env);
   user.app=space==='verification'?VERIFY_APP:APP;
+  if(url.pathname==='/verification-receipts'||url.pathname.startsWith('/verification-receipts/')){
+   if(space!=='verification')fail(403,'驗證收據只可存取私人測試空間。');
+   const run=url.searchParams.get('run');if(!validRun(run)||url.searchParams.getAll('run').length!==1)fail(400,'收據批次無效。');
+   const match=url.pathname.match(/^\/verification-receipts\/([A-Za-z0-9_-]{1,200})$/);
+   if(url.pathname!=='/verification-receipts'&&!match)fail(404,'找不到收據。');
+   const fs=await folders(user,request.method==='POST'),folderIds=fs.map(f=>f.id);
+   const belongsReceipt=f=>{assertPrivate(f);if(f.mimeType!=='application/json'||f.appProperties?.app!==VERIFY_APP||f.appProperties?.owner!==user.sub||f.appProperties?.kind!=='receipt'||f.appProperties?.run!==run||!f.parents?.some(p=>folderIds.includes(p)))fail(403,'這不是本帳戶與批次的驗證收據。');};
+   const readReceipt=async f=>{belongsReceipt(f);if(Number(f.size)>RECEIPT_MAX_BYTES)fail(413,'驗證收據超過 256 KB。');const content=await limitedText(await api(user,'/files/'+f.id+'?alt=media'),RECEIPT_MAX_BYTES,'驗證收據超過 256 KB。');if(await digest(content)!==f.appProperties.sha256)fail(409,'驗證收據已被修改，請保留原檔。');let data;try{data=validateReceipt(JSON.parse(content));}catch{fail(409,'雲端驗證收據格式無效。');}if(data.run!==run||data.sessionId!==f.appProperties.session)fail(409,'收據批次或工作階段不一致。');return data;};
+   if(match){if(request.method!=='GET')fail(405,'收據保留歷史，不能覆寫。');return json(await readReceipt(await metadata(user,match[1])));}
+   if(!fs.length)return json({files:[],nextPageToken:null});
+   const q=`trashed=false and 'me' in owners and (${folderIds.map(id=>`'${id}' in parents`).join(' or ')}) and ${prop('app',VERIFY_APP)} and ${prop('owner',user.sub)} and ${prop('kind','receipt')} and ${prop('run',run)}`;
+   if(request.method==='GET'){const cursor=url.searchParams.get('cursor');if(cursor&&cursor.length>2048)fail(400,'分頁參數無效。');const data=await list(user,q,'id,name,createdTime,appProperties',cursor,'createdTime desc');return json({files:data.files.map(f=>({id:f.id,name:f.name,createdTime:f.createdTime,sessionId:f.appProperties.session,device:f.appProperties.device,restored:Number(f.appProperties.restored)||0,compared:Number(f.appProperties.compared)||0})),nextPageToken:data.nextPageToken??null});}
+   if(!request.headers.get('Content-Type')?.startsWith('application/json'))fail(415,'請使用 JSON 收據。');
+   let data;try{data=validateReceipt(JSON.parse(await limitedText(request,RECEIPT_MAX_BYTES,'驗證收據超過 256 KB。')));}catch(e){if(e instanceof Failure)throw e;fail(400,'驗證收據格式無效，未保存。');}if(data.run!==run)fail(400,'收據批次不一致。');
+   const content=JSON.stringify(data),hash=await digest(content),existing=await list(user,q+' and '+prop('sha256',hash),'id');
+   if(existing.files.length){const f=await metadata(user,existing.files[0].id);await readReceipt(f);return json({id:f.id,sha256:hash,duplicate:true});}
+   const progress=receiptProgress(data),file={name:`cloud-verification-${run}-${data.sessionId}-${new Date().toISOString().replaceAll(':','-')}.json`,mimeType:'application/json',parents:[fs[0].id],appProperties:{app:VERIFY_APP,owner:user.sub,kind:'receipt',run,session:data.sessionId,device:data.device,sha256:hash,restored:String(progress.restored.length),compared:String(progress.compared.length)}};
+   const boundary='receipt_'+crypto.randomUUID(),body=`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(file)}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${content}\r\n--${boundary}--`;
+   const r=await net('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{Authorization:'Bearer '+user.token,'Content-Type':'multipart/related; boundary='+boundary},body,signal:AbortSignal.timeout(30000)});
+   if(!r.ok)fail(r.status===401?401:502,'收據尚未確認雲存成功，請重試補存；測試進度仍保留本機。');
+   const saved=await r.json();await readReceipt(await metadata(user,saved.id));return json({id:saved.id,sha256:hash,duplicate:false},201);
+  }
   if(url.pathname==='/session'&&request.method==='POST'){
    const fs=await folders(user,true);return json({folderUrl:'https://drive.google.com/drive/folders/'+fs[0].id});
   }
