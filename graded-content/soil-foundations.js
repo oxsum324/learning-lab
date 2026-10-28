@@ -1,4 +1,4 @@
-import {questions as additional} from './soil-foundations-extra.js?v=0.15.0';
+import {questions as additional} from './soil-foundations-extra.js?v=0.16.0';
 const topic='soil-foundations';
 const opt=(id,text,reason)=>({id,text,reason});
 const q=(id,level,type,skill,prompt,body,explanation,assistance=1)=>({id:`so-d02-${id}`,version:1,topic,day:2,level,type,skill,model:'土壤三相關係',prompt,assistance,source:{kind:'principle',label:'教材原理：三相體積與質量定義',locator:'土壤力學及大地工程題庫 SO_C02'},explanation,...body});

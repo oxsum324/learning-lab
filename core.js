@@ -1,20 +1,21 @@
-import {validReview} from './review-state.js?v=0.15.0';
-import {validDrawing} from './drawing-model.js?v=0.15.0';
-import {TOPICS,resolveTopic,storageKey,dayKey} from './topics.js?v=0.15.0';
+import {validReview} from './review-state.js?v=0.16.0';
+import {validDrawing} from './drawing-model.js?v=0.16.0';
+import {TOPICS,resolveTopic,storageKey,dayKey} from './topics.js?v=0.16.0';
+import {validStudio} from './studio/state.js?v=0.16.0';
 export const SANDBOX=typeof location!=='undefined'&&new URLSearchParams(location.search).get('sandbox')==='1';
 export const TOPIC_ID=resolveTopic(typeof location!=='undefined'?location.search:'');
 export const KEY=storageKey(TOPIC_ID,SANDBOX);
 export const DAY_KEY=dayKey(TOPIC_ID,SANDBOX);
 export const emptyState=(topicId=TOPIC_ID)=>({schemaVersion:1,topicId,records:[],drafts:{}});
 export function assess(fields,values,hint=0){
- const checks=fields.map(f=>{const raw=String(values[f.id]??'').trim();const n=raw===''?NaN:Number(raw);return {label:f.label,expected:f.value,actual:Number.isFinite(n)?n:null,unit:f.unit,ok:Number.isFinite(n)&&Math.abs(n-f.value)<=Math.max(Math.abs(f.value)*.01,.000001)};});
+ const checks=fields.map(f=>{const raw=String(values[f.id]??'').trim();const n=raw===''?NaN:Number(raw);return {label:f.label,expected:f.value,actual:Number.isFinite(n)?n:null,unit:f.unit,ok:Number.isFinite(n)&&(f.integer!==true||Number.isInteger(n))&&Math.abs(n-f.value)<=(f.integer===true?.000001:Math.max(Math.abs(f.value)*.01,.000001))};});
  const correct=checks.filter(c=>c.ok).length;
  const text=!checks.length?'已記錄，待教練審閱':`${correct}/${checks.length} 項關鍵數值符合`;
  return {checks,correct,total:checks.length,text:text+(hint>=2?'；已使用方程或答案，需另日閉卷重做':'；推導與受力模型尚待審閱'),status:'submitted'};
 }
 const isObj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const str=(v,max=12000)=>typeof v==='string'&&v.length<=max;
-const reviewContextOK=(d,topic,day)=>d.progressive?.version!==2||(d.progressive.topic===topic&&d.progressive.day===day);
+const reviewContextOK=(d,topic,day)=>(d.progressive?.version!==2||(d.progressive.topic===topic&&d.progressive.day===day))&&validStudio(d.studio,topic,day);
 function draftOK(d){return isObj(d)&&validReview(d.progressive)&&Number.isFinite(d.activeMs)&&d.activeMs>=0&&d.activeMs<=86400000&&str(d.reasoning??'')&&str(d.explanation??'',8000)&&str(d.mistake??'',8000)&&[0,1,2,3].includes(d.hint??0)&&str(d.errorType??'',60)&&isObj(d.values??{})&&Object.keys(d.values??{}).length<=20&&Object.entries(d.values??{}).every(([k,v])=>/^[a-zA-Z0-9_]{1,40}$/.test(k)&&str(v,100))&&str(d.startedAt??'',50)&&str(d.updatedAt??'',50);}
 export function validateState(s,topicId=TOPIC_ID){
  if(isObj(s)&&s.topicId!==topicId)throw Error('備份主題不同，請先切換至對應主題再匯入。');
