@@ -1,6 +1,6 @@
 // Shared, lesson-specific scaffolding. No mastery score is inferred from recognition.
 export const STAGES={recognize:'1 · 候選辨識',guided:'2 · 提示補完',independent:'3 · 獨立作答'};
-import {REVIEW_CONTENT,diagramDrawing,lessonScaffold} from './review-content.js?v=0.15.0';
+import {REVIEW_CONTENT,diagramDrawing,lessonScaffold} from './review-content.js?v=0.16.0';
 function options(texts,seed,reasons=[]){
  const out=texts.map((text,i)=>({id:String(i),text,reason:i?reasons[i-1]??text:'依本課題設與模型。'}));
  let h=2166136261;for(const c of String(seed))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;
@@ -20,7 +20,7 @@ export function reviewMaterial(lesson,topic,guide){
 // Numeric alternatives are withheld until this attempt has a saved numeric submission.
 export function availableMaterial(material,p){return {...material,questions:material.questions.filter(q=>q.id!=='quantity'||p.numericSubmission!==undefined)};}
 export function numericRecognitionNote(p){return p.quantitySeen===true||Object.hasOwn(p.selections,'quantity')?'辨識後填入，不計閉卷。':'';}
-export {newReview,validReview,markSupport} from './review-state.js?v=0.15.0';
+export {newReview,validReview,markSupport} from './review-state.js?v=0.16.0';
 export function recognitionResult(material,p){const total=material.questions.length,correct=material.questions.filter(q=>p.selections[q.id]===q.correct).length;return {total,correct,complete:total>0&&material.questions.every(q=>Object.hasOwn(p.selections,q.id)),passed:total>0&&correct===total};}
 export function reviewOutcome(p,material,hint=0,answerViewed=false){
  const assistance=Math.max(p.assistance,hint,answerViewed?3:0,p.stage==='recognize'?1:p.stage==='guided'?2:0);

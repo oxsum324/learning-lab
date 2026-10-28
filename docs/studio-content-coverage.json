@@ -1,0 +1,1352 @@
+[
+  {
+    "topic": "structural-analysis",
+    "day": 1,
+    "model": "udl",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "f2c4addaa56f92ffbb8167f28ea2f3765783ecd2fd995162c9761ca6c82612a2",
+    "focus": "A題：受力圖、反力、V/M圖"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 2,
+    "model": "point",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "5c8393452fd1724610b234c8a6c37de2fb6db9da5795ed506e05ec35a29bc123",
+    "focus": "B題：偏心集中力；與A比較"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 3,
+    "model": "stability",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "fd882675d2e197507867d73eabd6d5a1bf1530c163e4a8c1e818d8865294cf87",
+    "focus": "判斷四種支承系統穩定性與靜不定次數"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 4,
+    "model": "udl",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "5c918da6ae8af397bde3b5e230902e3a94cca683bc5c4b307485cbce68ad98d7",
+    "focus": "A題改q＝8，手寫V(x)、M(x)"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 5,
+    "model": "truss",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "98d01277b83ed665425587484a1e4a068d57b10e9ed4f92b5186c0f837a44618",
+    "focus": "T題：節點法求三桿力"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 6,
+    "model": "frame",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "778d278494cdeaf4e23146a9d6ee6583d929a893f23537c2f7d14e1d5c818113",
+    "focus": "F題：剛接懸臂折架的反力及N/V/M概要"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 7,
+    "model": "udl",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "3340825f298d801da3d9b2a39e846ff4f7e3e89d082267de9cfabf346719a694",
+    "focus": "W1題＋S題中兩項口述"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 8,
+    "model": "cantilever",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "e2adcc2b74018d0a1a5d746976eeb2751928d7d2894b9540441653b8a13eb294",
+    "focus": "C題：由M(x)積分求端部轉角、撓度"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 9,
+    "model": "beam-deflection",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "8f9f28bcb366407d15813040432de4dd27648b8e3e76c04262ab33dbaf4513b3",
+    "focus": "A題：寫雙積分式，求跨中撓度"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 10,
+    "model": "cantilever",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "094642731486b95fb0b486fae18b6ae2cac31834fa1e97364d4b30a79b99ddce",
+    "focus": "C題：用單位力法重算端部撓度"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 11,
+    "model": "point-deflection",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "7b7416f870743771f8d033df3a75c6d453aad5ac133aaec3883856aac7f74462",
+    "focus": "E題：畫真實M與跨中單位力m，再積分"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 12,
+    "model": "truss-displacement",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "4f434efdca3c69519adb78fc1aacdde741f42ce1d0d1083689afbf784b907c8c",
+    "focus": "T題只列C點鉛直位移求和式；EA各桿相同"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 13,
+    "model": "beam-deflection",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "8340c54d4b87fa927bd00d8ec994cc33e0be6d2b448e31e58d9e1991a4c19d37",
+    "focus": "A題EI加倍、q加倍兩種情境；不重做長積分"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 14,
+    "model": "point-deflection",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "149029c0078778c56b7d833dbfc1f9801c4d9d019e1bffeb8332d829fc4e0d9a",
+    "focus": "W2／W2b：懸臂與簡支梁位移週測"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 15,
+    "model": "propped",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "a7ba019af848ac4a87d0658832b003b335c190b498722e68860e8fb85f58b172",
+    "focus": "P題只選贅力、畫基本系統與寫相容式"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 16,
+    "model": "force-flexibility",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "726b8f79ed96353f197bf5eb518df2e0feb6fafa15d7f2810ca7fde8c56c48ae",
+    "focus": "P題求自由端載重位移δ₀與柔度f"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 17,
+    "model": "propped",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "1a14e98ef3686a8e11930c70c1c4e918e38bc78ebc54f681b6162e70d4e68853",
+    "focus": "P題解贅力、固定端反力，畫M圖"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 18,
+    "model": "settlement",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "7aaf4f5a451d1d6f56e1b7e01b49a2194a6688c4638b8f6c1cbe188a386962c3",
+    "focus": "P題改B支承向下沉陷2mm"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 19,
+    "model": "propped",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "05b38649a0eb68bf78f7f9b046ee23a1b68b6f13ceed0952540f88d78ba93eb5",
+    "focus": "P題改L＝6、q＝4、EI不變"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 20,
+    "model": "propped",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "56f6831722059378e29afe50b42443e3320ed91229412205be9fa57a00abbdd6",
+    "focus": "重做D15～19中最差題，再白話解釋力法"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 21,
+    "model": "propped",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "06ec20ad0527df67d45fc885d7f70c8a237f3f4b8248045777f4a038d9c9773d",
+    "focus": "W3題：一次靜不定支承懸臂"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 22,
+    "model": "joint",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "b9e0b00a52223fdd45ec1ac30c11825eabcc9aeee18ace9a0ca46ceb18b8a81a",
+    "focus": "J題：畫連續梁，辨認節點轉角，列B節點力矩平衡"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 23,
+    "model": "joint",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "b2051e5fdf31d6e9558e2628d8aa8a47bc6ef6f0091640f81d9a0ce86670c3f5",
+    "focus": "J／W3：連續梁與力法混合週測"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 24,
+    "model": "influence",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "be5f59e990631bea44be6d7fae30ebca037f97fc6085ff247f184d84ba754909",
+    "focus": "I題：畫RA與跨中彎矩影響線"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 25,
+    "model": "two-loads",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "c90df4848f34b753c8f7f3b074a4b962bc5f7e88356eb6fe0b7916b8b58422fb",
+    "focus": "I題兩個集中力的固定位置反應"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 26,
+    "model": "axial",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "076a934df751db2b179a2c1f2f6870d70e7e6c443b661a7e484e7ec6f597361a",
+    "focus": "K題：軸桿k＝EA/L、Ku＝F"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 27,
+    "model": "axial",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "4554674af4de2f392ee9a419bdf0e2972e7c3f415f9598945f52bb35c7697d8a",
+    "focus": "畫一頁方法選擇圖，再重做最弱一題"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 28,
+    "model": "beam-deflection",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "70ce87e6d952862bb325f3e574ecd130c9b2b1c3aff5ea6e85ca049d72d61185",
+    "focus": "W4a題：靜定梁內力及跨中撓度"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 29,
+    "model": "propped",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "add673a96a6a2b9c5b9e094fb26eeb1a7a92a32c9d1fb18df6109e80d3f967f4",
+    "focus": "W4b題：一次靜不定梁的完整解題"
+  },
+  {
+    "topic": "structural-analysis",
+    "day": 30,
+    "model": "joint",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "d70ef6c6310aa9ca39e20ccd28a22051789050eea28d702dcbfc95f0a77bf06f",
+    "focus": "重做D28或29最弱題，口述平衡—變形—相容"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 1,
+    "model": "rc-flexure",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "1e7cf0c3763b467895677840299959176137e5d3d92964ede60f192a226084d4",
+    "focus": "基礎診斷、規範與單位"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 2,
+    "model": "rc-flexure",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "b6a63154d152c60a1e868c1838404ad96bdfc02861e611910ced10f1e1b68332",
+    "focus": "單筋矩形梁；應變相容、強度折減"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 3,
+    "model": "tbeam",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "eb2f7fcb322a299255a227307c0c469cace2c5fbcbf35c91463bdb82a2a5df30",
+    "focus": "雙筋梁、T形梁之分支判斷"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 4,
+    "model": "rc-column",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "a2f98ab00d80939911f5f73762a1bd2a745973474281cf4a74db33bc5a845df9",
+    "focus": "短柱P–M互制"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 5,
+    "model": "magnify",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "e04394ac21e8b6ccc908c6be31a370df284c625eaf50408cb34160fb7d14b8a7",
+    "focus": "柱設計圖、細長柱、二階效應"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 6,
+    "model": "rc-shear",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "80c2678c6ab88b15f4533586e17144d955a2e91961dcef456249e2bd9a5fa83b",
+    "focus": "梁剪力、箍筋與尺寸限制"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 7,
+    "model": "rc-flexure",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "2738039c752cd1960ed5fa51aafab200637cf238ed782f954087d155b41229ed",
+    "focus": "第一週閉卷小測"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 8,
+    "model": "torsion",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "998b66721edbe2b00a3adb98f7b4bd7283437e91f1d0525c97877aee65941f11",
+    "focus": "扭力與剪扭共同作用"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 9,
+    "model": "development",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "6c80c416206a8db0c64382a18cbddb45b936fd54aeb3c0ebabad1c2137079c5e",
+    "focus": "鋼筋伸展、錨定、搭接"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 10,
+    "model": "development",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "11e1075fcb7c8d8e1b00e41eff812fa7eb736471d1860a15811fedd94c38fcf1",
+    "focus": "鋼筋截斷、彎鉤與受力傳遞"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 11,
+    "model": "service",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "da8c00a231eb8f609ea348804c348ccf283e5f7f8889dec8ed360cb5a656266e",
+    "focus": "開裂、即時／長期撓度、裂縫控制"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 12,
+    "model": "slab",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "7bd07d4dc48938ac61524990e6d26f4414b5f0eccadebbdbff7f8985879d5025",
+    "focus": "單向板設計與構造"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 13,
+    "model": "punch",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "ce71e64416bb6818f2d21395564b49f7c2f62c7d29577423187b037b8a7fd254",
+    "focus": "雙向板、彎矩分配與穿孔剪力"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 14,
+    "model": "punch",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "c202edc0e3515e71667e7d660075f5ba719308fa78cc6d16f8db3a13c3cb368c",
+    "focus": "第二週閉卷小測"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 15,
+    "model": "punch",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "8e0ba40b9a8700c89b4dd5bd0423c4435c5b34542a169f82255a304d251bea4a",
+    "focus": "獨立基腳；承壓、彎矩、單向及穿孔剪力"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 16,
+    "model": "capacity",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "2955d33d4e3d387dca31c4fef24a6e1c0269716fbba6123d75a6a926b351bfa0",
+    "focus": "耐震梁、可能彎矩強度與容量剪力"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 17,
+    "model": "rc-column",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "1260327685fd004677e6b518cf98260f5cfc1f8ce95ff55108eabee6d7130441",
+    "focus": "耐震柱、圍束與梁柱接頭"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 18,
+    "model": "rc-shear",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "2c0830bf5947195608c71f5d2d238e951c35b1f208cb760a4a8d040bc3a7c06d",
+    "focus": "耐震牆與D15～17弱項"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 19,
+    "model": "prestress",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "c5c7e196c113e8cb8e0155fbadc3ac7ca6ea4b68fc2bd388779a40c0cad81cff",
+    "focus": "預力梁斷面應力、傳遞與服務階段"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 20,
+    "model": "loss",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "fa5d75d0c2efe78da1a361f909577a67aea3bdff1e4e69e9393f0566249119f4",
+    "focus": "預力損失：即時與長期"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 21,
+    "model": "prestress-range",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "a198dcecdf89b1a452d9b8689b5ae1ab092d396c6bb067e3c68770260904dfb8",
+    "focus": "預力量P與偏心距e之可行範圍"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 22,
+    "model": "rc-shear",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "a7cba36d5aa45ddc82462c800783bfce0770d96c016df2e8a62b3da326fcdbe8",
+    "focus": "預力梁剪力；彎曲強度流程"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 23,
+    "model": "prestress",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "6d1ed6cacfc2f96eebe9bcfa09f2e81baa88caebe6980b1a0c29eca7ffbe7d0b",
+    "focus": "預力週測＋跨章混合"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 24,
+    "model": "punch",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "280b6150523f58f39de61a334c86e5e589fe36f478744ebb8031e7067a6c6ee6",
+    "focus": "114年第一題：基腳"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 25,
+    "model": "capacity",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "a4aadf07f9aa3f58c895c4879e342d9bf371e19c165acf89068c09a3feb5c634",
+    "focus": "114年第二題：耐震梁剪力筋"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 26,
+    "model": "torsion",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "cedafdd1d72eb4997d8d13a2e6cdc12ebd9167106f64015a844101848d802033",
+    "focus": "114年第三題：扭矩強度"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 27,
+    "model": "prestress-range",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "988bf3ce060581cbad25702140faca2f4bdeacc32f61197dbb6b9e2b5e58fdd6",
+    "focus": "114年第四題：預力偏心距"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 28,
+    "model": "tbeam",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "824437de4a1dda89e3b802834eb3f83ca0f01ed5b569538f55440b30215b604c",
+    "focus": "四題訂正與規範版本整理"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 29,
+    "model": "magnify",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "3ac6c836f56a946827683d3d8a7592203e5b5a9ca7e0dff07ae9f61e377eb995",
+    "focus": "延遲閉卷重測"
+  },
+  {
+    "topic": "reinforced-concrete",
+    "day": 30,
+    "model": "prestress",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "57ce49ce4d29294953233085cf2bac2d6c69a3c7e65543ebf3d5447e5d2d1b97",
+    "focus": "全科出口檢查"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 1,
+    "model": "asdlrfd",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "5186f2d16e122d127e846bc2d1e19cc5a0717a91a8871fbbcfdaeb6bb8c6a43e",
+    "focus": "本頁首日診斷；考綱與版本"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 2,
+    "model": "h-section",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "6243a9f2a5c9e6a66f458e36b2100be40877cf78e7b15792dab9d831df791361",
+    "focus": "鋼材性質、殘餘應力；斷面表"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 3,
+    "model": "asdlrfd",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "299f43a51b445f4f42690e2896bdb737b65af2e7313593324db95581b4689665",
+    "focus": "ASD與LRFD；載重及抵抗端"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 4,
+    "model": "steel-tension",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "e07b356fb6237fa8414d31da7105e645586cdaade7ea4cc4720969abd145390a",
+    "focus": "受拉構材；Ag、An、Ae、剪力遲滯"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 5,
+    "model": "block",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "2d2d5fb5723dcf28e1b4855c865b4a5d3786ef655a84f04c845cf265d7ea8110",
+    "focus": "塊狀剪斷與接合區破壞"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 6,
+    "model": "buckling",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "66c62a184a53723a78ba95c178fb963035cb503facc9df1f44ce05bf36cced42",
+    "focus": "受壓構材；KL/r與挫屈強度"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 7,
+    "model": "steel-tension",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "b24b8506622762f4c625284b7b6714ff621a8da4bc3950b6f0d2f7e49ba48094",
+    "focus": "第一週閉卷測驗"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 8,
+    "model": "torsional",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "04197d66daaee8848bf97708c4c04157c0711845eb5077e82f93b35a58acc75d",
+    "focus": "非單純彎曲挫屈、組合／非對稱受壓構材"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 9,
+    "model": "classification",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "80d0a8cf28f054f3a0f5293546155d3b449cd155842c9a7b0be423ba0fb10407",
+    "focus": "寬厚比與斷面分類"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 10,
+    "model": "steel-bending",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "a4485c87e443e1b5189072bdb1df63fcb0060f392bb53f15ab537aa6e3644eb6",
+    "focus": "側向充分支承梁；My、Mp、局部挫屈"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 11,
+    "model": "ltb",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "a3ab6ee2665c5a62e3cd885a94244bc1e00516443e44aead8b7fc067c4e56b56",
+    "focus": "側扭挫屈；Lb、Lp、Lr、Cb"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 12,
+    "model": "steel-shear",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "f7e26941bb58bbeeee93654ba04e3ec47088e0f23af0aa5c6f32d932332ee7ea",
+    "focus": "腹板剪力、集中力與加勁"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 13,
+    "model": "interaction",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "667c86a423695d26ed28a35b315533a461c7d902e3cd5834a394a9de278d12c1",
+    "focus": "梁柱交互作用、二階效應"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 14,
+    "model": "buckling",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "84a96a61058756c5bff8e0c32b73725d0362a9f9dfca77712efd7daac0a5e675",
+    "focus": "第二週閉卷測驗"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 15,
+    "model": "bolt",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "b237252fa9342f9f7ce84c611835b3f627d1add5590cdf3828b84497502d7d14",
+    "focus": "螺栓剪力、孔壁承壓、端距與間距"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 16,
+    "model": "bolt",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "122f5215d91fdf3d84c734f81eeff810868baa14ddec6452699d6ab67c01b05d",
+    "focus": "摩阻接合、承壓接合；拉剪共同作用"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 17,
+    "model": "weld",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "70137cae436e116a365fd06a9c389f62aa28326d820a01db06fc72f96a970e1a",
+    "focus": "銲接；有效喉厚、有效長度與母材"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 18,
+    "model": "eccentric",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "3baa6dc9410a19db93d9722821257440f7fd706e39fe4e5366a28cf6f2acbffe",
+    "focus": "偏心螺栓群／銲道群"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 19,
+    "model": "weld",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "293334e5fa3baae5183fc2b67d3f69fa777f0f7042577a9469c35ea591d717e9",
+    "focus": "梁柱接合、柱腳與力流整合"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 20,
+    "model": "plastic",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "cfea1b8691b08b11d5932f8ec1e113b5aa0ece79e52888a0192fe39579205370",
+    "focus": "塑性鉸、機構與塑性分析"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 21,
+    "model": "fatigue",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "a9fa3286b6459ac26ee78758417cb4ecaf42a3d88408f95a4121f8e8771ff92a",
+    "focus": "材料韌性、脆性破壞／疲勞；製作安裝品管"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 22,
+    "model": "capacity",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "ed6a5e272adbcbc321ac56c0052f37c8cf69413fb7684ab0e4c41b0d81297bd2",
+    "focus": "鋼構耐震力流、容量設計、接合與側向支撐"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 23,
+    "model": "interaction",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "044d4a7fbdba5473a4d95173288006e290318e01ad881ca921e5494acfbf1648",
+    "focus": "三週混合測驗"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 24,
+    "model": "steel-bending",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "60d524936136598bc09af55e43de5018f860f0c349ad6901833350a821ebb2eb",
+    "focus": "114年第一題：LRFD梁強度"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 25,
+    "model": "steel-tension",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "c36aaa698fa8f6ac3e742d56cd68dfd6ef0bdf742b7ebb20daff41f82e166add",
+    "focus": "114年第二題：ASD受拉銲接組合"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 26,
+    "model": "ltb",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "a46d116d2116161276520ddcfc77faafad0c9a8151124335ce82345879575b19",
+    "focus": "114年第三題：LRFD梁彎矩強度"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 27,
+    "model": "plastic",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "321adf1bfab990d75aa3a9f37ae7661ea8dc501ffe68b7ac7f4b0ca6549edfd2",
+    "focus": "114年第四題：塑性鉸與崩塌機構"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 28,
+    "model": "classification",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "01f0800e5e5ee9c1b3674cc2aa859e08b3660a043813c9d1823012f3201e1653",
+    "focus": "歷屆題訂正與版本清單"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 29,
+    "model": "interaction",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "d1f582fd9c5d6d6a4ef80e2ec0896edeac772fdd841e7b3c251e701c29cb1026",
+    "focus": "延遲閉卷重測"
+  },
+  {
+    "topic": "steel-structures",
+    "day": 30,
+    "model": "steel-tension",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "45913fa67d4384faa97e0063d51f641aab869d783957339d1d6b938e3c13bccb",
+    "focus": "全科出口檢查與考前一頁紙"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 1,
+    "model": "period",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "5395747d79ac90d3656bc9cc91a6c5d89696898b9771e71378ec2bad0dccd4db",
+    "focus": "本頁首日診斷；考綱與教材目錄"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 2,
+    "model": "period",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "cb6625317fc0872feaf1972a95f15f5cd57a694e1d0bbe8c10cf50b9d9da8f6a",
+    "focus": "自由體圖、相對／絕對位移、等效質量與勁度"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 3,
+    "model": "free",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "02bf1194a98971b9327a427b58492f3450f2a6d8d227c38670cd04ce6c07f341",
+    "focus": "無阻尼自由振動與初始條件"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 4,
+    "model": "damping",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "bd5ddd43cd496ed5f87f74e9321fa1f6e12fa07a611816732bc245812f9227d1",
+    "focus": "黏滯阻尼、衰減包絡線與對數遞減"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 5,
+    "model": "harmonic",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "b6fce5eeffe45daa091a0cae49255111b2779d807ee486bd3d0f00efe3fa9622",
+    "focus": "諧和外力、共振、穩態與暫態"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 6,
+    "model": "impulse",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "fcb43e16681f086cb47e6acee67ca1b4fe0b2581bd726016b958151d71729b46",
+    "focus": "脈衝、階躍、Duhamel積分"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 7,
+    "model": "free",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "d8aa6f0f58576c524c83475d1424dec9093e21515b80fef14adff0a430d9871a",
+    "focus": "第一週閉卷測驗"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 8,
+    "model": "spectrum",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "6202ea51e8300f97a626efa85831c283eca510b31a30f21c101ef6e7b7fa9f1f",
+    "focus": "地震反應譜；位移、速度、加速度與擬譜"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 9,
+    "model": "two-dof",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "554688e2f50f383c1674fb96fd357329e764f4a95cb9aea09a55052df396c21b",
+    "focus": "剪力樓模型與質量、勁度矩陣"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 10,
+    "model": "two-dof",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "a7e4f4dfd0d212e367332f379cb8f9805b0d697861f4db186ab26877941df8b5",
+    "focus": "特徵值、自然頻率、振態與正規化"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 11,
+    "model": "rayleigh",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "e9ab175cd2adef44c062bc8138f8cb08f1d5adef2977ee5779e7e635a514a9a3",
+    "focus": "古典阻尼與Rayleigh阻尼"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 12,
+    "model": "modal",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "2267ccec834feaa661bdd4f0826aa72d9d87c9db4cbf786c5c8cf430eee3fdbc",
+    "focus": "振態參與係數、有效振態質量"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 13,
+    "model": "srss",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "33d9479899197b6ea81b528bb2261ff8748c23da3a526b3930ed7343eb8093ca",
+    "focus": "振態疊加、SRSS與CQC"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 14,
+    "model": "srss",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "f64b158c7a0b208a932ed58802d83a1775c2c313355d1b99031479195860f724",
+    "focus": "第二週週測：振態組合與阻尼"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 15,
+    "model": "newmark",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "c19347398ccbf66d56188d38036083df128e85d90f7cb146300a83fe9ba134f3",
+    "focus": "逐步積分、Newmark法、時間步長與非線性概念"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 16,
+    "model": "spectrum",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "70bd2609f66e37951c3c739ac345512ef362196d5236e70b4b4be8cc6eb143e4",
+    "focus": "建築規範通則、第2章：震區、工址、用途、譜形"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 17,
+    "model": "base-shear",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "c4a42d6f66d5296f4b54a8e38ea3e678670100d3b95a78fe28fb10f8d0d29e57",
+    "focus": "等值靜力、基底剪力與豎向分配"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 18,
+    "model": "drift",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "24124ee349a46c194d384a7870874b74b2f3d6bff72c33c89287fedff2bf744a",
+    "focus": "扭轉、不規則、層間變位、二階效應"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 19,
+    "model": "modal",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "6facac6550a951c8c01717f3aabf9beb2694ab82f39ddb31b04c0362264e9628",
+    "focus": "建築規範第3章：動力方法、譜分析與歷時分析"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 20,
+    "model": "capacity",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "dbe51c0ac4afbb6cdfb9d984815863001cc673b6709e2024803337216ee7127b",
+    "focus": "RC容量設計、圍束、剪力與接頭韌性"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 21,
+    "model": "interaction",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "4380b30e37158dbb773f31eb331ec063ef83c5581261d8c2655b0bc573a2a945",
+    "focus": "鋼構耐震系統、塑性區、接合與支撐"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 22,
+    "model": "bridge",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "67f411bd497a632e5f3446762cf2b665dbbffc7f09eed3d83208f29afb194e05",
+    "focus": "公路橋梁規範：分析、橋柱韌性與構材"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 23,
+    "model": "isolation",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "f6badb724af09842b4be92ffb96e9d3b138908f304a7e22667d853bd697c3e77",
+    "focus": "建築規範第9、10章；橋梁隔震消能"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 24,
+    "model": "base-shear",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "659951537f4df3445d52585b8857308a700bbbffd25a7075974f9ff58bf8503c",
+    "focus": "114年原卷第1題"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 25,
+    "model": "two-dof",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "f3efe61dae7f83d74411dd11c4a75b6f97377ef97c2721aea04277f26f357e4f",
+    "focus": "114年原卷第2題"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 26,
+    "model": "rayleigh",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "d6c4881716d6cd1cd4ce63fa0ff0d06ddd2d7293130b13054e3c95a67f06f3e7",
+    "focus": "114年原卷第3題"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 27,
+    "model": "capacity",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "5fab8ff90565e483f534b34fa90c6796e2aa68bf2d54b728b1514d5750451839",
+    "focus": "114年原卷第4題"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 28,
+    "model": "bridge",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "21da6ca19d42be7430c124da9609f61a7c394302f305c99f6083e2ee16ec8f3f",
+    "focus": "橋梁與隔減震補強題"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 29,
+    "model": "damping",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "b30a5b736f554f70af5c7f55cdc594ff5e56c9705df37b304d64f3f69f07129c",
+    "focus": "錯題本前3項弱點"
+  },
+  {
+    "topic": "structural-dynamics",
+    "day": 30,
+    "model": "base-shear",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "e54f22c353e032fde12a516fdcd97cb55619f171884747694d801b5258abacbf",
+    "focus": "跨主題閉卷總驗收"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 1,
+    "model": "phase",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "dc55e6712ca3a551e64925a22690630167425df8b5377b2f97c58604c3de3352",
+    "focus": "本頁首日診斷、考綱及教材目錄"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 2,
+    "model": "phase",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "d1fd1321a1fbbdb7d337784a02433391ae0e47dd14814d37a2daf4bb3180d02a",
+    "focus": "三相關係、含水量、單位重、粒徑與塑性分類"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 3,
+    "model": "effective",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "d0de07047cb4fd318a2ef34f4e30884a24d07f41804097769ae3c514d9ee23fc",
+    "focus": "總應力、孔隙水壓、有效應力與地下水位"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 4,
+    "model": "darcy",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "93eb5520ec290ea9a03f6751d895e7611d6052413c6d875734173917ad086118",
+    "focus": "Darcy定律、定水頭／變水頭試驗、分層透水性"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 5,
+    "model": "seepage",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "47344d68f10823b7f6b8b2333fc8018c3e0570b3ada10324d0bc4e4f9978f720",
+    "focus": "流網、滲透力、臨界水力坡降與砂湧"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 6,
+    "model": "compaction",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "a6840e464cc5fe88afd0de54bf6100cde4a0122f8c60e4c0ee8b059c3e177a98",
+    "focus": "夯實曲線、含水量、現地密度與壓實度"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 7,
+    "model": "effective",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "c27e63c2bd08b1b52945143b2de513268edfdd73b7cd34d378762bd7194a558a",
+    "focus": "第一週閉卷測驗"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 8,
+    "model": "stress-increment",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "83e59a27822e0e947a1d2759d6bfa7f7707f691a6a722e79b5b0d18f310500fb",
+    "focus": "荷重引致應力增量、影響係數與疊加"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 9,
+    "model": "oc-consolidation",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "d1a36d2f42ffac052684acdc99e5bf0dbff969217e3a7ff359589e416979e693",
+    "focus": "e–log有效應力、先期壓密壓力、OCR與沉陷量"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 10,
+    "model": "consolidation-time",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "0cc2ded091facdb378ba1ab5ea4b44e16d25325da85507e7e75759c87bb70e52",
+    "focus": "壓密時間、平均壓密度、排水距離"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 11,
+    "model": "mohr",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "45a857e83ebf2bfec209ac75fc6691b1af1093a3b90406cebeadea159a9d6d84",
+    "focus": "Mohr圓、破壞包絡線、峰值與殘餘強度"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 12,
+    "model": "triaxial",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "52466721c7a2ca708900b36089ce11b28f7dbd72db954ef59d8d64785fad58cd",
+    "focus": "UU、CU、CD三軸試驗及排水條件"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 13,
+    "model": "triaxial",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "7552112ae07941b83cfd98b620aecadc9d4e5732d4ef59ed4ea522a856105ac0",
+    "focus": "短／長期分析、應力路徑與體積變形"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 14,
+    "model": "consolidation",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "5f3357be5683da517b666a5c6a9a13f095256d6bf85bae34eb57ead644f980de",
+    "focus": "第二週閉卷測驗"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 15,
+    "model": "bearing",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "34b451db59afc2378e6323d4c2e991c25fc0b0485c0c6462ada634ee346b394f",
+    "focus": "淺基礎極限／容許、總／淨支承力"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 16,
+    "model": "footing-eccentric",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "f4a296ee193694ab333156a08c5fab92721e8ad97d92ba1c90fcf880cbcc021a",
+    "focus": "淺基礎沉陷、差異沉陷與偏心"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 17,
+    "model": "pile",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "4c2cff7e6240e316c4cc6f12a31a18faae4d71231b9c0c31831c890653c220fd",
+    "focus": "單樁端承、周面摩擦與負摩擦"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 18,
+    "model": "pile-group",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "3c4ad23a221bbfa431cb3fca1fad91aa5619f926cc07590dd8887e16ff3a384a",
+    "focus": "群樁支承、沉陷、變位及基礎選擇"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 19,
+    "model": "earth",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "1de70328d53489e948d3d099af3b5ee1ca7811cd048fdc997883dc3b703076f9",
+    "focus": "靜止／主動／被動土壓，Rankine與Coulomb"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 20,
+    "model": "wall",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "ea7db3c389b1a3f997c2fab0e6b5d185ed9af970da1ed5d7fcc5e7dc999973f3",
+    "focus": "重力式擋土牆滑動、傾覆、承載與整體穩定"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 21,
+    "model": "uplift",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "b0cee8d649658d46f4a33516b0d073194872588b0d99392310955e5ede395578",
+    "focus": "擋土支撐、底部隆起、砂湧、上舉與監測"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 22,
+    "model": "slope",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "b66fd7c52fb3a406ee96b0b41ff64186ab9dad3f12cab3246d8fc64f166ba47d",
+    "focus": "邊坡破壞、無限邊坡／條分法、排水與生態工法"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 23,
+    "model": "liquefaction",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "bb480b3d2d53163556b170a1338cc015f32bc397090ff73c2f721b4fd28e0976",
+    "focus": "地層改良與液化；規範第9、10章"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 24,
+    "model": "bearing",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "1bb4883cd6458f241ae7c0a64f98c2b1b12a1294e860f9088944246461c5d5b9",
+    "focus": "114年原卷第1題"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 25,
+    "model": "oc-consolidation",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "d71094ddf42eb164d30e9b10fb380865355ee8c7915b4d9254f97469d66f0d24",
+    "focus": "114年原卷第2題"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 26,
+    "model": "earth",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "9c309f13a5b81e2c160cc32de10d23299dbdd84793411b5879bd48d9b59f0090",
+    "focus": "114年原卷第3題"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 27,
+    "model": "stress-increment",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "0c5cb7aaf687c8599bf46ccda40936c31a021097523bc77e098351070b6d3eb7",
+    "focus": "114年原卷第4題"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 28,
+    "model": "elastic-settlement",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "583f7aeb02847c7018e09ae861a5c359c1c364399522977a7ed642a415b8d1bd",
+    "focus": "基礎選型與地層整合案例"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 29,
+    "model": "seepage",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "7aba91ab39c44562c7940eb358607c28f5fa87c6b78f0ff21a25bba9b7cf39ba",
+    "focus": "錯題本最高失分步驟"
+  },
+  {
+    "topic": "soil-foundations",
+    "day": 30,
+    "model": "pile-group",
+    "cases": 5,
+    "warmups": 3,
+    "originalHash": "b8b45b7212fe134fe8019b8fc13dce0b79a46e212bd91db99daffcc0c226acd9",
+    "focus": "跨主題總驗收"
+  }
+]

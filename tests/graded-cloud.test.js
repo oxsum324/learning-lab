@@ -5,6 +5,9 @@ import {CloudHistory,mergeCloudRecords} from '../site/cloud-history.js';
 import {emptyState} from '../site/core.js';
 import {createPractice,selectQuestion,recordResponse} from '../site/graded-practice.js';
 import {newReview} from '../site/review-state.js';
+import {readFileSync} from 'node:fs';
+import {prepareStudio,prepareWork} from '../site/studio/state.js';
+import {verificationStates,verificationDrawing} from '../site/verification/sample-data.js';
 
 const topic='structural-analysis',now='2026-10-13T13:00:00.000Z';
 const env={GOOGLE_CLIENT_ID:'test-client',ALLOWED_EMAIL:'example@example.test',ALLOWED_ORIGINS:'https://client.example'};
@@ -33,7 +36,7 @@ function backendFixture(){
  };
  const worker=createWorker(net);
  const fetcher=(url,options={})=>worker.fetch(new Request(url,{...options,headers:{...options.headers,Origin:'https://client.example'}}),env);
- const client=()=>{const c=new CloudHistory({endpoint:'https://worker.example',topicId:topic,fetcher});c.setToken('unit-test-token-only',3600);return c;};
+ const client=(topicId=topic)=>{const c=new CloudHistory({endpoint:'https://worker.example',topicId,fetcher});c.setToken('unit-test-token-only',3600);return c;};
  return {files,calls,client,fetcher};
 }
 function stateFixture(){
@@ -51,6 +54,9 @@ test('worker capability advertises old/new formats without private identity or t
  const f=backendFixture(),r=await f.fetcher('https://worker.example/config'),config=await r.json();
  assert.deepEqual(config.reviewVersions,[1,2]);assert.deepEqual(config.schemaVersions,[1]);assert.equal(config.draftResume,false);assert.equal(config.maxBytes,MAX_BYTES);
  assert.doesNotMatch(JSON.stringify(config),/example@example|token/);assert.equal(f.calls.length,0);
+});
+test('real worker routes preserve five-topic studio snapshots, every variant draft and older answers through mock Drive',async()=>{
+ const f=backendFixture();for(const topic of ['structural-analysis','reinforced-concrete','steel-structures','structural-dynamics','soil-foundations']){const original=verificationStates(topic,'studio-worker')[1],state=structuredClone(original),course=JSON.parse(readFileSync(new URL('../site/studio/content/'+topic+'.json',import.meta.url),'utf8')),l=course.lessons[1],s=prepareStudio(state.drafts[2],l,topic);for(const c of l.cases){s.selected=c.id;const w=prepareWork(s,c,verificationDrawing(topic));w.reasoning='新版各組原稿';w.values.s0='-17.25';w.firstValues={s0:'-17.25'};}const a=f.client(topic),b=f.client(topic),old=await a.backup(original),saved=await a.backup(state);assert.deepEqual(await b.read(old.id),original);assert.deepEqual(await b.read(saved.id),state);assert.equal((await a.backup(state)).duplicate,true);assert.deepEqual(state.records,original.records);}
 });
 
 test('two independent clients write/read exact v2 multi/order and preserve earlier legacy payload',async()=>{

@@ -1,4 +1,4 @@
-import {validateState,mergeStates} from './core.js?v=0.15.0';
+import {validateState,mergeStates} from './core.js?v=0.16.0';
 
 // Public service address only. Access tokens never enter localStorage or exports.
 export const CLOUD_ENDPOINT='https://learning-lab-history.oxsum324-learning.workers.dev';
@@ -51,7 +51,7 @@ export function mountCloudHistory({topicId,sandbox,getState,onMerge,download}){
  const controls=()=>{const connected=client.connected();$('cloud-backup').disabled=!connected;$('cloud-list').disabled=!connected;$('cloud-disconnect').hidden=!client.token;$('cloud-connect').disabled=!tokenClient;$('cloud-connect').textContent=client.token?'重新連接 Google':'連接 Google';$('cloud-retry').hidden=!!tokenClient;$('cloud-retry').disabled=checking;};
  function error(e){status(e instanceof TypeError||e.name==='TimeoutError'?'雲端連線失敗，請稍後重試；本機紀錄仍保留。':e.message||'雲端連線失敗，請稍後重試；本機紀錄仍保留。',true);controls();}
  async function backup(){
-  const snapshot=structuredClone(getState()),savedRevision=revision;pending++;status('雲端備份中，請保持本頁開啟…',false,'雲端備份中');
+  let snapshot;try{snapshot=structuredClone(getState());}catch(e){error(e);return;}const savedRevision=revision;pending++;status('雲端備份中，請保持本頁開啟…',false,'雲端備份中');
   try{await client.backup(snapshot);latestState=JSON.stringify(snapshot);status('雲端歷史已保存 · '+new Date().toLocaleTimeString('zh-TW')+(savedRevision!==revision?'；其後的本機變更尚未備份。':''),false,savedRevision!==revision?'本機有新變更':'雲端已備份');}
   catch(e){error(e);}finally{pending--;controls();}
  }

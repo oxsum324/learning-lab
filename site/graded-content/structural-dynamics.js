@@ -1,4 +1,4 @@
-import {questions as additional} from './structural-dynamics-extra.js?v=0.15.0';
+import {questions as additional} from './structural-dynamics-extra.js?v=0.16.0';
 const topic='structural-dynamics';
 const opt=(id,text,reason)=>({id,text,reason});
 const q=(id,level,type,skill,prompt,body,explanation,assistance=1)=>({id:`dy-d02-${id}`,version:1,topic,day:2,level,type,skill,model:'單自由度基底激振',prompt,assistance,source:{kind:'principle',label:'教材原理：相對座標與牛頓第二定律',locator:'耐震設計及結構動力題庫 DY_C02'},explanation,...body});

@@ -48,5 +48,10 @@
     "type": "image/jpeg",
     "sha256": "bcfa7aceecfac731f865f82bc7342d1d59f44a2b3cee4e423a83a3e5e36e8483",
     "purpose": "四階段卡共用裝飾小圖；已目視核對，無文字、數字、箭頭、公式或個資。"
+  },
+  "site/assets/studio-subjects-v1.jpg": {
+    "type": "image/jpeg",
+    "purpose": "已視覺檢查的五科工程筆記風入口情境插畫；ImageGen 生成，僅裝飾，不作工程答案。",
+    "sha256": "6ade16c758fffe71cbf1aa39d660ea1580dc2c5da62586fd00bb08357b446e75"
   }
 }
