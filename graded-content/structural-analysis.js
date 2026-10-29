@@ -1,4 +1,4 @@
-import {questions as additional} from './structural-analysis-extra.js?v=0.15.0';
+import {questions as additional} from './structural-analysis-extra.js?v=0.16.0';
 const topic = 'structural-analysis';
 const opt = (id,text,reason) => ({id,text,reason});
 const q = (id,level,type,skill,prompt,body,explanation,assistance=1) => ({id:`sa-d02-${id}`,version:1,topic,day:2,level,type,skill,model:'偏心集中力簡支梁',prompt,assistance,source:{kind:'principle',label:'教材原理：靜力平衡與剪彎關係',locator:'結構學題庫 B；D02 偏心集中力'},explanation,...body});

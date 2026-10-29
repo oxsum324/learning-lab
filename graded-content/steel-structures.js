@@ -1,4 +1,4 @@
-import {questions as extraQuestions} from './steel-structures-extra.js?v=0.15.0';
+import {questions as extraQuestions} from './steel-structures-extra.js?v=0.16.0';
 const topic='steel-structures';
 const opt=(id,text,reason)=>({id,text,reason});
 const q=(id,level,type,skill,prompt,body,explanation,assistance=1)=>({id:`st-d02-${id}`,version:1,topic,day:2,level,type,skill,model:'對稱焊接 H 形斷面',prompt,assistance,source:{kind:'principle',label:'教材原理：斷面幾何與材料性質',locator:'鋼結構題庫 ST_C02；D02 斷面表與殘餘應力'},explanation,...body});

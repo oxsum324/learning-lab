@@ -1,5 +1,5 @@
-import {shape,emptyWorkspace} from './drawing-model.js?v=0.15.0';
-import {lessonLayout} from './drawing-layouts.js?v=0.15.0';
+import {shape,emptyWorkspace} from './drawing-model.js?v=0.16.0';
+import {lessonLayout} from './drawing-layouts.js?v=0.16.0';
 
 // Authored exercise registry. Unlisted lessons deliberately have no recognition item.
 // Diagrams are qualitative teaching schematics; dimensions are labelled, not to scale.

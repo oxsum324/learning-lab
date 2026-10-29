@@ -1,4 +1,4 @@
-import {validateState,mergeStates} from './core.js?v=0.15.0';
+import {validateState,mergeStates} from './core.js?v=0.16.0';
 
 // Public service address only. Access tokens never enter localStorage or exports.
 export const CLOUD_ENDPOINT='https://learning-lab-history.oxsum324-learning.workers.dev';
@@ -21,12 +21,12 @@ export class CloudHistory {
  }
  async session(){return this.request('/session',{method:'POST'});}
  async assertFormatSupport(state){
-  const versions=[...new Set([...state.records,...Object.values(state.drafts)].map(r=>r.progressive?.version).filter(v=>v>1))];
-  if(!versions.length)return;
+  const items=[...state.records,...Object.values(state.drafts)],versions=[...new Set(items.map(r=>r.progressive?.version).filter(v=>v>1))],studioVersions=[...new Set(items.map(r=>r.studio?.version).filter(v=>v!==undefined))];
+  if(!versions.length&&!studioVersions.length)return;
   const response=await this.fetcher(this.endpoint+'/config',{cache:'no-store',credentials:'omit',signal:AbortSignal.timeout(15000)});
   if(!response.ok)throw Error('尚無法確認雲端格式支援；新版答案仍保留本機，請先匯出完整 JSON。');
   const config=await response.json();
-  if(!Array.isArray(config.reviewVersions)||versions.some(v=>!config.reviewVersions.includes(v)))throw Error('雲端尚未支援這份新版作答；未上傳或降級資料，請先匯出完整 JSON。');
+  if(versions.some(v=>!config.reviewVersions?.includes(v))||studioVersions.some(v=>!config.studioVersions?.includes(v)))throw Error('雲端尚未支援這份新版作答；未上傳或降級資料，請先匯出完整 JSON。');
  }
  backup(state){
   const snapshot=structuredClone(validateState(state,this.topicId)),generation=this.generation;
@@ -51,7 +51,7 @@ export function mountCloudHistory({topicId,sandbox,getState,onMerge,download}){
  const controls=()=>{const connected=client.connected();$('cloud-backup').disabled=!connected;$('cloud-list').disabled=!connected;$('cloud-disconnect').hidden=!client.token;$('cloud-connect').disabled=!tokenClient;$('cloud-connect').textContent=client.token?'重新連接 Google':'連接 Google';$('cloud-retry').hidden=!!tokenClient;$('cloud-retry').disabled=checking;};
  function error(e){status(e instanceof TypeError||e.name==='TimeoutError'?'雲端連線失敗，請稍後重試；本機紀錄仍保留。':e.message||'雲端連線失敗，請稍後重試；本機紀錄仍保留。',true);controls();}
  async function backup(){
-  const snapshot=structuredClone(getState()),savedRevision=revision;pending++;status('雲端備份中，請保持本頁開啟…',false,'雲端備份中');
+  let snapshot;try{snapshot=structuredClone(getState());}catch(e){error(e);return;}const savedRevision=revision;pending++;status('雲端備份中，請保持本頁開啟…',false,'雲端備份中');
   try{await client.backup(snapshot);latestState=JSON.stringify(snapshot);status('雲端歷史已保存 · '+new Date().toLocaleTimeString('zh-TW')+(savedRevision!==revision?'；其後的本機變更尚未備份。':''),false,savedRevision!==revision?'本機有新變更':'雲端已備份');}
   catch(e){error(e);}finally{pending--;controls();}
  }

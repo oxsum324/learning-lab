@@ -1,4 +1,4 @@
-import {S,M,E,O,lesson} from './build.js?v=0.15.0';
+import {S,M,E,O,lesson} from './build.js?v=0.16.0';
 const make=(day,model,locator,rows,kind='principle')=>lesson('steel-structures','st',day,model,`鋼結構題庫 ${locator}；D${String(day).padStart(2,'0')}`,rows,kind);
 export const questions=[
  ...make(1,'鋼構材料、構材及接合診斷','受拉、挫屈與接合起點診斷',[
