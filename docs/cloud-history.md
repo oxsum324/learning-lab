@@ -57,3 +57,9 @@ GitHub Pages 前端 → HTTPS / Bearer token → Cloudflare Worker → Google Dr
 - [Drive 範圍](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)
 - [Drive multipart 上傳](https://developers.google.com/workspace/drive/api/guides/manage-uploads)
 - [Cloudflare Worker metadata](https://developers.cloudflare.com/workers/configuration/multipart-upload-metadata/)
+
+## v0.16.0 題組格式
+
+雲端設定另宣告 `studioVersions:[1]` 與 `studioContentRevisions:[1,2]`。前端在上傳包含題組草稿或作答的備份前先核對支援；未支援就停止，不丟棄題組資料以強行相容。新版保留題設快照、首答、訂正、暖身、圖解及各組草稿；舊快照讀回仍維持原文。
+
+本輪本機以真正 Worker 路由搭配模擬 Drive 驗證資料契約；實體裝置與真實私人 Drive 往返仍須使用者實測，服務部署與設定讀取不能代替其驗收。補充註記僅隨完整 JSON 匯出，不在雲端作答快照內；舊欄名 `practiceNotes` 與正式 `localPracticeNotes` 均可讀取。

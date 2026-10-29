@@ -21,12 +21,12 @@ export class CloudHistory {
  }
  async session(){return this.request('/session',{method:'POST'});}
  async assertFormatSupport(state){
-  const versions=[...new Set([...state.records,...Object.values(state.drafts)].map(r=>r.progressive?.version).filter(v=>v>1))];
-  if(!versions.length)return;
+  const items=[...state.records,...Object.values(state.drafts)],versions=[...new Set(items.map(r=>r.progressive?.version).filter(v=>v>1))],studioVersions=[...new Set(items.map(r=>r.studio?.version).filter(v=>v!==undefined))];
+  if(!versions.length&&!studioVersions.length)return;
   const response=await this.fetcher(this.endpoint+'/config',{cache:'no-store',credentials:'omit',signal:AbortSignal.timeout(15000)});
   if(!response.ok)throw Error('尚無法確認雲端格式支援；新版答案仍保留本機，請先匯出完整 JSON。');
   const config=await response.json();
-  if(!Array.isArray(config.reviewVersions)||versions.some(v=>!config.reviewVersions.includes(v)))throw Error('雲端尚未支援這份新版作答；未上傳或降級資料，請先匯出完整 JSON。');
+  if(versions.some(v=>!config.reviewVersions?.includes(v))||studioVersions.some(v=>!config.studioVersions?.includes(v)))throw Error('雲端尚未支援這份新版作答；未上傳或降級資料，請先匯出完整 JSON。');
  }
  backup(state){
   const snapshot=structuredClone(validateState(state,this.topicId)),generation=this.generation;

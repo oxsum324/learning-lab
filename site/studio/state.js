@@ -21,9 +21,19 @@ export function prepareWork(studio,exercise,drawing){
 export function recordWarmup(work,q,choice,at){
  if(!q.options.includes(choice))throw Error('請先選擇答案。');
  if(work.warmups.length>=30)throw Error('本題暖身已保留 30 次作答，請先提交再重練。');
+ if(Object.values(work.values).some(v=>v.trim()))freezeInitial(work);
  const a={id:q.id,prompt:q.prompt,choice,correct:choice===q.answer,at};work.warmups.push(a);work.hint=Math.max(work.hint,1);return a;
 }
 export function reveal(work){if(work.firstValues===undefined)work.firstValues=structuredClone(work.values);delete work.submittedId;work.hint=3;work.answerViewed=true;}
 export function freezeInitial(work){if(work.firstValues===undefined)work.firstValues=structuredClone(work.values);}
+export function revealDiagnostic(work){freezeInitial(work);delete work.submittedId;work.hint=Math.max(work.hint,2);}
+export function staleExercise(work,current){return !!work&&JSON.stringify(work.snapshot)!==JSON.stringify(current);}
+export function useCurrentExercise(studio,current,completedIds){
+ const old=studio.workspaces[current.id];
+ if(!old||!staleExercise(old,current))return false;
+ const answered=old.activeMs>0||old.hint>0||old.answerViewed||old.warmups.length>0||old.reasoning.trim()||old.explanation.trim()||old.diagnostic.trim()||Object.values(old.values).some(v=>v.trim())||hasDrawing(old.drawing);
+ if(answered&&!(old.submittedId&&completedIds.has(old.submittedId)))throw Error('舊題草稿仍有未提交內容，請先保留原題提交或匯出備份；未覆寫原稿。');
+ delete studio.workspaces[current.id];return true;
+}
 export function hasStudioWork(s){return !!s&&Object.values(s.workspaces).some(w=>!w.submittedId&&(w.activeMs>0||w.hint>0||w.answerViewed||w.warmups.length>0||w.reasoning.trim()||w.explanation.trim()||w.diagnostic.trim()||Object.values(w.values).some(v=>v.trim())||hasDrawing(w.drawing)));}
 export function sameDraftContent(a,b){return !!a?.studio&&!!b?.studio&&JSON.stringify({...a,updatedAt:undefined})===JSON.stringify({...b,updatedAt:undefined});}

@@ -68,7 +68,7 @@ export function createWorker(net=fetch){
   const url=new URL(request.url);
   const space=url.searchParams.get('space');
   if(url.searchParams.getAll('space').length>1||space!==null&&space!=='verification')fail(400,'雲端空間參數無效。');
-  if(request.method==='GET'&&url.pathname==='/config')return json({ready:!!(env.GOOGLE_CLIENT_ID&&env.ALLOWED_EMAIL),clientId:env.GOOGLE_CLIENT_ID||'',maxBytes:MAX_BYTES,schemaVersions:[1],reviewVersions:[1,2],recordRestore:true,draftResume:false,verificationSpace:true,storageSpace:space??'learning',receiptVersions:[2],receiptMaxBytes:RECEIPT_MAX_BYTES});
+  if(request.method==='GET'&&url.pathname==='/config')return json({ready:!!(env.GOOGLE_CLIENT_ID&&env.ALLOWED_EMAIL),clientId:env.GOOGLE_CLIENT_ID||'',maxBytes:MAX_BYTES,schemaVersions:[1],reviewVersions:[1,2],studioVersions:[1],studioContentRevisions:[1,2],recordRestore:true,draftResume:false,verificationSpace:true,storageSpace:space??'learning',receiptVersions:[2],receiptMaxBytes:RECEIPT_MAX_BYTES});
   if(!['GET','POST'].includes(request.method))fail(405,'不支援此操作。');
   const user=await auth(request,env);
   user.app=space==='verification'?VERIFY_APP:APP;
