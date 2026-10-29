@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {createHash} from 'node:crypto';
+import {curriculumHash} from '../scripts/curriculum-hash.mjs';
 import {rcLegacyCourse,rcDisplay,rcCanonical,rcText} from '../site/rc-units.js';
 import {numericModel,numericParameterSets,numericQuestionFromParameters} from '../site/graded-numeric.js';
 import {createPractice,selectQuestion,recordNumericInitial,recordResponse,validPractice} from '../site/graded-practice.js';
@@ -10,9 +10,9 @@ const topic='reinforced-concrete',params={b:300,d:500,As:1500,fc:28,fy:420,Es:20
 const near=(a,b,t=1e-8)=>assert.ok(Math.abs(a-b)<=t*Math.max(1,Math.abs(b)),a+' != '+b);
 const raw=fs.readFileSync(new URL('../site/rc-curriculum.json',import.meta.url)),course=JSON.parse(raw);
 
-test('all 30 original RC lessons stay byte-identical while runtime fields carry converted values and units',()=>{
- const baseline=JSON.parse(fs.readFileSync(new URL('../docs/studio-content-baseline.json',import.meta.url)));
- assert.equal(createHash('sha256').update(raw).digest('hex'),baseline['rc-curriculum.json']);
+test('all 30 original RC lessons keep their locked content across checkout line endings while runtime fields convert',()=>{
+ const baseline=JSON.parse(fs.readFileSync(new URL('../docs/studio-content-canonical-baseline.json',import.meta.url)));
+ assert.equal(curriculumHash(raw),baseline['rc-curriculum.json']);
  const source=JSON.stringify(course),converted=rcLegacyCourse(course);assert.equal(JSON.stringify(course),source);assert.equal(converted.days.length,30);
  for(const [i,l]of converted.days.entries())for(const [j,f]of l.fields.entries()){const old=course.days[i].fields[j];near(rcCanonical(f.value,old.unit),old.value);if(['MPa','kN','kN·m','kPa'].includes(old.unit))assert.notEqual(f.unit,old.unit);}
  const l=converted.days[1],a=l.fields.find(f=>f.unit==='mm');assert.ok(a);const values=Object.fromEntries(l.fields.map(f=>[f.id,String(f.value)]));assert.equal(assess(l.fields,values).correct,l.fields.length);
