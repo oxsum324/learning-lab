@@ -1,4 +1,4 @@
-import {S,M,E,O,lesson} from './build.js?v=0.16.0';
+import {S,M,E,O,lesson} from './build.js?v=0.16.1';
 const make=(day,model,locator,rows)=>lesson('structural-analysis','sa',day,model,`結構學題庫 ${locator}；D${String(day).padStart(2,'0')}`,rows);
 export const questions=[
  ...make(1,'結構學分流診斷','A／S／T／F／P',[

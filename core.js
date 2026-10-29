@@ -1,7 +1,7 @@
-import {validReview} from './review-state.js?v=0.16.0';
-import {validDrawing} from './drawing-model.js?v=0.16.0';
-import {TOPICS,resolveTopic,storageKey,dayKey} from './topics.js?v=0.16.0';
-import {validStudio} from './studio/state.js?v=0.16.0';
+import {validReview} from './review-state.js?v=0.16.1';
+import {validDrawing} from './drawing-model.js?v=0.16.1';
+import {TOPICS,resolveTopic,storageKey,dayKey} from './topics.js?v=0.16.1';
+import {validStudio} from './studio/state.js?v=0.16.1';
 export const SANDBOX=typeof location!=='undefined'&&new URLSearchParams(location.search).get('sandbox')==='1';
 export const TOPIC_ID=resolveTopic(typeof location!=='undefined'?location.search:'');
 export const KEY=storageKey(TOPIC_ID,SANDBOX);
