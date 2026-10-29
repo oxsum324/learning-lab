@@ -1,4 +1,4 @@
-import {selectQuestion,recordResponse,revealSupport,setPracticeLevel,canRetry,recordNumericInitial} from './graded-practice.js?v=0.16.0';
+import {selectQuestion,recordResponse,revealSupport,setPracticeLevel,canRetry,recordNumericInitial} from './graded-practice.js?v=0.16.1';
 
 export const START_LABELS={A:'A 重建 · 先喚起觀念',B:'B 喚醒 · 先整理步驟',C:'C 閉卷 · 先獨立作答'};
 export const LEVEL_LABELS={1:'辨認條件',2:'分清觀念',3:'整理步驟',4:'補完圖解',5:'自己作答'};

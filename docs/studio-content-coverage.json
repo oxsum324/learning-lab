@@ -407,7 +407,7 @@
   {
     "topic": "reinforced-concrete",
     "day": 16,
-    "model": "capacity",
+    "model": "rc-capacity",
     "cases": 5,
     "warmups": 3,
     "originalHash": "2955d33d4e3d387dca31c4fef24a6e1c0269716fbba6123d75a6a926b351bfa0",
@@ -488,7 +488,7 @@
   {
     "topic": "reinforced-concrete",
     "day": 25,
-    "model": "capacity",
+    "model": "rc-capacity",
     "cases": 5,
     "warmups": 3,
     "originalHash": "a4aadf07f9aa3f58c895c4879e342d9bf371e19c165acf89068c09a3feb5c634",

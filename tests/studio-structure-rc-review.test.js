@@ -14,9 +14,31 @@ const integrate = (f, length, count = 4000) => {
   return total;
 };
 
+const rcStressKeys={
+  'rc-flexure':['fy','fc','Es'],'rc-column':['fc','fy'],'rc-shear':['fy'],
+  torsion:['fy'],development:['fs','tau'],slab:['fy'],tbeam:['fy','fc','Es'],
+  'prestress-range':['fc']
+};
+const rcForceKeys={
+  magnify:['M1'],torsion:['T'],service:['q','EI'],slab:['q'],punch:['Vu'],
+  'rc-capacity':['M','q'],prestress:['P'],loss:['P0'],'prestress-range':['P']
+};
+function canonicalParams(c){
+  const p={...c.params};
+  if(c.id.startsWith('reinforced-concrete-')){
+    for(const key of rcStressKeys[c.model]??[])p[key]*=.0980665;
+    for(const key of rcForceKeys[c.model]??[])p[key]*=9.80665;
+  }
+  return p;
+}
+function canonicalField(field){
+  const factor={'kgf/cm²':.0980665,'tf':9.80665,'tf·m':9.80665,'tf/m':9.80665,'tf/m²':9.80665,'tf·m/m':9.80665,'tf·m²':9.80665,'kgf/cm':.980665};
+  return field.value*(factor[field.unit]??1);
+}
+
 // The audit uses only exported question data. It does not import production solvers.
 function independent(c) {
-  const p = c.params, changed = c.condition;
+  const p = canonicalParams(c), changed = c.condition;
   switch (c.model) {
     case 'udl': return [p.q * p.L ** 2 / (changed ? 2 : 8), p.q * p.L / (changed ? 1 : 2)];
     case 'point': {
@@ -109,7 +131,8 @@ function independent(c) {
       const shearArea = p.bo * (changed ? 1.2 : 1) * p.d;
       return [p.Vu * 1000 / shearArea, shearArea];
     }
-    case 'capacity': {
+    case 'capacity':
+    case 'rc-capacity': {
       const pair = 2 * p.M / p.L, gravity = p.q * p.L / 2;
       return [Math.abs(pair + (changed ? -gravity : gravity)), pair];
     }
@@ -135,10 +158,10 @@ test('independent review checks all 300 structure/RC problem instances and 60 in
     const expected = independent(c);
     if (c.index === 3) {
       near(c.fields[0].value, c.params[c.unknown], c.id);
-      near(c.target.value, expected[0], `${c.id} inverse target`);
+      near(canonicalField(c.target), expected[0], `${c.id} inverse target`);
     } else {
       assert.equal(c.fields.length, expected.length, c.id);
-      for (let i = 0; i < expected.length; i++) near(c.fields[i].value, expected[i], `${c.id} field ${i}`);
+      for (let i = 0; i < expected.length; i++) near(canonicalField(c.fields[i]), expected[i], `${c.id} field ${i}`);
     }
   }
 });
@@ -161,16 +184,16 @@ test('short-column prompts disclose their specified concrete stress coefficient 
 });
 
 test('reversed capacity-shear cases refer to a specified end, not the larger end envelope', () => {
-  for (const c of cases.filter(c => c.model === 'capacity' && c.condition)) {
+  for (const c of cases.filter(c => ['capacity','rc-capacity'].includes(c.model) && c.condition)) {
     assert.doesNotMatch(c.fields[0].label, /較大端/, c.id);
     assert.match(c.fields[0].label, /指定端|同一端/, c.id);
-    assert.ok(c.fields[0].value < independent({ ...c, condition: false })[0], c.id);
+    assert.ok(canonicalField(c.fields[0]) < independent({ ...c, condition: false })[0], c.id);
   }
 });
 
 test('RC pressure-block exercises disclose strain data and satisfy the assumed steel yielding', () => {
   for (const c of cases.filter(c => ['tbeam', 'rc-flexure'].includes(c.model))) {
-    const p = c.params;
+    const p = canonicalParams(c);
     assert.ok(p.ecu > 0 && p.beta1 > 0 && p.Es > 0, `${c.id}: 題給 ecu、beta1、Es`);
     const a = independent(c)[1], neutralAxis = a / p.beta1;
     const steelStrain = p.ecu * (p.d - neutralAxis) / neutralAxis;
@@ -181,12 +204,12 @@ test('RC pressure-block exercises disclose strain data and satisfy the assumed s
 
 test('prestress constraints retain both edge stresses and feasible nonnegative eccentricity', () => {
   for (const c of cases.filter(c => c.model === 'prestress')) {
-    const [bottom, top] = independent(c), p = c.params;
+    const [bottom, top] = independent(c), p = canonicalParams(c);
     near((bottom + top) / 2 * p.A, p.P * 1000, c.id);
     near((bottom - top) / 2 * p.Z, p.P * 1000 * p.e * (c.condition ? -1 : 1), c.id);
   }
   for (const c of cases.filter(c => c.model === 'prestress-range')) {
-    const [e, uniform] = independent(c), p = c.params;
+    const [e, uniform] = independent(c), p = canonicalParams(c);
     assert.ok(e >= 0, c.id);
     const bending = p.P * 1000 * e / p.Z, limit = p.fc * (c.condition ? .5 : 1);
     assert.ok(uniform - bending >= -1e-9, `${c.id} top no tension`);

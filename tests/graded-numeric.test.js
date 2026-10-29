@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {concreteBeta1,numericModel,numericQuestion,numericParameterSets,numericQuestionFromParameters} from '../site/graded-numeric.js';
 import {createPractice,selectQuestion,recordNumericInitial,recordResponse,validPractice} from '../site/graded-practice.js';
+import {rcCanonical,rcDisplay} from '../site/rc-units.js';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8*Math.max(1,Math.abs(b)),`${a} != ${b}`);
 const topics=['structural-analysis','reinforced-concrete','steel-structures','structural-dynamics','soil-foundations'];
 test('numeric variants match independently written fixed hand-calculation references',()=>{
@@ -35,11 +36,11 @@ test('all 139 unique finite parameter combinations pass independent physics chec
   for(const [i,parameters] of sets.entries()){
   const before=structuredClone(parameters),q=numericQuestionFromParameters(topic,parameters,'complete-'+i);assert.deepEqual(parameters,before);
   assert.equal(q.options.length,3);assert.equal(new Set(q.options.map(o=>o.text)).size,3);
-  const p=q.numericMeta.parameters,v=q.numericMeta.correct;
+  const p=q.numericMeta.parameters,shown=q.numericMeta.correct,v=topic==='reinforced-concrete'?rcCanonical(shown,'kN·m'):shown;
   const result=numericModel(topic,p);near(result.value,result.check);
-  assert.equal(q.numericMeta.tolerance,Math.max(1e-6,.01*Math.abs(v)),'learner tolerance remains 1%; it is not the calculation verification tolerance');
-  assert.ok(q.numericMeta.tolerance>1e-8*Math.max(1,Math.abs(v)));
-  for(const other of result.values.slice(1))assert.ok(Math.abs(other-v)>q.numericMeta.tolerance,'distractor outside learner tolerance');
+  assert.equal(q.numericMeta.tolerance,Math.max(1e-6,.01*Math.abs(shown)),'learner tolerance remains 1% of the displayed quantity; it is not the calculation verification tolerance');
+  assert.ok(q.numericMeta.tolerance>1e-8*Math.max(1,Math.abs(shown)));
+  for(const other of result.values.slice(1)){const candidate=topic==='reinforced-concrete'?rcDisplay(other,'kN·m'):other;assert.ok(Math.abs(candidate-shown)>q.numericMeta.tolerance,'distractor outside learner tolerance');}
   if(topic==='structural-analysis'){const rb=p.P*p.a/p.L;near(v+rb,p.P);near(v*p.L,p.P*(p.L-p.a));}
   if(topic==='reinforced-concrete'){
    // An independent equilibrium-first calculation: solve neutral-axis depth from C=T,
@@ -49,7 +50,7 @@ test('all 139 unique finite parameter combinations pass independent physics chec
    const integral=stress*p.b*(p.d*a-a*a/2)/1e6;
    near(v,integral);near(p.beta,expectedBeta);assert.ok(a<p.d);assert.ok(strain>p.fy/p.Es);assert.ok(strain>=.005);
    assert.match(q.prompt,new RegExp('β1='+expectedBeta.toFixed(2).replace('.','\\.')));assert.ok(q.explanation.includes('c=a/β1='+c.toFixed(4)));
-   assert.ok(q.explanation.includes('εt=0.003(d−c)/c='+strain.toFixed(6)));assert.doesNotMatch(q.prompt,/0\.7999/);assert.equal(q.version,2);
+   assert.ok(q.explanation.includes('εt=0.003(d−c)/c='+strain.toFixed(6)));assert.doesNotMatch(q.prompt,/0\.7999/);assert.equal(q.version,3);
    if(p.fc===35)fc35++;
   }
   if(topic==='steel-structures'){
@@ -77,7 +78,7 @@ test('seeded questions stay deterministic and inside the fully enumerated parame
 });
 test('legacy RC version 1 snapshots keep their original beta, wording and first response after restoration',()=>{
  const topic='reinforced-concrete',now='2026-10-14T00:00:00.000Z';
- const current=numericQuestionFromParameters(topic,{b:300,d:500,As:1200,fc:35,fy:420,Es:200000},'legacy-rc');
+ const current=numericQuestionFromParameters(topic,{b:300,d:500,As:1200,fc:35,fy:420,Es:200000},'legacy-rc',{rcUnits:'si'});
  const old=structuredClone(current);old.version=1;old.numericMeta.parameters.beta=.85;
  old.prompt="矩形梁 f'c=35 MPa；題設 β1=0.85，求名義彎矩 Mn。";old.explanation='原版本題設與推導保留。';
  const practice=createPractice('A',{topic,day:2,sessionId:'legacy-rc-snapshot',now});selectQuestion([old],practice,{level:3,now});

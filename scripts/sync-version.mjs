@@ -9,6 +9,7 @@ const files=['site/index.html','site/app.js','site/core.js','site/drawing.js','s
 for(const item of readdirSync(new URL('site/',root)))if(/^graded-.*\.js$/.test(item))files.push('site/'+item);
 for(const item of readdirSync(new URL('site/graded-content/',root)))if(item.endsWith('.js'))files.push('site/graded-content/'+item);
 for(const item of readdirSync(new URL('site/studio/',root)))if(/\.(js|html)$/.test(item))files.push('site/studio/'+item);
+files.push('site/rc-units.js');
 let changes=0;
 for(const file of files){
  const url=new URL(file,root),before=readFileSync(url,'utf8');

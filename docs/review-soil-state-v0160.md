@@ -61,3 +61,13 @@ JSON 中 `record.values` 及 `assessment.checks.actual` 仍保有提交值；畫
 ## 待驗事項
 
 完整瀏覽器操作、實體iPhone/Safari與平板、真實私人Drive新版資料往返，由主流程及使用者實機測試處理。本次獨立公式核算不代替每題推導及工程圖的人工評閱，也不給予正式能力或工程安全認證。
+## 追加：RC 傳統單位邊界（2026-10-29）
+
+- `site/app.js`：新RC舊版平台課程於載入時以 `rcLegacyCourse()` 深拷貝轉換；原課表不改。新草稿標記 `rcUnitSystem: kgf-tf-v1`。既有未標記草稿完整保留SI題面、欄位、候選、推導、首次數值與快照，不自動遷移或重算；題面明示原單位。提交舊稿後再建立的新稿才採傳統單位。
+- 原版歷史每筆依該筆的單位標記、原課表或題組快照顯示原值及單位，未以新版題面重新核對。
+- 舊版候選文字、向量圖的文字標籤與補完提示按新稿單位轉換；D02起式明列 As/100、T(kgf)及T×力臂(mm)/10⁶→tf·m，避免只換單位字樣。
+- `numericModel()` 保持SI解算器；`numericQuestionFromParameters()` 預設RC version3，應力顯示kgf/cm²、答案及候選tf·m。`numericMeta.parameters`保持SI，`unit/correct/tolerance`均對應實際輸入及顯示單位。`{rcUnits:'si'}`保留version2並供舊SI草稿延續。
+- 舊有139組有限參數的SI獨立物理核算斷言保留；RC顯示量先反轉至SI才比較。另新增5項單位/相容測試，涵蓋30課原檔雜湊、24個RC數值變式的傳統制獨立運算、version2模式、舊數值首答及已提交快照不變、新舊稿混合JSON。
+- `node --test tests/rc-legacy-units.test.js tests/graded-numeric.test.js`：11/11通過，exit0；`node --check site/app.js`、`node --check site/graded-numeric.js`：exit0。
+- 新回歸初版曾誤將「已核對後主動select新題」要求為整個session不變而失敗；已修正為檢查未核對舊題維持原稿、主動新題後舊attempts逐位元組不變。此為測試預期修正，沒有修改練習引擎或放寬原始作答保存。
+- 實際瀏覽器舊稿SI/新稿傳統切換仍由主流程確認；本分身未操作私人資料與正式站點。

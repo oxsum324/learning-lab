@@ -1,6 +1,6 @@
-import {hasDrawing} from './drawing-model.js?v=0.16.0';
-import {hasStudioWork} from './studio/state.js?v=0.16.0';
-import {sessionPhases,sessionKind} from './session-phases.js?v=0.16.0';
+import {hasDrawing} from './drawing-model.js?v=0.16.1';
+import {hasStudioWork} from './studio/state.js?v=0.16.1';
+import {sessionPhases,sessionKind} from './session-phases.js?v=0.16.1';
 
 export const PHASES={
  'structural-analysis':['平衡與靜定分析','位移與能量方法','力法與靜不定','影響線與整合演練'],

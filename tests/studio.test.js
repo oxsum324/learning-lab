@@ -35,7 +35,7 @@ test('independent static equilibrium and virtual-work quadrature validate the st
  }
 });
 test('RC force equilibrium and T-beam pressure-block branch close independently',()=>{
- for(const course of courses)for(const l of course.lessons)for(const c of l.cases){const p=c.params,r=evaluate(c.model,p,c.condition);if(c.model==='rc-flexure'){const a=r[1].value,b=p.b*(c.condition?2:1);near(.85*p.fc*b*a,p.As*p.fy);near(r[0].value*1e6,p.As*p.fy*(p.d-a/2));assert.ok(a<p.d);}if(c.model==='tbeam'){const hf=p.hf*(c.condition?.5:1),a=r[1].value,area=a<=hf?p.bf*a:p.bw*a+(p.bf-p.bw)*hf;near(.85*p.fc*area,p.As*p.fy);assert.ok(a<p.d);}}
+ for(const course of courses)for(const l of course.lessons)for(const c of l.cases){const p=c.params,r=evaluate(c.model,p,c.condition);if(c.model==='rc-flexure'){const a=r[1].value,b=p.b*(c.condition?2:1);near(.85*p.fc*b*a,p.As*p.fy);near(r[0].value*(c.unitSystem==='taiwan-gravity'?1e8:1e6),p.As*p.fy*(p.d-a/2));assert.ok(a<p.d);}if(c.model==='tbeam'){const hf=p.hf*(c.condition?.5:1),a=r[1].value,area=a<=hf?p.bf*a:p.bw*a+(p.bf-p.bw)*hf;near(.85*p.fc*area,p.As*p.fy);assert.ok(a<p.d);}}
 });
 test('steel governing modes, bolt planes and weld throat retain demand/capacity units',()=>{
  for(const course of courses)for(const l of course.lessons)for(const c of l.cases){const p=c.params,r=evaluate(c.model,p,c.condition);if(c.model==='steel-tension'){assert.ok(r[0].value<=.9*p.Fy*p.Ag/1000+1e-8);assert.ok(r[0].value<=.75*p.Fu*p.An*(c.condition?.8:1)/1000+1e-8);}if(c.model==='bolt')near(r[0].value*p.n*(c.condition?2:1),p.V);if(c.model==='weld')near(r[0].value*1000,r[1].value*p.L*p.F*(c.condition?2:1));if(c.model==='buckling'){const critical=r[0].value*1000;near(critical*(p.K*p.L*(c.condition?2:1))**2,Math.PI**2*p.E*p.I);}}

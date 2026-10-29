@@ -3,6 +3,7 @@ import {createHash} from 'node:crypto';
 import {MODELS,evaluate,invert} from '../site/studio/models.js';
 import {TOPICS} from '../site/topics.js';
 import {curriculumHash} from './curriculum-hash.mjs';
+import {rcUnit,rcText} from '../site/rc-units.js';
 const map={
  'structural-analysis':['udl','point','stability','udl','truss','frame','udl','cantilever','beam-deflection','cantilever','point-deflection','truss-displacement','beam-deflection','point-deflection','propped','force-flexibility','propped','settlement','propped','propped','propped','joint','joint','influence','two-loads','axial','axial','beam-deflection','propped','joint'],
  'reinforced-concrete':['rc-flexure','rc-flexure','tbeam','rc-column','magnify','rc-shear','rc-flexure','torsion','development','development','service','slab','punch','punch','punch','capacity','rc-column','rc-shear','prestress','loss','prestress-range','rc-shear','prestress','punch','capacity','torsion','prestress-range','tbeam','magnify','prestress'],
@@ -20,6 +21,9 @@ const wrong={
 };
 wrong.frame='L 形折架的向下端力，對基底力矩應用豎桿高度 h 作力臂。';
 wrong['two-loads']='兩個不同位置的集中力，對 A 反力的影響線縱距都取 1/2。';
+wrong['rc-capacity']=wrong.capacity;
+map['reinforced-concrete']=map['reinforced-concrete'].map(id=>id==='capacity'?'rc-capacity':id);
+for(const id of map['reinforced-concrete'])wrong[id]=rcText(wrong[id]);
 fs.mkdirSync('site/studio/content',{recursive:true});
 const baseline={},coverage=[];
 const lockedBaseline=JSON.parse(fs.readFileSync('docs/studio-content-canonical-baseline.json'));
@@ -51,10 +55,10 @@ for(const [topic,t] of Object.entries(TOPICS)){
    if(id==='pile'&&condition)mechanics.push(results[0].value<0?'端承扣除負摩擦的有號餘額為負，表示抵抗缺額，無可加外壓力；不是負的承載容量。':'此值為端承扣除負摩擦後的有號餘額，尚未套用設計安全係數，不直接視為容許載重。');
    const steps=[`列出已知並統一單位：${given.join('；')}。`,...(condition?[`本組條件覆寫：${model.change}其餘已知維持題給值。`]:[]),model.formula,...results.map(r=>`${r.formula} → ${r.label}＝${fmt(r.value)} ${r.unit}。`),...mechanics,...(inverse?[`反解得 ${unknown.symbol}＝${fmt(wanted[0].value)} ${unknown.unit}；以原關係式回代，${target.label}＝${fmt(target.value)} ${target.unit}。`]:[]),...(index===4?[`錯因核對：${model.pitfall}`]:[]),'檢查量綱、邊界條件與受力方向；數值一致仍需審閱推導及圖解。'];
    const text=`${model.title}｜${type}\n${model.assumptions}\n${given.join('；')}。\n${condition?model.change+'\n':''}${task}`;
-   return {id:`${topic}-d${String(day.day).padStart(2,'0')}-v${index}`,version:1,contentRevision:2,type,index,model:id,condition,params:p,unknown:inverse?unknown.symbol:null,target:inverse?target:null,title:model.title,prompt:text,fields:wanted.map((r,i)=>({id:'s'+i,label:r.label,value:r.value,unit:r.unit,...(/靜不定計數|外部反力分量數|塑性鉸總數/.test(r.label)?{integer:true}:{})})),steps,plain:`先把「${model.title}」的已知與邊界說清楚，再用題設關係求 ${wanted[0].label}。${model.pitfall} 這裡只核對本題明示模型；完整工程設計還需其他檢核。`,drawing:{kind:model.kind,labels:given,task:'先畫題給幾何、受力方向及座標，再補內力、變形或應力分布；示意不按比例。'},source,digest:hash({id,p,condition,results})};
+   return {id:`${topic}-d${String(day.day).padStart(2,'0')}-v${index}`,version:1,contentRevision:topic==='reinforced-concrete'?3:2,...(model.unitSystem?{unitSystem:model.unitSystem}:{}),type,index,model:id,condition,params:p,unknown:inverse?unknown.symbol:null,target:inverse?target:null,title:model.title,prompt:text,fields:wanted.map((r,i)=>({id:'s'+i,label:r.label,value:r.value,unit:r.unit,...(/靜不定計數|外部反力分量數|塑性鉸總數/.test(r.label)?{integer:true}:{})})),steps,plain:`先把「${model.title}」的已知與邊界說清楚，再用題設關係求 ${wanted[0].label}。${model.pitfall} 這裡只核對本題明示模型；完整工程設計還需其他檢核。`,drawing:{kind:model.kind,labels:given,task:'先畫題給幾何、受力方向及座標，再補內力、變形或應力分布；示意不按比例。'},source,digest:hash({id,p,condition,results})};
   });
   const cond=evaluate(id,params,true)[0].value,answerDirection=cond>base[0].value+1e-9?'增加':cond<base[0].value-1e-9?'減少':'不變';
-  const unit=base[0].unit||'無因次';const units=[...new Set([unit,'kN','kN·m','m','MPa','無因次'])].slice(0,4);
+  const unit=base[0].unit||'無因次';const units=[...new Set([unit,'kN','kN·m','m','MPa','無因次'].map(u=>topic==='reinforced-concrete'?rcUnit(u):u))].slice(0,4);
   const otherModels=Object.values(MODELS).filter(m=>m.id!==id).map(m=>m.solve(Object.fromEntries(m.vars.map(v=>[v.symbol,v.value])),false)[0].formula).filter(f=>f!==base[0].formula);
   const warmups=[{id:'unit',prompt:`「${base[0].label}」依本題應使用哪個單位？`,options:units,answer:unit,explanation:`依定義及一致單位，本題用 ${unit}；勿只看結果數字。`},{id:'relation',prompt:`求「${base[0].label}」應先採用哪條關係？`,options:[base[0].formula,...otherModels.slice(day.day%8,day.day%8+2)],answer:base[0].formula,explanation:model.formula},{id:'condition',prompt:`依題設「${model.change}」，主要結果的有號數值會如何變化？`,options:['增加','減少','不變'],answer:answerDirection,explanation:`原情境 ${fmt(base[0].value)} ${base[0].unit}；改變情境 ${fmt(cond)} ${base[0].unit}。${model.formula}`}];
   coverage.push({topic,day:day.day,model:id,cases:cases.length,warmups:3,originalHash:hash(day),focus:day.task});
