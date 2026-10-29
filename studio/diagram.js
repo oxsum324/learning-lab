@@ -20,7 +20,7 @@ export function problemDiagram(c){
  else if(k==='section'){
   if(id==='h-section'||id.startsWith('steel-')||['classification','asdlrfd','block'].includes(id)){rect(200,45,220,24);rect(298,69,24,110);rect(200,179,220,24);text(160,233,'斷面性質與尺寸依題設');}
   else{rect(210,40,200,160);for(const x of [240,280,320,360,390])s.append(make('circle',{cx:x,cy:173,r:6,fill:'#286b61'}));text(124,113,'壓力');text(425,177,'拉力');text(158,232,'斷面與鋼筋僅示意，非配筋施工圖');}
- }else if(id==='capacity'){
+ }else if(['capacity','rc-capacity'].includes(id)){
   line(95,140,525,140,7);line(95,65,525,65,1);for(let x=115;x<525;x+=45)arrow(x,65,x,123);text(300,43,'q');
   for(const x of [95,525]){s.append(make('path',{d:`M${x-16} 103 A22 22 0 1 1 ${x+20} 108`,fill:'none',stroke:'#27786b','stroke-width':3}));text(x-35,195,'Mpr');}
   text(88,228,c.condition?'指定端：VM − Vg（有號）':'指定端：VM + Vg（有號）');

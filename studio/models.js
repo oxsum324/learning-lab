@@ -1,4 +1,5 @@
 // Authored teaching models. Coefficients explicitly supplied in a problem are not code lookups.
+import {rcUnit,rcDisplay,rcCanonical,rcText} from '../rc-units.js?v=0.16.1';
 export const MODELS={};
 const v=(symbol,label,unit,value)=>({symbol,label,unit,value});
 const out=(label,value,unit,formula)=>({label,value,unit,formula});
@@ -94,6 +95,35 @@ add('oc-consolidation','跨先期壓密壓力沉陷',[v('H','土層厚','m',4),v
 add('elastic-settlement','彈性即時沉陷',[v('q','基底淨壓力','kPa',150),v('B','基礎寬','m',3),v('E','土彈性模數','kPa',20000),v('nu','泊松比','',0.3),v('I','題給沉陷影響係數','',1)],(p,m)=>[out('即時沉陷',p.q*p.B*(1-p.nu*p.nu)/p.E*p.I*(m?.8:1),'m','Se=q B(1−ν²) I/E'),out('無因次應力模數比',p.q/p.E,'','q/E')],'分清題給的淨應力、模數與影響係數，以量綱檢查結果應為長度。','線彈性半無限體簡化式；I 已含本題形狀與計算點，不混入主壓密沉陷。','基礎剛度與形狀情境改變，題給 I 降為原 0.80 倍。','把土模數 MPa 的數字直接配 kPa 壓力，漏一千倍換算。','soil');
 add('frame','剛接懸臂折架的受力傳遞',[v('P','水平臂端向下力','kN',20),v('a','水平臂長','m',3),v('h','豎桿高','m',4)],(p,m)=>[out('基底反力矩絕對值',p.P*p.a*(m?2:1),'kN·m','|MA|=P a'),out('基底向上反力',p.P,'kN','RAy=P'),out('豎桿軸壓力絕對值',p.P,'kN','|Ncolumn|=P')],'取整架自由體求基底反力，再切水平臂與豎桿，逐段辨認軸力、剪力與彎矩。','L 形折架，豎桿底固定，頂部剛接向右水平臂；臂端僅有向下載重，忽略自重。','水平臂長增為原兩倍，豎桿高度與荷重不變。','把豎桿高度 h 當成向下端力對基底的力臂。','frame');
 add('two-loads','兩集中力與影響線疊加',[v('P1','第一向下集中力','kN',10),v('P2','第二向下集中力','kN',20),v('L','簡支梁跨度','m',6)],(p,m)=>{let r1=m?2/3:1/3,r2=m?1/3:2/3;return[out('A 支承反力',p.P1*(1-r1)+p.P2*(1-r2),'kN','RA=ΣPi(1−xi/L)'),out('跨中彎矩',p.L/6*(p.P1+p.P2),'kN·m','Mmid=ΣPi ηmid(xi)，x=L/3 或 2L/3 時 η=L/6')];},'畫 A 反力與跨中彎矩影響線，對兩載重逐項乘縱距並疊加，再用直接平衡核對。','A 鉸、B 水平面滾支承，載重在 L/3 與 2L/3；彎矩影響線縱距單位為 m。','兩個載重交換位置，各自大小不變。','兩個載重不分位置都用 1/2 作 A 反力影響線縱距。');
+// Keep the reviewed SI mechanics inside the boundary; RC inputs and results use Taiwan gravity units.
+const rcFormula={
+ 'rc-flexure':()=>['Mn=As fy(d−a/2)/10⁸','a=As fy/(0.85 fc b)'],
+ 'rc-column':()=>['Pn=[α fc(Ag−Ast)+fy Ast]/10⁵','Ac=Ag−Ast'],
+ magnify:()=>['M2=M1/(1−P/Pcr)','δ=1/(1−P/Pcr)'],
+ 'rc-shear':()=>['Vs=Av fy d cotθ/(s×10⁵)','Av/s'],
+ torsion:()=>['q=T×10⁷/(2Ao)','At=10 q s/fy，θ=45°'],
+ development:()=>['ld=db fs/(4τ)','T=πdb² fs/(4×10⁵)'],
+ service:()=>['δ=5qL⁴/(384EIeff)','EIeff 依題給'],
+ slab:condition=>[condition?'M=qL²/12（題給連續帶係數）':'M=qL²/8','As=M×10⁸/(fy z)'],
+ punch:()=>['vu=Vu×10⁵/(bo d)','Acv=bo d'],
+ 'rc-capacity':()=>['V=(Mpr,L+Mpr,R)/Ln ± qLn/2','VM=2Mpr/Ln'],
+ prestress:condition=>[condition?'σbottom=P×10⁵(1/A−e/Z)':'σbottom=P×10⁵(1/A+e/Z)',condition?'σtop=P×10⁵(1/A+e/Z)':'σtop=P×10⁵(1/A−e/Z)'],
+ loss:condition=>[condition?'Pe=P0(1−ri)（傳遞時刻）':'Pe=P0(1−ri)(1−rl)','Pi=P0(1−ri)'],
+ tbeam:()=>['Mn=(T d−Cw a/2−Cf hf/2)/10⁶；T、Cw、Cf 採 kgf','先判斷 a≤hf；超出則算腹板與翼板突出部分'],
+ 'prestress-range':()=>['e≤min(Z/A,[fallow−P×10⁵/A] Z/(P×10⁵))','σ0=P×10⁵/A']
+};
+MODELS['rc-capacity']={...MODELS.capacity,id:'rc-capacity'};
+for(const [id,formulas] of Object.entries(rcFormula)){
+ const canonical=MODELS[id];
+ MODELS[id]={...canonical,unitSystem:'taiwan-gravity',vars:canonical.vars.map(q=>({...q,value:rcDisplay(q.value,q.unit),unit:rcUnit(q.unit)})),
+  formula:rcText(canonical.formula)+' 本題應力採 kgf/cm²，力採 tf，彎矩採 tf·m；斷面尺寸採 mm，面積由 mm² 換成 cm² 須除以100。',
+  assumptions:rcText(canonical.assumptions),change:rcText(canonical.change),pitfall:rcText(canonical.pitfall),
+  solve:(p,condition)=>{const input=Object.fromEntries(canonical.vars.map(q=>[q.symbol,rcCanonical(p[q.symbol],q.unit)]));return canonical.solve(input,condition).map((r,i)=>({...r,value:rcDisplay(r.value,r.unit),unit:rcUnit(r.unit),formula:formulas(condition)[i]}));}
+ };
+}
+MODELS.tbeam.formula+=' 壓力合力統一採 kgf：T=As fy/100；壓力塊各區亦以 mm²÷100 成 cm² 後乘壓應力。';
+MODELS.punch.pitfall='漏做 tf、kgf 與 mm²、cm² 的換算；剪應力應以 kgf/cm² 回報。';
+MODELS['rc-shear'].assumptions='本題先忽略混凝土剪力，壓桿 θ=45°；不含折減、上限及最小配筋檢查。';
 export function evaluate(id,params,condition=false){const m=MODELS[id];if(!m)throw Error('未知題設模型');return m.solve(params,condition);}
 export function invert(id,params,target,condition=false,key=MODELS[id].vars[0].symbol){
  const base=params[key];

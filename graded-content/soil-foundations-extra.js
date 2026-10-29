@@ -1,4 +1,4 @@
-import {S,M,E,O,lesson} from './build.js?v=0.16.0';
+import {S,M,E,O,lesson} from './build.js?v=0.16.1';
 const make=(day,model,locator,rows)=>lesson('soil-foundations','so',day,model,`土壤力學及大地工程題庫 ${locator}；D${String(day).padStart(2,'0')}`,rows);
 export const questions=[
  ...make(1,'土壤與地工資料分流診斷','SO_C02～SO_C07',[

@@ -1,4 +1,4 @@
-import {questions as extraQuestions} from './reinforced-concrete-extra.js?v=0.16.0';
+import {questions as extraQuestions} from './reinforced-concrete-extra.js?v=0.16.1';
 const topic='reinforced-concrete';
 const opt=(id,text,reason)=>({id,text,reason});
 const q=(id,level,type,skill,prompt,body,explanation,assistance=1)=>({id:`rc-d02-${id}`,version:1,topic,day:2,level,type,skill,model:'單筋矩形梁',prompt,assistance,source:{kind:'specified-model',label:'明示題設模型：單筋矩形梁壓力塊',locator:'鋼筋混凝土題庫 rc_core_01；係數與降伏依題設'},explanation,...body});

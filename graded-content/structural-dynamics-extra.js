@@ -1,4 +1,4 @@
-import {S,M,E,O,lesson} from './build.js?v=0.16.0';
+import {S,M,E,O,lesson} from './build.js?v=0.16.1';
 const make=(day,model,locator,rows)=>lesson('structural-dynamics','dy',day,model,`耐震設計及結構動力題庫 ${locator}；D${String(day).padStart(2,'0')}`,rows);
 export const questions=[
  ...make(1,'動力基礎分流診斷','DY_C02～DY_C07',[

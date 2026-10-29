@@ -1,4 +1,5 @@
 // D02 variants use explicitly stated lesson models, not a design-code compliance check.
+import {rcDisplay,rcUnit} from './rc-units.js?v=0.16.1';
 const TOPICS=['structural-analysis','reinforced-concrete','steel-structures','structural-dynamics','soil-foundations'];
 const PARAMETER_AXES={
  'structural-analysis':{L:[6,8,10],ratio:[.2,.3,.4],P:[10,12,15,20]},
@@ -72,21 +73,31 @@ export function numericModel(topic,p){
  if(values.some((x,i)=>i&&Math.abs(x-values[0])<=Math.max(1e-6,.01*Math.abs(values[0])))||new Set(values).size!==3)throw Error('候選數值發生碰撞');
  return {value,values,check,unit,fieldLabel,prompt,model,worked};
 }
-export function numericQuestion(topic,seed){
+export function numericQuestion(topic,seed,options={}){
  const pick=generator(topic+':'+seed);let p;
  const axes=PARAMETER_AXES[topic];if(!axes)throw Error('未提供此科變式');
  // Constant axes consume no random draw, preserving the original seed mapping.
  p=modelParameters(topic,Object.fromEntries(Object.entries(axes).map(([key,values])=>[key,values.length===1?values[0]:pick(values)])));
- return numericQuestionFromParameters(topic,p,seed);
+ return numericQuestionFromParameters(topic,p,seed,options);
 }
-export function numericQuestionFromParameters(topic,parameters,seed='parameter-set'){
+export function numericQuestionFromParameters(topic,parameters,seed='parameter-set',options={}){
+ // Parameters stay SI; version 3 correct/options/tolerance use the stated display unit.
  const p=modelParameters(topic,parameters);
- const r=numericModel(topic,p),labels={
+ const si=numericModel(topic,p),traditional=topic==='reinforced-concrete'&&options.rcUnits!=='si';
+ let r=si;
+ if(traditional){
+  const {b,d,As,fc,fy,Es}=p,beta=concreteBeta1(fc),a=As*fy/(.85*fc*b),c=a/beta,epsilonT=.003*(d-c)/c;
+  const display=value=>Number(value.toPrecision(10)),stress=value=>display(rcDisplay(value,'MPa'));
+  r={...si,value:rcDisplay(si.value,'kN·m'),values:si.values.map(value=>Number(rcDisplay(value,'kN·m').toPrecision(7))),unit:rcUnit('kN·m'),
+   prompt:`單筋矩形梁 b=${b} mm、d=${d} mm、As=${As} mm²、f'c=${stress(fc)} kgf/cm²、fy=${stress(fy)} kgf/cm²、Es=${stress(Es)} kgf/cm²。題設壓力塊應力 0.85f'c；依建築物混凝土結構設計規範表 22.2.2.4.3，β1=${betaLabel(beta)}。極限壓應變 0.003，拉力筋降伏；求名義彎矩 Mn（tf·m），不乘強度折減因數。面積及長度保留 mm 制，應力採 kgf/cm²；計算合力時面積需由 mm² 換成 cm²。`,
+   worked:`a=As fy/(0.85f'c b)=${a.toFixed(4)} mm（壓、拉力的面積換算因子 1/100 相消）；β1=${betaLabel(beta)}，c=a/β1=${c.toFixed(4)} mm，εt=0.003(d−c)/c=${epsilonT.toFixed(6)}，大於降伏應變 fy/Es=${(fy/Es).toFixed(6)}，且符合本題 εt≥0.005 的參數篩選條件。以 fy 的 kgf/cm² 數值計，T=As fy/100 kgf；Mn=T(d−a/2)/10⁶=As fy(d−a/2)/10⁸=${rcDisplay(si.value,'kN·m').toFixed(6)} tf·m。β1 與應變篩選先按原強度的標準單位精確核算，顯示換算不改變內部參數；此處僅計算題設斷面的名義彎矩。`};
+ }
+ const labels={
   'structural-analysis':['滿足對 B 點力矩平衡。','把 A 與 B 的力臂顛倒。','偏心荷重不應把兩端反力直接平分。'],
   'reinforced-concrete':['採壓拉合力間的力臂。','漏掉壓力合力作用位置的 a/2。','將壓力合力錯置於壓力塊底部。'],
   'steel-structures':['使用實際面積及中心強軸慣性矩。','用外接矩形面積取代 H 形實際面積。','錯把慣性矩多除以二。'],
   'structural-dynamics':['週期為圓頻率的 2π 倍倒數。','漏乘 2π。','把週期與圓頻率的關係顛倒。'],
   'soil-foundations':['分母包含固體與孔隙體積。','漏計孔隙體積。','算成含水重量的濕單位重。']
  };
- return {id:`${topic}-d02-numeric-${hash(seed).toString(36)}`,version:topic==='reinforced-concrete'?2:1,topic,day:2,level:3,type:'single',skill:'數值與單位',model:r.model,numeric:true,assistance:topic==='reinforced-concrete'?2:1,source:{kind:'specified-model',label:'本課明示題設模型',locator:topic==='reinforced-concrete'?'D02 變式；β1 依 112 年版建築物混凝土結構設計規範（113 年勘誤）表 22.2.2.4.3，第 22-3 頁；其餘模型假設見題幹':'D02 變式；模型假設見題幹'},prompt:r.prompt,options:r.values.map((v,i)=>({id:['a','b','c'][i],text:`${v} ${r.unit}`,reason:labels[topic][i]})),answer:'a',explanation:r.worked,numericMeta:{parameters:p,seed:String(seed),unit:r.unit,correct:r.value,tolerance:Math.max(1e-6,.01*Math.abs(r.value)),fieldLabel:r.fieldLabel}};
+ return {id:`${topic}-d02-numeric-${hash(seed).toString(36)}${traditional?'-tf':''}`,version:topic==='reinforced-concrete'?(traditional?3:2):1,topic,day:2,level:3,type:'single',skill:'數值與單位',model:r.model,numeric:true,assistance:topic==='reinforced-concrete'?2:1,source:{kind:'specified-model',label:'本課明示題設模型',locator:topic==='reinforced-concrete'?'D02 變式；β1 依 112 年版建築物混凝土結構設計規範（113 年勘誤）表 22.2.2.4.3，第 22-3 頁；其餘模型假設見題幹'+(traditional?'；題面採 kgf/cm²、tf·m，內部參數仍為原標準單位':'；保留舊稿原單位'):'D02 變式；模型假設見題幹'},prompt:r.prompt,options:r.values.map((v,i)=>({id:['a','b','c'][i],text:`${v} ${r.unit}`,reason:labels[topic][i]})),answer:'a',explanation:r.worked,numericMeta:{parameters:p,seed:String(seed),unit:r.unit,correct:r.value,tolerance:Math.max(1e-6,.01*Math.abs(r.value)),fieldLabel:r.fieldLabel}};
 }
