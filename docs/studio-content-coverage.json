@@ -650,7 +650,7 @@
   {
     "topic": "steel-structures",
     "day": 13,
-    "model": "interaction",
+    "model": "steel-interaction",
     "cases": 5,
     "warmups": 3,
     "originalHash": "667c86a423695d26ed28a35b315533a461c7d902e3cd5834a394a9de278d12c1",
@@ -731,7 +731,7 @@
   {
     "topic": "steel-structures",
     "day": 22,
-    "model": "capacity",
+    "model": "steel-capacity",
     "cases": 5,
     "warmups": 3,
     "originalHash": "ed6a5e272adbcbc321ac56c0052f37c8cf69413fb7684ab0e4c41b0d81297bd2",
@@ -740,7 +740,7 @@
   {
     "topic": "steel-structures",
     "day": 23,
-    "model": "interaction",
+    "model": "steel-interaction",
     "cases": 5,
     "warmups": 3,
     "originalHash": "044d4a7fbdba5473a4d95173288006e290318e01ad881ca921e5494acfbf1648",
@@ -794,7 +794,7 @@
   {
     "topic": "steel-structures",
     "day": 29,
-    "model": "interaction",
+    "model": "steel-interaction",
     "cases": 5,
     "warmups": 3,
     "originalHash": "d1f582fd9c5d6d6a4ef80e2ec0896edeac772fdd841e7b3c251e701c29cb1026",
