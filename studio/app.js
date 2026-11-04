@@ -1,15 +1,18 @@
-import {TOPICS,storageKey} from '../topics.js?v=0.16.1';
-import {TOPIC_ID,SANDBOX,emptyState,validateState,mergeStates,safeSave,assess} from '../core.js?v=0.16.1';
-import {DrawingEditor,renderAnswerDrawing} from '../drawing.js?v=0.16.1';
-import {emptyWorkspace} from '../drawing-model.js?v=0.16.1';
-import {lessonLayout} from '../drawing-layouts.js?v=0.16.1';
-import {mountCloudHistory,mergeCloudRecords} from '../cloud-history.js?v=0.16.1';
-import {normalizeNotes,mergeNotes} from '../practice-notes.js?v=0.16.1';
-import {normalizePrefs,meaningfulDraft,practiceBudget} from '../learning-flow.js?v=0.16.1';
-import {sessionKind} from '../session-phases.js?v=0.16.1';
-import {prepareStudio,prepareWork,recordWarmup,reveal,freezeInitial,sameDraftContent,revealDiagnostic,staleExercise,useCurrentExercise} from './state.js?v=0.16.1';
-import {problemDiagram} from './diagram.js?v=0.16.1';
-import {rcLegacyDay} from '../rc-units.js?v=0.16.1';
+import {TOPICS,storageKey} from '../topics.js?v=0.16.2';
+import {TOPIC_ID,SANDBOX,emptyState,validateState,mergeStates,safeSave,assess} from '../core.js?v=0.16.2';
+import {DrawingEditor,renderAnswerDrawing} from '../drawing.js?v=0.16.2';
+import {emptyWorkspace} from '../drawing-model.js?v=0.16.2';
+import {lessonLayout} from '../drawing-layouts.js?v=0.16.2';
+import {mountCloudHistory,mergeCloudRecords} from '../cloud-history.js?v=0.16.2';
+import {normalizeNotes,mergeNotes} from '../practice-notes.js?v=0.16.2';
+import {normalizePrefs,meaningfulDraft,practiceBudget} from '../learning-flow.js?v=0.16.2';
+import {sessionKind} from '../session-phases.js?v=0.16.2';
+import {prepareStudio,prepareWork,recordWarmup,reveal,freezeInitial,sameDraftContent,revealDiagnostic,staleExercise,useCurrentExercise} from './state.js?v=0.16.2';
+import {problemDiagram} from './diagram.js?v=0.16.2';
+import {rcLegacyDay} from '../rc-units.js?v=0.16.2';
+import {steelLegacyDay} from '../steel-units.js?v=0.16.2';
+// Subjects whose current cases use Taiwan gravity units also display the preserved SI source lesson in those units.
+const legacyDay={'reinforced-concrete':rcLegacyDay,'steel-structures':steelLegacyDay}[TOPIC_ID];
 const $=id=>document.getElementById(id),node=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
 const key=storageKey(TOPIC_ID,SANDBOX),notesKey='learning-lab:'+(SANDBOX?'sandbox:':'')+TOPIC_ID+':practice-notes:v1';
 const now=()=>new Date().toISOString(),clone=structuredClone;
@@ -21,7 +24,7 @@ const blank=()=>({activeMs:0,reasoning:'',explanation:'',mistake:'',values:{},hi
 function status(text,bad=false){$('save-status').textContent=text;$('save-status').classList.toggle('warning',bad);}
 try{expected=localStorage.getItem(key);if(expected)state=validateState(JSON.parse(expected),TOPIC_ID);}catch(e){writable=false;raw=expected;$('export-raw').hidden=!raw;status('原有資料未能讀取，已停止覆寫；請先在備份頁下載原檔。',true);}
 const lesson=()=>course.lessons[day-1];
-const originalLesson=()=>TOPIC_ID==='reinforced-concrete'&&exercise().unitSystem==='taiwan-gravity'?rcLegacyDay(lesson().original):lesson().original;
+const originalLesson=()=>legacyDay&&exercise().unitSystem==='taiwan-gravity'?legacyDay(lesson().original):lesson().original;
 const draft=()=>state.drafts[day]??=blank();
 function exercise(){const s=prepareStudio(draft(),lesson(),TOPIC_ID);return s.workspaces[s.selected]?.snapshot??lesson().cases.find(c=>c.id===s.selected)??lesson().cases[0];}
 function work(){const c=exercise(),s=draft().studio;return prepareWork(s,c,emptyWorkspace(TOPIC_ID==='structural-analysis'&&c.drawing.kind==='beam'?'beam-full':lessonLayout(TOPIC_ID,day)));}
@@ -83,7 +86,7 @@ setInterval(()=>{if(course&&tick!==null)clock();},500);
 setInterval(()=>{if(course&&tick!==null){capture();persist();}},5000);
 async function init(){applyPrefs();for(const[id,t]of Object.entries(TOPICS)){const o=node('option',t.name);o.value=id;$('topic').append(o);}$('topic').value=TOPIC_ID;$('topic').onchange=()=>{const target=$('topic').value;if(!pauseForChange()){$('topic').value=TOPIC_ID;return;}location.href='?topic='+target+(SANDBOX?'&sandbox=1':'');};$('subject-name').textContent=TOPICS[TOPIC_ID].name+' · 30 天複習';const classic='../?topic='+TOPIC_ID+(SANDBOX?'&sandbox=1':'');$('classic-link').href=classic;$('old-backup').href=classic+'#backup';$('sandbox-notice').hidden=!SANDBOX;const artIndex=Object.keys(TOPICS).indexOf(TOPIC_ID);$('subject-picture').style.backgroundPosition=(artIndex*25)+'% 50%';
  if(matchMedia('(min-width:1151px)').matches)$('subject-picture').style.backgroundImage='url(../assets/studio-subjects-v1.jpg)';
- const r=await fetch('content/'+TOPIC_ID+'.json?v=0.16.1');if(!r.ok)throw Error('課程尚未載入，請重新整理；原有紀錄未刪除。');course=await r.json();if(course.topic!==TOPIC_ID||course.lessons.length!==30)throw Error('課程主題或課數不符。');
+ const r=await fetch('content/'+TOPIC_ID+'.json?v=0.16.2');if(!r.ok)throw Error('課程尚未載入，請重新整理；原有紀錄未刪除。');course=await r.json();if(course.topic!==TOPIC_ID||course.lessons.length!==30)throw Error('課程主題或課數不符。');
  for(const l of course.lessons){const o=node('option','D'+String(l.day).padStart(2,'0')+' · '+l.focus);o.value=String(l.day);$('lesson').append(o);}editor=new DrawingEditor($('drawing-editor'),queue);
  let initial=1;try{const d=Number(new URLSearchParams(location.search).get('day')||sessionStorage.getItem('studio-day:'+TOPIC_ID));if(Number.isInteger(d)&&d>=1&&d<=30)initial=d;}catch{}loadDay(initial);
  cloud=mountCloudHistory({topicId:TOPIC_ID,sandbox:SANDBOX,getState:()=>{if(!flush())throw Error('本機儲存尚未完成，請先匯出紀錄。');return state;},onMerge:remote=>{if(!pauseForChange())throw Error('本機尚未保存，未合併。');const merged=mergeCloudRecords(state,remote);state=merged;if(!persist())throw Error('合併結果未保存，請匯出。');loadDay(day);},download});

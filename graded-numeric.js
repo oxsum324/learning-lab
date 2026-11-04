@@ -1,5 +1,5 @@
 // D02 variants use explicitly stated lesson models, not a design-code compliance check.
-import {rcDisplay,rcUnit} from './rc-units.js?v=0.16.1';
+import {rcDisplay,rcUnit} from './rc-units.js?v=0.16.2';
 const TOPICS=['structural-analysis','reinforced-concrete','steel-structures','structural-dynamics','soil-foundations'];
 const PARAMETER_AXES={
  'structural-analysis':{L:[6,8,10],ratio:[.2,.3,.4],P:[10,12,15,20]},

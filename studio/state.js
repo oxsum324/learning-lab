@@ -1,4 +1,4 @@
-import {validDrawing,hasDrawing} from '../drawing-model.js?v=0.16.1';
+import {validDrawing,hasDrawing} from '../drawing-model.js?v=0.16.2';
 const obj=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 const str=(v,n=12000)=>typeof v==='string'&&v.length<=n;
 const stamp=v=>str(v,40)&&Number.isFinite(Date.parse(v));
