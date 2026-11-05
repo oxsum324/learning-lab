@@ -1,20 +1,26 @@
-import {STAGES,newReview,reviewMaterial,availableMaterial,numericRecognitionNote,markSupport,recognitionResult,reviewOutcome,recommendedStage} from './progressive-review.js?v=0.16.1';
-import {TOPICS} from './topics.js?v=0.16.1';
-import {KEY,DAY_KEY,TOPIC_ID,SANDBOX,emptyState,assess,validateState,mergeStates,safeSave} from './core.js?v=0.16.1';
-import {DrawingEditor,renderAnswerDrawing,renderDrawing} from './drawing.js?v=0.16.1';
-import {hasDrawing} from './drawing-model.js?v=0.16.1';
-import {hasStudioWork} from './studio/state.js?v=0.16.1';
-import {GUIDES} from './teaching-guides.js?v=0.16.1';
-import {mountCloudHistory,mergeCloudRecords} from './cloud-history.js?v=0.16.1';
-import {PHASES,RANGES,RECALL,meaningfulDraft,dayStatus,nextLesson,lessonMode,practiceBudget,normalizePrefs,coachSummary,gradedAnswerText} from './learning-flow.js?v=0.16.1';
-import {sessionPhases,phaseAt,referenceLocked,referenceAccess,recordHint} from './session-phases.js?v=0.16.1';
-import {normalizeNotes,mergeNotes,reviewDate,pendingReview,notesMarkdown} from './practice-notes.js?v=0.16.1';
-import {TOPIC_ART,PHASE_ART,decorativeImage,loadPanelArt} from './illustrations.js?v=0.16.1';
-import {createPractice,setPracticeLevel,revealSupport,practiceOutcome} from './graded-practice.js?v=0.16.1';
-import {getQuestions} from './graded-bank.js?v=0.16.1';
-import {numericQuestion} from './graded-numeric.js?v=0.16.1';
-import {rcLegacyCourse,rcText} from './rc-units.js?v=0.16.1';
-import {renderGradedPractice,refreshGradedLimit,normalizeStarts,startPreference,starterFor,gradedAccess,priorCoreAssistance} from './graded-ui.js?v=0.16.1';
+import {STAGES,newReview,reviewMaterial,availableMaterial,numericRecognitionNote,markSupport,recognitionResult,reviewOutcome,recommendedStage} from './progressive-review.js?v=0.16.2';
+import {TOPICS} from './topics.js?v=0.16.2';
+import {KEY,DAY_KEY,TOPIC_ID,SANDBOX,emptyState,assess,validateState,mergeStates,safeSave} from './core.js?v=0.16.2';
+import {DrawingEditor,renderAnswerDrawing,renderDrawing} from './drawing.js?v=0.16.2';
+import {hasDrawing} from './drawing-model.js?v=0.16.2';
+import {hasStudioWork} from './studio/state.js?v=0.16.2';
+import {GUIDES} from './teaching-guides.js?v=0.16.2';
+import {mountCloudHistory,mergeCloudRecords} from './cloud-history.js?v=0.16.2';
+import {PHASES,RANGES,RECALL,meaningfulDraft,dayStatus,nextLesson,lessonMode,practiceBudget,normalizePrefs,coachSummary,gradedAnswerText} from './learning-flow.js?v=0.16.2';
+import {sessionPhases,phaseAt,referenceLocked,referenceAccess,recordHint} from './session-phases.js?v=0.16.2';
+import {normalizeNotes,mergeNotes,reviewDate,pendingReview,notesMarkdown} from './practice-notes.js?v=0.16.2';
+import {TOPIC_ART,PHASE_ART,decorativeImage,loadPanelArt} from './illustrations.js?v=0.16.2';
+import {createPractice,setPracticeLevel,revealSupport,practiceOutcome} from './graded-practice.js?v=0.16.2';
+import {getQuestions} from './graded-bank.js?v=0.16.2';
+import {numericQuestion} from './graded-numeric.js?v=0.16.2';
+import {rcLegacyCourse,rcText} from './rc-units.js?v=0.16.2';
+import {steelLegacyCourse,steelText} from './steel-units.js?v=0.16.2';
+// Subjects whose new drafts use Taiwan gravity units. Older drafts keep their SI wording, values and snapshots.
+const UNIT_SYSTEMS={
+ 'reinforced-concrete':{key:'rcUnitSystem',marker:'kgf-tf-v1',text:rcText,course:rcLegacyCourse,units:'kgf/cm²、tf/m²、tf／tf·m',legacy:'此為既有草稿：保留原 SI 題面、數值、提示與快照，以原單位核對；提交後的新練習才採 kgf/cm²、tf/m² 與 tf。',fresh:'本次新稿採 kgf/cm²、tf/m²、tf／tf·m；幾何保留 mm，請依欄位及式內換算作答。'},
+ 'steel-structures':{key:'steelUnitSystem',marker:'tf-cm2-v1',text:steelText,course:steelLegacyCourse,units:'tf/cm²、tf／tf·m',legacy:'此為既有草稿：保留原 SI 題面、數值、提示與快照，以原單位核對；提交後的新練習才採 tf/cm² 與 tf。',fresh:'本次新稿採 tf/cm²、tf／tf·m；幾何保留 mm，應力乘面積前先把 mm² 除以100 換成 cm²。'}
+};
+import {renderGradedPractice,refreshGradedLimit,normalizeStarts,startPreference,starterFor,gradedAccess,priorCoreAssistance} from './graded-ui.js?v=0.16.2';
 let cloud;
 const notesKey='learning-lab:'+(SANDBOX?'sandbox:':'')+TOPIC_ID+':practice-notes:v1';
 let notes=normalizeNotes(),notesExpected=null,notesWritable=true,lastSubmitted=null,phaseKey='',activePhase=-2,pendingReference='';
@@ -39,14 +45,16 @@ if(SANDBOX){document.querySelector('.notice').hidden=false;document.querySelecto
 function storageMessage(msg,bad=false){$('storage-status').textContent=msg;$('storage-status').className=bad?'warning':'';$('workspace-storage').textContent=bad?msg:'';$('workspace-storage').hidden=!bad;}
 try{expected=localStorage.getItem(KEY);if(expected)state=validateState(JSON.parse(expected));storageMessage('本機儲存可用');}catch{writable=false;unreadRaw=expected;$('export-original').hidden=typeof unreadRaw!=='string';storageMessage('無法讀取原有資料，已停止覆寫。請至備份頁下載原始未讀取資料；本頁新作答須另行匯出，勿清除瀏覽器資料。',true);}
 function persist(){if(!writable)return false;try{expected=safeSave(localStorage,state,expected);storageMessage('已存至目前瀏覽器 · '+new Date().toLocaleTimeString('zh-TW'));cloud?.changed();return true;}catch(e){writable=false;storageMessage(e.message+' 儲存未完成，請先匯出本頁資料。',true);return false;}}
-const blank=()=>({activeMs:0,reasoning:'',explanation:'',mistake:'',hint:0,answerViewed:false,errorType:'未判定',values:{},startedAt:'',updatedAt:now(),...(TOPIC_ID==='reinforced-concrete'?{rcUnitSystem:'kgf-tf-v1'}:{})});
+const UNITS=UNIT_SYSTEMS[TOPIC_ID];
+const blank=()=>({activeMs:0,reasoning:'',explanation:'',mistake:'',hint:0,answerViewed:false,errorType:'未判定',values:{},startedAt:'',updatedAt:now(),...(UNITS?{[UNITS.key]:UNITS.marker}:{})});
 function draft(){return state.drafts[currentDay]??=blank();}
-function legacyRC(day=currentDay){return TOPIC_ID==='reinforced-concrete'&&!!state.drafts[day]&&state.drafts[day].rcUnitSystem!=='kgf-tf-v1';}
-function lessonFor(day=currentDay){return (legacyRC(day)?originalCourse:course).days[day-1];}
-function rcContent(value){if(typeof value==='string')return rcText(value);if(Array.isArray(value))return value.map(rcContent);if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,rcContent(item)]));return value;}
-function unitContent(value){return TOPIC_ID==='reinforced-concrete'&&!legacyRC()?rcContent(value):value;}
-function lessonQuestions(){return getQuestions(TOPIC_ID,currentDay).map(q=>TOPIC_ID==='reinforced-concrete'&&!legacyRC()?{...rcContent(q),id:q.id+'-tf',version:q.version+1}:q);}
-function lessonStarter(fallback){if(TOPIC_ID==='reinforced-concrete'&&!legacyRC()&&currentDay===2)return '先寫 T=As fy/100、C=0.85f′c b a/100（As、b、a 保留 mm 制，應力採 kgf/cm²，合力為 kgf）。令 C=T 求 a，再用 Mn=T(d−a/2)/10⁶ 換成 tf·m；尚未確認控制條件前不逕套折減係數。';return unitContent(starterFor(TOPIC_ID,currentDay,fallback));}
+function legacyUnits(day=currentDay){return !!UNITS&&!!state.drafts[day]&&state.drafts[day][UNITS.key]!==UNITS.marker;}
+function lessonFor(day=currentDay){return (legacyUnits(day)?originalCourse:course).days[day-1];}
+function unitText(value){if(typeof value==='string')return UNITS.text(value);if(Array.isArray(value))return value.map(unitText);if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,unitText(item)]));return value;}
+function unitContent(value){return UNITS&&!legacyUnits()?unitText(value):value;}
+// The steel recognition bank is authored in exam units; only RC questions need a converted copy with its own id.
+function lessonQuestions(){return getQuestions(TOPIC_ID,currentDay).map(q=>TOPIC_ID==='reinforced-concrete'&&!legacyUnits()?{...unitText(q),id:q.id+'-tf',version:q.version+1}:q);}
+function lessonStarter(fallback){if(TOPIC_ID==='reinforced-concrete'&&!legacyUnits()&&currentDay===2)return '先寫 T=As fy/100、C=0.85f′c b a/100（As、b、a 保留 mm 制，應力採 kgf/cm²，合力為 kgf）。令 C=T 求 a，再用 Mn=T(d−a/2)/10⁶ 換成 tf·m；尚未確認控制條件前不逕套折減係數。';return unitContent(starterFor(TOPIC_ID,currentDay,fallback));}
 function timeText(ms){const seconds=Math.floor(ms/1000);return `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;}
 function elapsed(){return (state.drafts[currentDay]?.activeMs??0)+(tickFrom===null?0:Math.max(0,performance.now()-tickFrom));}
 function bankTick(){if(tickFrom!==null){draft().activeMs+=Math.max(0,performance.now()-tickFrom);tickFrom=performance.now();draft().updatedAt=now();}}
@@ -73,7 +81,7 @@ function switchDay(day){if(!course||day<1||day>30)return;pause();const d=capture
 function openLesson(day){switchDay(day);showTab('today');$('day-title').focus({preventScroll:true});}
 
 function showDay(day){pause();if(day!==currentDay)gradedSubmissionView=null;lastSubmitted=null;$('submission-feedback').hidden=true;approvedReferences.clear();$('concept-details').open=false;phaseKey='';currentDay=day;localStorageSelection(day);$('day-select').value=String(day);const lesson=lessonFor(day),d=state.drafts[day]??blank();$('day-title').textContent=`D${String(day).padStart(2,'0')} · ${lesson.task}`;$('workspace-lesson').textContent=$('day-title').textContent;$('read-task').textContent=lesson.read;$('do-task').textContent=lesson.activity??lesson.task;$('check-task').textContent=lesson.check;textDoc($('problem'),lesson.problem);$('beam-diagram').hidden=TOPIC_ID!=='structural-analysis'||day!==1;$('answer-details').open=false;$('guide-details').open=false;const guide=lesson.guide??GUIDES[day];textDoc($('guide-worked'),guide.worked.join('\n'));$('guide-plain').textContent=guide.plain;textDoc($('guide-draw'),guide.draw.join('\n'));$('numeric-fields').replaceChildren();for(const f of lesson.fields){const label=document.createElement('label');label.textContent=f.label;const input=document.createElement('input');input.type='text';input.inputMode='decimal';input.dataset.answer=f.id;input.setAttribute('aria-label',f.label);input.maxLength=100;input.value=d.values[f.id]??'';const unit=el('span',f.unit,'input-unit'),wrap=el('span',undefined,'numeric-input');wrap.append(input,unit);input.setAttribute('aria-label',f.label+'（'+f.unit+'）');label.append(wrap);$('numeric-fields').append(label);}
- $('numeric-note').textContent=(legacyRC(day)?'此為既有草稿：保留原 SI 題面、數值、提示與快照，以原單位核對；提交後的新練習才採 kgf/cm²、tf/m² 與 tf。':TOPIC_ID==='reinforced-concrete'?'本次新稿採 kgf/cm²、tf/m²、tf／tf·m；幾何保留 mm，請依欄位及式內換算作答。':'')+(lesson.fields.length?'關鍵數值採相對誤差 1% 核對；欄位單位固定如標示。數值符合不代表推導已驗收。':'今天以觀念與推導練習為主，提交後標記待教練審閱。');for(const k of ['reasoning','explanation','mistake'])$(k).value=d[k];$('hint').value=String(d.hint);$('error-type').value=d.errorType;$('timer').textContent=timeText(d.activeMs);$('start').textContent=d.activeMs?'繼續計時':'開始計時';$('result').textContent='';editor?.set(d.drawing,TOPIC_ID,day);paintLessonMeta();paintReview();}
+ $('numeric-note').textContent=(legacyUnits(day)?UNITS.legacy:UNITS?UNITS.fresh:'')+(lesson.fields.length?'關鍵數值採相對誤差 1% 核對；欄位單位固定如標示。數值符合不代表推導已驗收。':'今天以觀念與推導練習為主，提交後標記待教練審閱。');for(const k of ['reasoning','explanation','mistake'])$(k).value=d[k];$('hint').value=String(d.hint);$('error-type').value=d.errorType;$('timer').textContent=timeText(d.activeMs);$('start').textContent=d.activeMs?'繼續計時':'開始計時';$('result').textContent='';editor?.set(d.drawing,TOPIC_ID,day);paintLessonMeta();paintReview();}
 function material(){const lesson=originalCourse.days[currentDay-1];return unitContent(reviewMaterial(lesson,TOPIC_ID,lesson.guide??GUIDES[currentDay]));}
 function usesGraded(){return currentDay<=7&&(!state.drafts[currentDay]?.progressive||state.drafts[currentDay].progressive.version===2);}
 function topicStart(){return startPreference(starts,TOPIC_ID,state.records.length>0||Object.values(state.drafts).some(d=>d.progressive?.version===1&&meaningfulDraft(d)));}
@@ -90,7 +98,7 @@ function paintGraded(){
  $('pref-start-level').value=topicStart().startLevel;$('start-level-setup').hidden=topicStart().configured;
  reviewAccessKey=String(inWorkPhase());
  const save=(active=true)=>{if(active){beginNewAttempt();if(tickFrom===null&&!draft().startedAt)$('start').click();}draft().hint=Math.max(draft().hint,p.assistance);$('hint').value=String(draft().hint);draft().updatedAt=now();persist();};
- renderGradedPractice($('graded-practice'),{practice:p,questions:lessonQuestions(),day:currentDay,allowed:gradedAllowed(),weeklyLocked:blocked,activeMs:elapsed,onChange:save,onRender:paintReview,onLevel:level=>{if(level<5&&!gradedAllowed())return;beginNewAttempt();capture();p.activeMs=Math.max(p.activeMs,Math.round(elapsed()));setPracticeLevel(p,level);p.selectedStage=true;save(false);paintReview();},onCore:()=>$('answer-workspace').scrollIntoView({block:'start'}),onFinish:()=>$('written-answer').scrollIntoView({block:'start'}),onPreference:value=>saveStart(value),hasScaffold:!!m.scaffold,starter:lessonStarter(m.starter),draw:m.draw,numericFactory:currentDay===2?seed=>numericQuestion(TOPIC_ID,seed,{rcUnits:legacyRC()?'si':'traditional'}):null,onStarter:()=>{p.starterSeen=true;revealSupport(p,2,'worked-step');save();paintReview();},onScaffold:()=>{if(!m.scaffold||p.scaffoldId)return;revealSupport(p,2,'scaffold');editor.commit(()=>editor.data.sheets.workspace.push(...structuredClone(m.scaffold.drawing.sheets.workspace)));p.scaffoldId=m.scaffold.id;save();paintReview();$('answer-workspace').scrollIntoView({block:'start'});}});
+ renderGradedPractice($('graded-practice'),{practice:p,questions:lessonQuestions(),day:currentDay,allowed:gradedAllowed(),weeklyLocked:blocked,activeMs:elapsed,onChange:save,onRender:paintReview,onLevel:level=>{if(level<5&&!gradedAllowed())return;beginNewAttempt();capture();p.activeMs=Math.max(p.activeMs,Math.round(elapsed()));setPracticeLevel(p,level);p.selectedStage=true;save(false);paintReview();},onCore:()=>$('answer-workspace').scrollIntoView({block:'start'}),onFinish:()=>$('written-answer').scrollIntoView({block:'start'}),onPreference:value=>saveStart(value),hasScaffold:!!m.scaffold,starter:lessonStarter(m.starter),draw:m.draw,numericFactory:currentDay===2?seed=>numericQuestion(TOPIC_ID,seed,{rcUnits:legacyUnits()?'si':'traditional'}):null,onStarter:()=>{p.starterSeen=true;revealSupport(p,2,'worked-step');save();paintReview();},onScaffold:()=>{if(!m.scaffold||p.scaffoldId)return;revealSupport(p,2,'scaffold');editor.commit(()=>editor.data.sheets.workspace.push(...structuredClone(m.scaffold.drawing.sheets.workspace)));p.scaffoldId=m.scaffold.id;save();paintReview();$('answer-workspace').scrollIntoView({block:'start'});}});
 }
 function paintReview(){
  const graded=usesGraded();$('graded-practice').hidden=!graded;$('legacy-review').hidden=graded;
@@ -144,7 +152,7 @@ function renderRoute(){
 }
 function historicalValues(record){
  const snapshot=record.studio?.workspaces[record.studio.selected]?.snapshot;
- const fields=snapshot?.fields??(record.rcUnitSystem==='kgf-tf-v1'?course:originalCourse).days[record.day-1].fields;
+ const fields=snapshot?.fields??(UNITS&&record[UNITS.key]!==UNITS.marker?originalCourse:course).days[record.day-1].fields;
  return Object.entries(record.values).map(([id,value])=>{const field=fields.find(f=>f.id===id);return (field?.label??id)+'='+value+(field?.unit?' '+field.unit:'');}).join('，')||'未填';
 }
 function renderHistory(){
@@ -155,7 +163,7 @@ function renderHistory(){
  for(const r of records){
   const card=el('article',undefined,'history-item'),head=el('div',undefined,'history-heading'),title=el('h3','D'+String(r.day).padStart(2,'0')+' · '+course.days[r.day-1].task),redo=el('button','重練這課','secondary');redo.onclick=()=>openLesson(r.day);head.append(title,redo);
   const info=el('p',new Date(r.submittedAt).toLocaleString('zh-TW')+' · '+(r.activeMs/60000).toFixed(1)+' 分鐘 · '+(r.progressive?STAGES[r.progressive.stage]:'舊版作答')+' · 提示 '+r.hint+' · '+r.errorType,'muted');const details=el('details'),summary=el('summary','查看原稿與圖解');details.append(summary);
-  if(TOPIC_ID==='reinforced-concrete')details.append(el('p',r.studio?'題組原稿：沿用提交快照的單位，未重算。':r.rcUnitSystem==='kgf-tf-v1'?'本次原稿採 kgf/cm²、tf/m²、tf／tf·m；數值及原始題目保留。':'舊版原稿：沿用原 SI 題面及單位，未轉換數值或重算核對結果。','muted'));
+  if(UNITS)details.append(el('p',r.studio?'題組原稿：沿用提交快照的單位，未重算。':r[UNITS.key]===UNITS.marker?'本次原稿採 '+UNITS.units+'；數值及原始題目保留。':'舊版原稿：沿用原 SI 題面及單位，未轉換數值或重算核對結果。','muted'));
   const pre=el('pre','數值：'+historicalValues(r)+'\n推導：'+(r.reasoning||'未填')+'\n白話解釋：'+(r.explanation||'未填')+'\n錯因／問題：'+(r.mistake||'未填'));details.append(pre);for(const c of r.assessment.review?.checks??[])details.append(el('p',c.prompt+'：'+c.selected+'（'+(c.ok?'辨識符合':'待重練')+'）'));if(Object.hasOwn(notes.mistakes,r.id))details.append(el('p','提交後錯因卡：'+(notes.mistakes[r.id].mistake||'（已清空補充；原稿保留）'),'annotation-note'));
   if(r.progressive?.version===2)for(const a of r.progressive.attempts){const item=el('details');item.append(el('summary',a.question.prompt),el('p','原答：'+gradedAnswerText(a.question,a.answer)),el('p','本題核對：'+(a.result.correct?'符合':'需訂正')+' · 協助 '+a.assistance));item.append(el('p','題目版本：'+a.question.version+' · 題目依據：'+a.question.source.label+'｜'+a.question.source.locator,'muted'));if(a.question.numericInitial)item.append(el('p','首次數值：'+(a.question.numericInitial.status==='unknown'?'目前不知道':a.question.numericInitial.value+' '+a.question.numericMeta.unit)));for(const message of a.result.feedback)item.append(el('p',message));details.append(item);}
   // Render tall drawings only when their original record is opened.
@@ -239,7 +247,7 @@ $('pref-review-mode').onchange=()=>{prefs.reviewMode=$('pref-review-mode').value
 function download(value,name){const blob=new Blob([value],{type:name.endsWith('.md')?'text/markdown;charset=utf-8':'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 const exportSummary=()=>{pause();download(coachSummary(state,TOPICS[TOPIC_ID].name)+notesMarkdown(notes,state.records),'learning-review-'+TOPIC_ID+'.md');$('export-status').textContent='已匯出教練回顧摘要；完整圖解請另附 JSON。';};$('export-summary').onclick=exportSummary;$('history-export').onclick=exportSummary;
 $('export-original').onclick=()=>{if(typeof unreadRaw!=='string')return;download(unreadRaw,`learning-lab-original-${TOPIC_ID}.json`);$('export-status').textContent='原始未讀取資料已交給瀏覽器下載；內容未重寫，請保留並交給教練核對。';};
-$('export').onclick=()=>{pause();const data={...state,exportedAt:now(),source:'learning-lab-browser-v0.16.1',localPracticeNotes:notes};download(JSON.stringify(data,null,2),`learning-lab-${TOPIC_ID}-${new Date().toISOString().slice(0,10)}.json`);$('export-status').textContent='已交給瀏覽器下載，請確認檔案確實保存。雲端保存狀態請見雲端歷史區。';};
+$('export').onclick=()=>{pause();const data={...state,exportedAt:now(),source:'learning-lab-browser-v0.16.2',localPracticeNotes:notes};download(JSON.stringify(data,null,2),`learning-lab-${TOPIC_ID}-${new Date().toISOString().slice(0,10)}.json`);$('export-status').textContent='已交給瀏覽器下載，請確認檔案確實保存。雲端保存狀態請見雲端歷史區。';};
 $('import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>20*1024*1024)throw Error('檔案超過20MB。');pause();const {localPracticeNotes,practiceNotes,...raw}=JSON.parse(await file.text());const incoming=validateState(raw);const merged=mergeStates(state,incoming);state=merged;const saved=persist();notes=mergeNotes(notes,mergeNotes(localPracticeNotes,practiceNotes));const notesSaved=saveNotes();$('usage-feedback').value=notes.feedback;showDay(currentDay);paintStats();$('usage-feedback-status').textContent=notesSaved?'已合併本機補充註記。':'補充註記尚未保存，請匯出 JSON。';$('import-status').textContent=saved?`已合併，共${state.records.length}筆作答。`:'已載入本頁，瀏覽器儲存失敗，請匯出合併後備份。';}catch(err){$('import-status').textContent='未匯入：'+err.message;}e.target.value='';};
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});window.addEventListener('pagehide',pause);window.addEventListener('storage',e=>{if(e.key===KEY&&e.newValue!==expected){writable=false;pause();storageMessage('另一個分頁已更新紀錄，本頁已停止覆寫。請匯出本頁資料，再重新整理合併。',true);}});
 setInterval(()=>{const ms=elapsed();$('timer').textContent=timeText(ms);$('session-progress').value=Math.min(ms,prefs.minutes*60000);$('time-target').textContent=ms>=prefs.minutes*60000?'已達本次目標，可核對並記錄':'目標 '+prefs.minutes+' 分鐘';paintSession();},250);setInterval(()=>{if(tickFrom!==null){bankTick();persist();paintStats();}},5000);
@@ -252,7 +260,7 @@ $('route-description').textContent=topic.route;
 $('backup-topic').textContent='目前主題：'+topic.name+'。匯出及還原僅處理這個主題；另一科請切換後另行備份。';
 for(const [id,item] of Object.entries(TOPICS)){const option=document.createElement('option');option.value=id;option.textContent=item.name+(id==='reinforced-concrete'?'（含預力）':'');$('topic-select').append(option);}
 $('topic-select').value=TOPIC_ID;
-$('topic-select').onchange=e=>{const next=e.target.value;if(course){pause();const d=capture();if(!meaningfulDraft(d))delete state.drafts[currentDay];if(!persist()){$('topic-select').value=TOPIC_ID;storageMessage('尚有未保存資料，請先匯出備份，再切換主題。',true);return;}}const url=new URL(location.href);url.searchParams.set('topic',next);url.searchParams.set('v','0.16.1');url.hash='';location.assign(url.href);};
+$('topic-select').onchange=e=>{const next=e.target.value;if(course){pause();const d=capture();if(!meaningfulDraft(d))delete state.drafts[currentDay];if(!persist()){$('topic-select').value=TOPIC_ID;storageMessage('尚有未保存資料，請先匯出備份，再切換主題。',true);return;}}const url=new URL(location.href);url.searchParams.set('topic',next);url.searchParams.set('v','0.16.2');url.hash='';location.assign(url.href);};
 if(TOPIC_ID!=='structural-analysis'){
  $('step-do').textContent='02 / 做什麼 · 17分鐘';$('step-check').textContent='03 / 怎麼驗收 · 5分鐘';
  $('rhythm-note').textContent='另留3分鐘閉卷提取。可加量至60分鐘；週測20分鐘作答＋10分鐘核對，歷屆題25分鐘作答＋5分鐘檢查。';
@@ -285,7 +293,7 @@ focusDialog.addEventListener('close',()=>{
 });
 
 editor=new DrawingEditor($('drawing-editor'),data=>{beginNewAttempt();const d=draft();d.drawing=data;d.updatedAt=now();persist();});
-try{const response=await fetch(TOPICS[TOPIC_ID].curriculum+new URL(import.meta.url).search);if(!response.ok)throw Error('教材讀取失敗');originalCourse=await response.json();course=TOPIC_ID==='reinforced-concrete'?rcLegacyCourse(originalCourse):originalCourse;if(course.days.length!==30||course.days.some((d,i)=>d.day!==i+1)||course.topicId&&course.topicId!==TOPIC_ID)throw Error('教材主題或課次不正確');for(const d of course.days){const option=document.createElement('option');option.value=String(d.day);option.textContent=`D${String(d.day).padStart(2,'0')} · ${d.task.slice(0,30)}`;$('day-select').append(option);}if(course.sources){$('lesson-sources').replaceChildren();for(const source of course.sources){const a=document.createElement('a');a.href=source.url;a.textContent=source.label;a.target='_blank';a.rel='noopener';$('lesson-sources').append(a);}}textDoc($('reference'),course.reference);textDoc($('answers'),course.answers);let savedDay=prefs.startToday&&!location.hash?nextLesson(state).day:(prefs.lastDays[TOPIC_ID]||nextLesson(state).day);try{if(location.hash||!prefs.startToday)savedDay=Number(sessionStorage.getItem(DAY_KEY))||savedDay;}catch{}showDay(Number.isInteger(savedDay)&&savedDay>=1&&savedDay<=30?savedDay:1);$('day-select').disabled=false;$('practice-controls').disabled=false;$('start').disabled=false;paintStats();}catch(e){$('day-title').textContent='教材尚未載入，請重新整理。';storageMessage(e.message,true);$('start').disabled=true;}
+try{const response=await fetch(TOPICS[TOPIC_ID].curriculum+new URL(import.meta.url).search);if(!response.ok)throw Error('教材讀取失敗');originalCourse=await response.json();course=UNITS?UNITS.course(originalCourse):originalCourse;if(course.days.length!==30||course.days.some((d,i)=>d.day!==i+1)||course.topicId&&course.topicId!==TOPIC_ID)throw Error('教材主題或課次不正確');for(const d of course.days){const option=document.createElement('option');option.value=String(d.day);option.textContent=`D${String(d.day).padStart(2,'0')} · ${d.task.slice(0,30)}`;$('day-select').append(option);}if(course.sources){$('lesson-sources').replaceChildren();for(const source of course.sources){const a=document.createElement('a');a.href=source.url;a.textContent=source.label;a.target='_blank';a.rel='noopener';$('lesson-sources').append(a);}}textDoc($('reference'),course.reference);textDoc($('answers'),course.answers);let savedDay=prefs.startToday&&!location.hash?nextLesson(state).day:(prefs.lastDays[TOPIC_ID]||nextLesson(state).day);try{if(location.hash||!prefs.startToday)savedDay=Number(sessionStorage.getItem(DAY_KEY))||savedDay;}catch{}showDay(Number.isInteger(savedDay)&&savedDay>=1&&savedDay<=30?savedDay:1);$('day-select').disabled=false;$('practice-controls').disabled=false;$('start').disabled=false;paintStats();}catch(e){$('day-title').textContent='教材尚未載入，請重新整理。';storageMessage(e.message,true);$('start').disabled=true;}
 
 cloud=mountCloudHistory({topicId:TOPIC_ID,sandbox:SANDBOX,getState:()=>state,download,onMerge:remote=>{
  if(!course)throw Error('請等待教材載入後再合併。');
