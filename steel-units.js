@@ -1,5 +1,6 @@
-// Steel sources and mechanics stay SI; current steel lessons, answers and studio cases use the exam-paper units tf, tf/cm² and tf·m.
-import {createGravityUnits,GRAVITY,STRESS} from './gravity-units.js?v=0.16.2';
+// Steel sources and mechanics stay SI. Drafts marked tf-cm2-v1 show tf, tf/cm² and tf·m with mm geometry (steelText);
+// current lessons and studio cases follow the exam papers: tf, tf/cm², tf·m with section properties and member lengths in cm.
+import {createGravityUnits,GRAVITY,STRESS} from './gravity-units.js?v=0.16.3';
 export const STEEL_STRESS=STRESS*1000;// 1 tf/cm² = 98.0665 MPa
 const TF_CM2=1/STEEL_STRESS,TF=1/GRAVITY;
 const steel=createGravityUnits({
@@ -38,3 +39,8 @@ export const steelCanonical=steel.canonical;
 export const steelText=steel.text;
 export const steelLegacyDay=steel.legacyDay;
 export const steelLegacyCourse=steel.legacyCourse;
+// Exam papers tabulate A, I, S, Z, r and member lengths in cm; shape designations, plate thickness and weld legs stay mm.
+const GEOMETRY={mm:['cm',.1],'mm²':['cm²',.01],mm2:['cm²',.01],'mm³':['cm³',1e-3],mm3:['cm³',1e-3],'mm⁴':['cm⁴',1e-4],mm4:['cm⁴',1e-4]};
+export function steelExamUnit(unit,keepMm=false){return !keepMm&&GEOMETRY[unit]?GEOMETRY[unit][0]:steel.unit(unit);}
+export function steelExamDisplay(value,unit,keepMm=false){return !keepMm&&GEOMETRY[unit]?value*GEOMETRY[unit][1]:steel.display(value,unit);}
+export function steelExamCanonical(value,unit,keepMm=false){return !keepMm&&GEOMETRY[unit]?value/GEOMETRY[unit][1]:steel.canonical(value,unit);}

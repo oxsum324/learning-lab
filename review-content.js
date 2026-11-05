@@ -1,5 +1,5 @@
-import {shape,emptyWorkspace} from './drawing-model.js?v=0.16.2';
-import {lessonLayout} from './drawing-layouts.js?v=0.16.2';
+import {shape,emptyWorkspace} from './drawing-model.js?v=0.16.3';
+import {lessonLayout} from './drawing-layouts.js?v=0.16.3';
 
 // Authored exercise registry. Unlisted lessons deliberately have no recognition item.
 // Diagrams are qualitative teaching schematics; dimensions are labelled, not to scale.
@@ -41,6 +41,11 @@ add(ST,[3],['LRFD 的 φRn 比 Pu；ASD 的容許強度比 Pa，兩邊載重層�
 add(ST,[4],['交錯孔路徑含正的 s²/(4g) 修正，Ae=UAn；另查毛面積降伏。','交錯孔距修正 s²/(4g) 應從淨面積再扣除。','有效淨面積 Ae 一律等於 Ag，剪力遲滯 U 可省略。']);
 add(ST,[5],['各路徑都取題設兩式較小值，再比較 A、B 路徑；不反推未給孔位。','各路徑取兩式較大值，才不會過度低估強度。','題目只給面積，也可唯一還原每個螺栓的孔位圖。']);
 add(ST,[6],['同 KL 下，較小 ry 得較大細長比與較低柱強度，需比較兩軸。','因 rx 大於 ry，x 軸細長比必較大而控制。','比較柱軸力強度只看 A，不需兩軸 r。'],visual('column','依 rx=55、ry=35，選出本題控制軸的判讀。',['λy>λx，y 軸較弱且先檢核。','λx>λy，x 軸較弱且先檢核。','λx=λy，兩軸同樣細長。'],'已給柱與軸壓方向；補控制軸、該方向挫屈形狀及兩個 KL/r，再依題設曲線算強度。',{rx:55,ry:35,KL:3600}));
+// Current steel lessons tabulate section properties in cm as the exam papers do; drafts on the earlier mm wording keep the entries above.
+export const EXAM_REVIEW_CONTENT={[ST]:{
+ 2:{...REVIEW_CONTENT[ST][2],quantity:numeric('st_c02_area',[60,40.08],REVIEW_CONTENT[ST][2].quantity.reasons)},
+ 6:{...REVIEW_CONTENT[ST][6],visual:visual('column','依 rx=5.5 cm、ry=3.5 cm，選出本題控制軸的判讀。',REVIEW_CONTENT[ST][6].visual.labels,REVIEW_CONTENT[ST][6].visual.task,{rx:5.5,ry:3.5,KL:360,unit:'cm'})}
+}};
 add(ST,[9],['翼板與腹板寬厚比分別查，局部板件分類與整體構件細長比不同。','H 梁只查翼板，不管腹板寬厚比即可判定斷面類別。','KL/r 已查過就能取代所有板件寬厚比限制。']);
 add(ST,[10],['側向充分支承仍需區分 My、Mp 與局部板件限制。','有側向支承的梁，無論斷面分類都能達到 Mp。','彈性與塑性截面模數必相等，所以 My=Mp。']);
 add(ST,[11],['Lb 是壓翼緣有效側向支撐間距，不能直接用總跨距取代。','梁只要兩端有鉛直支承，壓翼緣 Lb 就等於零。','Cb 與彎矩梯度無關，可任意固定為最大值。']);
@@ -107,7 +112,7 @@ export function diagramDrawing(spec,variant=0,partial=false){
   push(pen([[310,70],[690,70],[690,110],[530,110],[530,290],[690,290],[690,330],[310,330],[310,290],[470,290],[470,110],[310,110],[310,70]]));t(120,225,`H=${p.H}`);t(350,35,`bf=${p.bf} mm`);
   if(!partial){const web=rect(470,variant===1?70:110,530,variant===1?330:290);web.color=variant===1?'#b64b32':'#285ca8';push(web,variant===2?line(500,40,500,365):line(220,200,780,200));t(variant===2?520:780,variant===2?55:210,'x');t(550,240,variant===1?'腹板 H':'腹板 H−2tf');t(530,385,`tw=${p.tw}；tf=${p.tf} mm`);}else t(120,410,'補：tw、tf、淨腹板與重心強軸 x');
  }else if(spec.family==='column'){
-  push(line(430,90,430,340),line(570,90,570,340),arrow(500,30,500,85),item('pin',500,345));t(180,80,`KL=${p.KL} mm`);t(620,140,`rx=${p.rx} mm`);t(620,190,`ry=${p.ry} mm`);if(!partial){push(line(710,290,920,290),line(810,210,810,380));t(925,295,'x');t(820,205,'y');t(705,430,'斷面側移方向');if(variant!==1)push(arrow(760,270,890,270));if(variant!==0)push(arrow(840,365,840,235));t(180,410,['λy>λx：繞 y','λx>λy：繞 x','λx=λy'][variant]);}else t(180,410,'補：挫屈形狀與控制軸，不預畫撓曲線');
+  push(line(430,90,430,340),line(570,90,570,340),arrow(500,30,500,85),item('pin',500,345));const u=p.unit??'mm';t(180,80,`KL=${p.KL} ${u}`);t(620,140,`rx=${p.rx} ${u}`);t(620,190,`ry=${p.ry} ${u}`);if(!partial){push(line(710,290,920,290),line(810,210,810,380));t(925,295,'x');t(820,205,'y');t(705,430,'斷面側移方向');if(variant!==1)push(arrow(760,270,890,270));if(variant!==0)push(arrow(840,365,840,235));t(180,410,['λy>λx：繞 y','λx>λy：繞 x','λx=λy'][variant]);}else t(180,410,'補：挫屈形狀與控制軸，不預畫撓曲線');
  }else if(spec.family==='base'){
   push(rect(360,70,650,150),line(200,330,820,330),pen([[410,150],[410,180],[380,195],[440,215],[380,235],[440,255],[410,275],[410,330]]),line(600,150,600,220),rect(575,220,625,270),variant===1&&!partial?line(600,270,880,410):line(600,270,600,330));t(450,120,'m=1000 kg');
   if(!partial){t(250,240,'k');t(650,240,'c');t(230,395,variant===2?'x=u+ug':'x=u−ug');push(arrow(660,100,790,100),arrow(200,360,340,360));t(800,105,'u');t(350,365,'ug');if(variant===1){push(line(790,410,960,410));t(730,445,'阻尼固定地面');}}else t(160,410,'補：k、c、u、ug、x 正方向與方程');

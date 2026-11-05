@@ -1,5 +1,5 @@
 // Original sources and mechanics stay SI; current RC answer fields use Taiwan gravity units.
-import {createGravityUnits,GRAVITY,STRESS} from './gravity-units.js?v=0.16.2';
+import {createGravityUnits,GRAVITY,STRESS} from './gravity-units.js?v=0.16.3';
 const rc=createGravityUnits({
  units:{
   MPa:['kgf/cm²',1/STRESS],
