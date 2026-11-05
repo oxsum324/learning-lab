@@ -1,14 +1,14 @@
 // Shared, lesson-specific scaffolding. No mastery score is inferred from recognition.
 export const STAGES={recognize:'1 · 候選辨識',guided:'2 · 提示補完',independent:'3 · 獨立作答'};
-import {REVIEW_CONTENT,diagramDrawing,lessonScaffold} from './review-content.js?v=0.16.2';
+import {REVIEW_CONTENT,EXAM_REVIEW_CONTENT,diagramDrawing,lessonScaffold} from './review-content.js?v=0.16.3';
 function options(texts,seed,reasons=[]){
  const out=texts.map((text,i)=>({id:String(i),text,reason:i?reasons[i-1]??text:'依本課題設與模型。'}));
  let h=2166136261;for(const c of String(seed))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;
  for(let i=out.length-1;i>0;i--){h^=h<<13;h^=h>>>17;h^=h<<5;const j=(h>>>0)%(i+1);[out[i],out[j]]=[out[j],out[i]];}return out;
 }
-export function reviewMaterial(lesson,topic,guide){
+export function reviewMaterial(lesson,topic,guide,{exam=false}={}){
  if(!guide?.draw?.length||!guide?.worked?.length)throw Error('缺少本課補完教材');
- const content=REVIEW_CONTENT[topic]?.[lesson.day],questions=[];
+ const content=(exam&&EXAM_REVIEW_CONTENT[topic]?.[lesson.day])||REVIEW_CONTENT[topic]?.[lesson.day],questions=[];
  if(content&&!content.skipRecognition){
   questions.push({id:'concept',prompt:'依本課題設，哪個觀念／推導判斷成立？',correct:'0',options:options(content.texts,`${topic}:${lesson.day}:concept`)});
   if(content.visual){const v=content.visual;questions.push({id:'diagram',prompt:v.prompt,correct:'0',options:options(v.labels,`${topic}:${lesson.day}:diagram`).map(o=>({...o,drawing:diagramDrawing(v,Number(o.id)),alt:o.text}))});}
@@ -20,7 +20,7 @@ export function reviewMaterial(lesson,topic,guide){
 // Numeric alternatives are withheld until this attempt has a saved numeric submission.
 export function availableMaterial(material,p){return {...material,questions:material.questions.filter(q=>q.id!=='quantity'||p.numericSubmission!==undefined)};}
 export function numericRecognitionNote(p){return p.quantitySeen===true||Object.hasOwn(p.selections,'quantity')?'辨識後填入，不計閉卷。':'';}
-export {newReview,validReview,markSupport} from './review-state.js?v=0.16.2';
+export {newReview,validReview,markSupport} from './review-state.js?v=0.16.3';
 export function recognitionResult(material,p){const total=material.questions.length,correct=material.questions.filter(q=>p.selections[q.id]===q.correct).length;return {total,correct,complete:total>0&&material.questions.every(q=>Object.hasOwn(p.selections,q.id)),passed:total>0&&correct===total};}
 export function reviewOutcome(p,material,hint=0,answerViewed=false){
  const assistance=Math.max(p.assistance,hint,answerViewed?3:0,p.stage==='recognize'?1:p.stage==='guided'?2:0);
