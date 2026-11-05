@@ -1,5 +1,5 @@
 // D02 variants use explicitly stated lesson models, not a design-code compliance check.
-import {rcDisplay,rcUnit} from './rc-units.js?v=0.16.2';
+import {rcDisplay,rcUnit} from './rc-units.js?v=0.16.3';
 const TOPICS=['structural-analysis','reinforced-concrete','steel-structures','structural-dynamics','soil-foundations'];
 const PARAMETER_AXES={
  'structural-analysis':{L:[6,8,10],ratio:[.2,.3,.4],P:[10,12,15,20]},
@@ -83,8 +83,15 @@ export function numericQuestion(topic,seed,options={}){
 export function numericQuestionFromParameters(topic,parameters,seed='parameter-set',options={}){
  // Parameters stay SI; version 3 correct/options/tolerance use the stated display unit.
  const p=modelParameters(topic,parameters);
- const si=numericModel(topic,p),traditional=topic==='reinforced-concrete'&&options.rcUnits!=='si';
+ const si=numericModel(topic,p),traditional=topic==='reinforced-concrete'&&options.rcUnits!=='si',examCm=topic==='steel-structures'&&options.steelUnits==='cm';
  let r=si;
+ if(examCm){
+  // Exam papers designate shapes in mm but tabulate A, Ix and r in cm; the geometry check stays in mm.
+  const {H,bf,tw,tf}=p,h=H-2*tf,A=2*bf*tf+tw*h,I=(bf*H**3-(bf-tw)*h**3)/12;
+  r={...si,value:si.value/10,values:si.values.map(value=>Number((value/10).toPrecision(7))),unit:'cm',
+   prompt:`忽略銲道及圓角的對稱焊接 H 形斷面 H${H}×${bf}×${tw}×${tf}（mm）：總高 H=${H} mm、翼板寬 bf=${bf} mm、腹板厚 tw=${tw} mm、翼板厚 tf=${tf} mm。尺寸先換成 cm，依原卷斷面表單位求通過斷面中心、平行翼板的強軸迴轉半徑 rx（cm）。`,
+   worked:`A=${Number((A/100).toPrecision(10))} cm²；Ix=${(I/1e4).toFixed(4)} cm⁴；rx=√(Ix/A)=${(si.value/10).toFixed(4)} cm。`};
+ }
  if(traditional){
   const {b,d,As,fc,fy,Es}=p,beta=concreteBeta1(fc),a=As*fy/(.85*fc*b),c=a/beta,epsilonT=.003*(d-c)/c;
   const display=value=>Number(value.toPrecision(10)),stress=value=>display(rcDisplay(value,'MPa'));
@@ -99,5 +106,5 @@ export function numericQuestionFromParameters(topic,parameters,seed='parameter-s
   'structural-dynamics':['週期為圓頻率的 2π 倍倒數。','漏乘 2π。','把週期與圓頻率的關係顛倒。'],
   'soil-foundations':['分母包含固體與孔隙體積。','漏計孔隙體積。','算成含水重量的濕單位重。']
  };
- return {id:`${topic}-d02-numeric-${hash(seed).toString(36)}${traditional?'-tf':''}`,version:topic==='reinforced-concrete'?(traditional?3:2):1,topic,day:2,level:3,type:'single',skill:'數值與單位',model:r.model,numeric:true,assistance:topic==='reinforced-concrete'?2:1,source:{kind:'specified-model',label:'本課明示題設模型',locator:topic==='reinforced-concrete'?'D02 變式；β1 依 112 年版建築物混凝土結構設計規範（113 年勘誤）表 22.2.2.4.3，第 22-3 頁；其餘模型假設見題幹'+(traditional?'；題面採 kgf/cm²、tf·m，內部參數仍為原標準單位':'；保留舊稿原單位'):'D02 變式；模型假設見題幹'},prompt:r.prompt,options:r.values.map((v,i)=>({id:['a','b','c'][i],text:`${v} ${r.unit}`,reason:labels[topic][i]})),answer:'a',explanation:r.worked,numericMeta:{parameters:p,seed:String(seed),unit:r.unit,correct:r.value,tolerance:Math.max(1e-6,.01*Math.abs(r.value)),fieldLabel:r.fieldLabel}};
+ return {id:`${topic}-d02-numeric-${hash(seed).toString(36)}${traditional?'-tf':examCm?'-cm':''}`,version:topic==='reinforced-concrete'?(traditional?3:2):examCm?2:1,topic,day:2,level:3,type:'single',skill:'數值與單位',model:r.model,numeric:true,assistance:topic==='reinforced-concrete'?2:1,source:{kind:'specified-model',label:'本課明示題設模型',locator:topic==='reinforced-concrete'?'D02 變式；β1 依 112 年版建築物混凝土結構設計規範（113 年勘誤）表 22.2.2.4.3，第 22-3 頁；其餘模型假設見題幹'+(traditional?'；題面採 kgf/cm²、tf·m，內部參數仍為原標準單位':'；保留舊稿原單位'):'D02 變式；模型假設見題幹'},prompt:r.prompt,options:r.values.map((v,i)=>({id:['a','b','c'][i],text:`${v} ${r.unit}`,reason:labels[topic][i]})),answer:'a',explanation:r.worked,numericMeta:{parameters:p,seed:String(seed),unit:r.unit,correct:r.value,tolerance:Math.max(1e-6,.01*Math.abs(r.value)),fieldLabel:r.fieldLabel}};
 }

@@ -11,12 +11,15 @@ const G=9.80665,STRESS=98.0665;
 const stressKeys={'steel-tension':['Fy','Fu'],block:['Fu'],buckling:['E'],'steel-bending':['Fy'],ltb:['E'],'steel-shear':['Fy'],weld:['F'],fatigue:['allow']};
 const forceKeys={'steel-interaction':['Pu','Pc'],bolt:['V','Rn'],eccentric:['V'],fatigue:['dF'],asdlrfd:['Rn'],'steel-capacity':['M','q'],plastic:['Mp']};
 const stiffnessKeys={ltb:{GJ:980665},torsional:{GJ:980665,ECw:9.80665e7}};
-const fieldFactor={tf:G,'tf·m':G,'tf/m':G,'tf/cm²':STRESS,'tf·cm²':980665,'tf·cm⁴':9.80665e7};
+// Exam papers give section properties and member lengths in cm; shape sizes, plate b/t and welds stay mm.
+const geometryKeys={'steel-tension':{Ag:100,An:100},block:{Av:100,At:100},buckling:{L:10,I:1e4},torsional:{L:10,r0:10},'steel-bending':{S:1e3,Z:1e3},ltb:{Lb:10,Iy:1e4},'steel-shear':{Aw:100},eccentric:{e:10,a:10,b:10},fatigue:{A:100}};
+const fieldFactor={tf:G,'tf·m':G,'tf/m':G,'tf/cm²':STRESS,'tf·cm²':980665,'tf·cm⁴':9.80665e7,cm:10,'cm²':100,'cm³':1e3,'cm⁴':1e4};
 function canonicalParams(c){
  const p={...c.params};
  for(const key of stressKeys[c.model]??[])p[key]*=STRESS;
  for(const key of forceKeys[c.model]??[])p[key]*=G;
  for(const [key,factor] of Object.entries(stiffnessKeys[c.model]??{}))p[key]*=factor;
+ for(const [key,factor] of Object.entries(geometryKeys[c.model]??{}))p[key]*=factor;
  return p;
 }
 const canonicalField=f=>f.value*(fieldFactor[f.unit]??1);
@@ -53,19 +56,21 @@ test('independent SI recomputation matches all 150 steel cases and 30 inverse ta
  }
 });
 
-test('gravity-unit formulas quoted in the steps reproduce the stored answers when applied literally',()=>{
+test('exam-unit formulas quoted in the steps reproduce the stored answers when applied literally',()=>{
  for(const c of cases){
   if(c.index===3)continue;
   const p=c.params,steps=c.steps.join('\n'),v=c.fields.map(f=>f.value);
-  if(c.model==='steel-tension'){assert.match(steps,/φPn=min\(0\.90Fy Ag,0\.75Fu U An\)\/100/);near(v[0],Math.min(.9*p.Fy*p.Ag,.75*(c.condition?.8:1)*p.Fu*p.An)/100,c.id);}
-  if(c.model==='block'){assert.match(steps,/Rn=\(0\.6Fu Anv\+Fu Ant\)\/100/);near(v[0],(.6*p.Fu*p.Av+p.Fu*p.At*(c.condition?.5:1))/100,c.id);}
-  if(c.model==='buckling'){assert.match(steps,/Pcr=π²E I\/\[100 \(KL\)²\]/);near(v[0],Math.PI**2*p.E*p.I/(100*(p.K*p.L*(c.condition?2:1))**2),c.id);}
-  if(c.model==='steel-bending'){assert.match(steps,/Fy [SZ]\/10⁵/);near(v[0],p.Fy*(c.condition?p.S:p.Z)/1e5,c.id);}
-  if(c.model==='ltb'){assert.match(steps,/Mcr=\(π\/Lb\)√\(E Iy GJ\)\/1000/);near(v[0],Math.PI/(p.Lb*(c.condition?2:1))*Math.sqrt(p.E*p.Iy*p.GJ)/1000,c.id);}
-  if(c.model==='torsional'){assert.match(steps,/Pcr,t=100\[GJ\+100π²ECw\/Lt²\]\/r0²/);const Lt=p.L*(c.condition?2:1);near(v[0],100*(p.GJ+100*Math.PI**2*p.ECw/Lt**2)/p.r0**2,c.id);near(v[1],1e4*Math.PI**2*p.ECw/(Lt**2*p.r0**2),c.id+' warp');}
-  if(c.model==='steel-shear'){assert.match(steps,/Vn=0\.6Fy Aw Cv\/100/);near(v[0],.6*p.Fy*p.Aw*p.Cv*(c.condition?.8:1)/100,c.id);}
+  if(c.model==='steel-tension'){assert.match(steps,/φPn=min\(0\.90Fy Ag,0\.75Fu U An\) →/);near(v[0],Math.min(.9*p.Fy*p.Ag,.75*(c.condition?.8:1)*p.Fu*p.An),c.id);}
+  if(c.model==='block'){assert.match(steps,/Rn=0\.6Fu Anv\+Fu Ant →/);near(v[0],.6*p.Fu*p.Av+p.Fu*p.At*(c.condition?.5:1),c.id);}
+  if(c.model==='buckling'){assert.match(steps,/Pcr=π²E I\/\(KL\)² →/);near(v[0],Math.PI**2*p.E*p.I/(p.K*p.L*(c.condition?2:1))**2,c.id);}
+  if(c.model==='steel-bending'){assert.match(steps,/Fy [SZ]\/100 →/);near(v[0],p.Fy*(c.condition?p.S:p.Z)/100,c.id);}
+  if(c.model==='ltb'){assert.match(steps,/Mcr=\(π\/Lb\)√\(E Iy GJ\)\/100/);near(v[0],Math.PI/(p.Lb*(c.condition?2:1))*Math.sqrt(p.E*p.Iy*p.GJ)/100,c.id);}
+  if(c.model==='torsional'){assert.match(steps,/Pcr,t=\[GJ\+π²ECw\/Lt²\]\/r0²/);const Lt=p.L*(c.condition?2:1);near(v[0],(p.GJ+Math.PI**2*p.ECw/Lt**2)/p.r0**2,c.id);near(v[1],Math.PI**2*p.ECw/(Lt**2*p.r0**2),c.id+' warp');}
+  if(c.model==='steel-shear'){assert.match(steps,/Vn=0\.6Fy Aw Cv →/);near(v[0],.6*p.Fy*p.Aw*p.Cv*(c.condition?.8:1),c.id);}
   if(c.model==='weld'){assert.match(steps,/R=0\.707 w Le F\/100/);near(v[0],.707*p.w*p.L*p.F*(c.condition?2:1)/100,c.id);}
-  if(c.model==='fatigue'){assert.match(steps,/Δσ=100 ΔF\/A/);near(v[0],100*p.dF/(p.A*(c.condition?.8:1)),c.id);}
+  if(c.model==='fatigue'){assert.match(steps,/Δσ=ΔF\/A →/);near(v[0],p.dF/(p.A*(c.condition?.8:1)),c.id);}
+  if(c.model==='eccentric'){assert.match(steps,/M=V e（tf·cm）/);const M=p.V*p.e*(c.condition?-1:1),j=4*(p.a**2+p.b**2);near(v[0],Math.hypot(M*p.b/j,p.V/4+M*p.a/j),c.id);}
+  if(c.model==='h-section'){const tw=p.tw*(c.condition?2:1)/10,h=p.h/10,b=p.b/10,tf=p.tf/10;near(v[1],2*b*tf+(h-2*tf)*tw,c.id+' A cm²');}
   if(c.model==='steel-capacity'){near(v[0],2*p.M/p.L+(c.condition?-1:1)*p.q*p.L/2,c.id);assert.match(c.fields[0].label,/指定端/);}
  }
 });
@@ -78,5 +83,6 @@ test('steel material givens follow the exam-paper values and every stress field 
   if('E' in c.params)assert.match(given,/E＝2040 tf\/cm²/,c.id);
   for(const f of c.fields)if(/應力/.test(f.label)&&f.unit)assert.equal(f.unit,'tf/cm²',c.id+' '+f.label);
   for(const f of c.fields)assert.doesNotMatch(f.unit,/MPa|kN/,c.id);
+  for(const f of c.fields)if(/面積|斷面模數|慣性矩/.test(f.label))assert.match(f.unit,/^cm[²³⁴]$/,c.id+' '+f.label);
  }
 });

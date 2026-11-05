@@ -1,6 +1,6 @@
 // Authored teaching models. Coefficients explicitly supplied in a problem are not code lookups.
-import {rcUnit,rcDisplay,rcCanonical,rcText} from '../rc-units.js?v=0.16.2';
-import {steelUnit,steelDisplay,steelCanonical,steelText} from '../steel-units.js?v=0.16.2';
+import {rcUnit,rcDisplay,rcCanonical,rcText} from '../rc-units.js?v=0.16.3';
+import {steelText,steelExamUnit,steelExamDisplay,steelExamCanonical} from '../steel-units.js?v=0.16.3';
 export const MODELS={};
 const v=(symbol,label,unit,value)=>({symbol,label,unit,value});
 const out=(label,value,unit,formula)=>({label,value,unit,formula});
@@ -126,41 +126,44 @@ MODELS.tbeam.formula+=' 壓力合力統一採 kgf：T=As fy/100；壓力塊各�
 MODELS.punch.pitfall='漏做 tf、kgf 與 mm²、cm² 的換算；剪應力應以 kgf/cm² 回報。';
 MODELS['rc-shear'].assumptions='本題先忽略混凝土剪力，壓桿 θ=45°；不含折減、上限及最小配筋檢查。';
 // Steel lessons use exam-paper units: tf, tf/cm², tf·m with mm geometry. Defaults follow the 110–114 年原卷 common values.
+// Exam papers: stresses and E in tf/cm², forces tf, moments tf·m; section properties and member lengths in cm.
+// Shape designations, plate widths/thicknesses and weld sizes stay in mm as printed on the papers (listed in mm).
 const steelModels={
  asdlrfd:{defaults:{Rn:100},formulas:()=>['φRn','Rn/Ω']},
- 'h-section':{defaults:{},formulas:()=>['Ix=[bh³−(b−tw)(h−2tf)³]/12','A=2btf+(h−2tf)tw','Sx=Ix/(h/2)']},
- 'steel-tension':{defaults:{Fy:2.5,Fu:4.1},formulas:()=>['φPn=min(0.90Fy Ag,0.75Fu U An)/100','φy Py=0.90Fy Ag/100']},
- block:{defaults:{Fu:4.1},formulas:()=>['Rn=(0.6Fu Anv+Fu Ant)/100','Rv=0.6Fu Anv/100']},
- buckling:{defaults:{E:2040},formulas:()=>['Pcr=π²E I/[100 (KL)²]','Le=KL']},
- torsional:{defaults:{GJ:80000,ECw:2e8},formulas:()=>['Pcr,t=100[GJ+100π²ECw/Lt²]/r0²（GJ 用 tf·cm²、ECw 用 tf·cm⁴，Lt、r0 用 mm）','Pwarp=10⁴π²ECw/(Lt² r0²)']},
- classification:{defaults:{},formulas:()=>['η=(b/t)/λlim','λ=b/t']},
- // Section moduli lead so per-day scaling and the parameter variant change geometry, not the exam material value.
- 'steel-bending':{defaults:{Fy:2.5},order:['S','Z','Fy'],formulas:condition=>[condition?'Mn=My=Fy S/10⁵':'Mn=Mp=Fy Z/10⁵','My=Fy S/10⁵']},
- ltb:{defaults:{E:2040,GJ:80000},formulas:()=>['Mcr=(π/Lb)√(E Iy GJ)/1000（E 用 tf/cm²、Iy 用 mm⁴、GJ 用 tf·cm²、Lb 用 mm）','Lb 依邊界情境']},
- 'steel-shear':{defaults:{Fy:2.5},formulas:()=>['Vn=0.6Fy Aw Cv/100','Vy=0.6Fy Aw/100']},
+ 'h-section':{defaults:{},mm:['h','b','tw','tf'],formulas:()=>['Ix=[bh³−(b−tw)(h−2tf)³]/12（尺寸 mm÷10 換 cm 後代入）','A=2btf+(h−2tf)tw','Sx=Ix/(h/2)']},
+ 'steel-tension':{defaults:{Fy:2.5,Fu:4.1},formulas:()=>['φPn=min(0.90Fy Ag,0.75Fu U An)','φy Py=0.90Fy Ag']},
+ block:{defaults:{Fu:4.1},formulas:()=>['Rn=0.6Fu Anv+Fu Ant','Rv=0.6Fu Anv']},
+ buckling:{defaults:{E:2040},formulas:()=>['Pcr=π²E I/(KL)²','Le=KL']},
+ torsional:{defaults:{GJ:80000,ECw:2e8},formulas:()=>['Pcr,t=[GJ+π²ECw/Lt²]/r0²（GJ 用 tf·cm²、ECw 用 tf·cm⁴，Lt、r0 用 cm）','Pwarp=π²ECw/(Lt² r0²)']},
+ classification:{defaults:{},mm:['b','t'],formulas:()=>['η=(b/t)/λlim','λ=b/t']},
+ // Z leads so per-day scaling and the parameter variant change geometry, not the exam material value; S scales with Z per day so S<Z (My<Mp) always holds.
+ 'steel-bending':{defaults:{Fy:2.5},order:['Z','S','Fy'],scaleWith:['S'],formulas:condition=>[condition?'Mn=My=Fy S/100':'Mn=Mp=Fy Z/100','My=Fy S/100']},
+ ltb:{defaults:{E:2040,GJ:80000},formulas:()=>['Mcr=(π/Lb)√(E Iy GJ)/100（E 用 tf/cm²、Iy 用 cm⁴、GJ 用 tf·cm²、Lb 用 cm，tf·cm÷100→tf·m）','Lb 依邊界情境']},
+ 'steel-shear':{defaults:{Fy:2.5},formulas:()=>['Vn=0.6Fy Aw Cv','Vy=0.6Fy Aw']},
  'steel-interaction':{defaults:{Pu:30,Pc:100},formulas:()=>['η=Pu/Pc+Mu/Mc','Mu/Mc≤1−Pu/Pc']},
  bolt:{defaults:{V:20,Rn:6},formulas:()=>['v=V/(n ns)','Vcap=n ns Rn']},
- weld:{defaults:{F:1.4},formulas:()=>['R=0.707 w Le F/100','te=0.707w']},
- eccentric:{defaults:{V:10},formulas:()=>['R=√[(M b/Jg)²+(V/4+M a/Jg)²]，M=V e（tf·mm）','Jg=Σri²=4(a²+b²)']},
+ weld:{defaults:{F:1.4},mm:['w','L'],keepOutputs:[1],formulas:()=>['R=0.707 w Le F/100（w、Le 用 mm，mm²÷100→cm²）','te=0.707w']},
+ eccentric:{defaults:{V:10},formulas:()=>['R=√[(M b/Jg)²+(V/4+M a/Jg)²]，M=V e（tf·cm）','Jg=Σri²=4(a²+b²)']},
  plastic:{defaults:{Mp:10},formulas:condition=>[condition?'固定兩端跨中荷重 Pc=8Mp/L':'簡支跨中荷重 Pc=4Mp/L','足以形成機構的鉸數']},
- fatigue:{defaults:{dF:10,allow:.6},formulas:()=>['Δσ=100 ΔF/A','η=Δσ/Δσallow']},
+ fatigue:{defaults:{dF:10,allow:.6},formulas:()=>['Δσ=ΔF/A','η=Δσ/Δσallow']},
  'steel-capacity':{defaults:{M:25,q:2},formulas:()=>['V=(Mpr,L+Mpr,R)/Ln ± qLn/2','VM=2Mpr/Ln']}
 };
-// Shared SI models keep serving dynamics and RC; steel gets its own copies.
 MODELS['steel-capacity']={...MODELS.capacity,id:'steel-capacity'};
 MODELS['steel-interaction']={...MODELS.interaction,id:'steel-interaction'};
-for(const [id,{defaults,formulas,order}] of Object.entries(steelModels)){
- const canonical=MODELS[id],converted=canonical.vars.some(q=>steelUnit(q.unit)!==q.unit);
- for(const symbol of [...Object.keys(defaults),...(order??[])])if(!canonical.vars.some(q=>q.symbol===symbol))throw Error('鋼構預設值對應不到變數 '+id+' '+symbol);
+const STEEL_NOTE='本題依原卷：應力與 E 採 tf/cm²，力採 tf，彎矩採 tf·m；斷面性質與構材長度採 cm 系。';
+for(const [id,{defaults,formulas,order,mm=[],keepOutputs=[],scaleWith}] of Object.entries(steelModels)){
+ const canonical=MODELS[id],converted=canonical.vars.some(q=>steelExamUnit(q.unit,mm.includes(q.symbol))!==q.unit);
+ for(const symbol of [...Object.keys(defaults),...(order??[]),...mm])if(!canonical.vars.some(q=>q.symbol===symbol))throw Error('鋼構預設值對應不到變數 '+id+' '+symbol);
  const vars=order?order.map(symbol=>canonical.vars.find(q=>q.symbol===symbol)):canonical.vars;
  if(vars.length!==canonical.vars.length)throw Error('鋼構變數順序不完整 '+id);
- MODELS[id]={...canonical,unitSystem:'taiwan-gravity',vars:vars.map(q=>({...q,unit:steelUnit(q.unit),value:defaults[q.symbol]??steelDisplay(q.value,q.unit)})),
-  formula:steelText(canonical.formula)+(converted?' 本題應力與 E 採 tf/cm²，力採 tf，彎矩採 tf·m；斷面尺寸採 mm，應力乘 mm² 面積須除以100 才得 tf。':''),
+ const keep=q=>mm.includes(q.symbol);
+ MODELS[id]={...canonical,unitSystem:'taiwan-gravity',examUnits:'cm',...(scaleWith?{scaleWith}:{}),vars:vars.map(q=>({...q,unit:steelExamUnit(q.unit,keep(q)),value:defaults[q.symbol]??steelExamDisplay(q.value,q.unit,keep(q))})),
+  formula:steelText(canonical.formula)+(converted?' '+STEEL_NOTE+(mm.length?`型鋼尺寸、板件與銲道（${mm.join('、')}）沿原卷以 mm 標示。`:''):''),
   assumptions:steelText(canonical.assumptions),change:steelText(canonical.change),pitfall:steelText(canonical.pitfall),
-  solve:(p,condition)=>{const input=Object.fromEntries(canonical.vars.map(q=>[q.symbol,steelCanonical(p[q.symbol],q.unit)]));return canonical.solve(input,condition).map((r,i)=>({...r,value:steelDisplay(r.value,r.unit),unit:steelUnit(r.unit),formula:formulas(condition)[i]}));}
+  solve:(p,condition)=>{const input=Object.fromEntries(canonical.vars.map(q=>[q.symbol,steelExamCanonical(p[q.symbol],q.unit,keep(q))]));return canonical.solve(input,condition).map((r,i)=>({...r,value:steelExamDisplay(r.value,r.unit,keepOutputs.includes(i)),unit:steelExamUnit(r.unit,keepOutputs.includes(i)),formula:formulas(condition)[i]}));}
  };
 }
-MODELS.fatigue.pitfall='以單一最大拉力代替最大與最小值之差，混淆平均應力與範圍；應力範圍須由 tf 與 mm² 換成 tf/cm²（乘100）。';
+MODELS.fatigue.pitfall='以單一最大拉力代替最大與最小值之差，混淆平均應力與範圍；力範圍 tf 除以面積 cm² 即得 tf/cm²。';
 export function evaluate(id,params,condition=false){const m=MODELS[id];if(!m)throw Error('未知題設模型');return m.solve(params,condition);}
 export function invert(id,params,target,condition=false,key=MODELS[id].vars[0].symbol){
  const base=params[key];

@@ -38,7 +38,7 @@ test('RC force equilibrium and T-beam pressure-block branch close independently'
  for(const course of courses)for(const l of course.lessons)for(const c of l.cases){const p=c.params,r=evaluate(c.model,p,c.condition);if(c.model==='rc-flexure'){const a=r[1].value,b=p.b*(c.condition?2:1);near(.85*p.fc*b*a,p.As*p.fy);near(r[0].value*(c.unitSystem==='taiwan-gravity'?1e8:1e6),p.As*p.fy*(p.d-a/2));assert.ok(a<p.d);}if(c.model==='tbeam'){const hf=p.hf*(c.condition?.5:1),a=r[1].value,area=a<=hf?p.bf*a:p.bw*a+(p.bf-p.bw)*hf;near(.85*p.fc*area,p.As*p.fy);assert.ok(a<p.d);}}
 });
 test('steel governing modes, bolt planes and weld throat retain demand/capacity units',()=>{
- for(const course of courses)for(const l of course.lessons)for(const c of l.cases){const p=c.params,r=evaluate(c.model,p,c.condition);const f=c.unitSystem==='taiwan-gravity'?100:1000;// tf = (tf/cm²)·mm²/100; kN = MPa·mm²/1000
+ for(const course of courses)for(const l of course.lessons)for(const c of l.cases){const p=c.params,r=evaluate(c.model,p,c.condition);const f=c.contentRevision>=4?(c.model==='weld'?100:1):c.unitSystem==='taiwan-gravity'?100:1000;// revision 4 exam units: tf=(tf/cm²)·cm², welds stay mm (÷100); revision 3: tf=(tf/cm²)·mm²/100; SI: kN=MPa·mm²/1000
   if(c.model==='steel-tension'){assert.ok(r[0].value<=.9*p.Fy*p.Ag/f+1e-8);assert.ok(r[0].value<=.75*p.Fu*p.An*(c.condition?.8:1)/f+1e-8);}if(c.model==='bolt')near(r[0].value*p.n*(c.condition?2:1),p.V);if(c.model==='weld')near(r[0].value*f,r[1].value*p.L*p.F*(c.condition?2:1));if(c.model==='buckling'){const critical=r[0].value*f;near(critical*(p.K*p.L*(c.condition?2:1))**2,Math.PI**2*p.E*p.I);}}
 });
 test('dynamics eigenvalue residuals, harmonic force balance and modal mass bounds hold',()=>{

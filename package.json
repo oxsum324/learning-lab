@@ -1,6 +1,6 @@
 {
   "name": "learning-lab",
-  "version": "0.16.2",
+  "version": "0.16.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
     "test": "npm run sync-version && node --test tests/*.test.js",
     "build": "npm run sync-version && node scripts/check-public.mjs",
     "build:backend": "esbuild backend/worker.js --bundle --format=esm --platform=browser --outfile=output/history-worker.mjs --minify",
-    "build:studio": "node scripts/build-studio.mjs",
+    "build:studio": "node scripts/build-steel-exam.mjs && node scripts/build-studio.mjs",
     "preview:studio": "node scripts/serve-preview.mjs"
   },
   "devDependencies": {

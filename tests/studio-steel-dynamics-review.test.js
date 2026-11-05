@@ -52,8 +52,8 @@ test('Rayleigh coefficients reproduce both target damping ratios and Newmark obe
 
 test('torsional-column long-length limit preserves Saint-Venant resistance while warping decays quadratically',()=>{
  const p=defaults('torsional'),one=evaluate('torsional',p,false),twice=evaluate('torsional',p,true);
- // Gravity-unit model: GJ in tf·cm² over r0² in mm² needs the 100 cm²/mm² factor; SI form keeps N·mm²/mm²/1000.
- const saintVenant=MODELS.torsional.unitSystem==='taiwan-gravity'?100*p.GJ/(p.r0*p.r0):p.GJ/(p.r0*p.r0)/1000;
+ // Exam units: GJ in tf·cm² over r0² in cm² gives tf directly; the SI form keeps N·mm²/mm²/1000.
+ const saintVenant=MODELS.torsional.examUnits==='cm'?p.GJ/(p.r0*p.r0):p.GJ/(p.r0*p.r0)/1000;
  near(one[1].value,4*twice[1].value);
  near(one[0].value-one[1].value,saintVenant);
  near(twice[0].value-twice[1].value,saintVenant);

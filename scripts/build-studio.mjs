@@ -30,6 +30,10 @@ map['steel-structures']=map['steel-structures'].map(id=>({capacity:'steel-capaci
 for(const id of map['steel-structures'])wrong[id]=steelText(wrong[id]);
 // Subjects whose current cases use Taiwan gravity units carry content revision 3; warmup unit choices follow the same table.
 const gravityTopics={'reinforced-concrete':rcUnit,'steel-structures':steelUnit};
+// Revision 3: Taiwan gravity units. Revision 4: steel exam-paper givens with cm section properties.
+const revision={'reinforced-concrete':3,'steel-structures':4};
+// Current steel lessons show the exam-unit course beside new cases; the SI source stays as `original` for older snapshots.
+const examCourses={'steel-structures':JSON.parse(fs.readFileSync('site/steel-exam-curriculum.json'))};
 fs.mkdirSync('site/studio/content',{recursive:true});
 const baseline={},coverage=[];
 const lockedBaseline=JSON.parse(fs.readFileSync('docs/studio-content-canonical-baseline.json'));
@@ -39,7 +43,7 @@ for(const [topic,t] of Object.entries(TOPICS)){
   const id=map[topic][day.day-1],model=MODELS[id];if(!model||!wrong[id])throw Error('缺模型或判錯題 '+id);
   const params=Object.fromEntries(model.vars.map(q=>[q.symbol,q.value]));
   // Per-day authored instances stay within the declared branch. Counts remain integers.
-  if(id!=='stability')params[model.vars[0].symbol]*=1+(day.day-1)*.02;
+  if(id!=='stability')for(const symbol of [model.vars[0].symbol,...(model.scaleWith??[])])params[symbol]*=1+(day.day-1)*.02;
   if(topic==='reinforced-concrete'&&day.day===28)params.As=5600;
   const base=evaluate(id,params),cases=names.map((type,index)=>{
    const p={...params};let condition=index===2;
@@ -61,7 +65,7 @@ for(const [topic,t] of Object.entries(TOPICS)){
    if(id==='pile'&&condition)mechanics.push(results[0].value<0?'端承扣除負摩擦的有號餘額為負，表示抵抗缺額，無可加外壓力；不是負的承載容量。':'此值為端承扣除負摩擦後的有號餘額，尚未套用設計安全係數，不直接視為容許載重。');
    const steps=[`列出已知並統一單位：${given.join('；')}。`,...(condition?[`本組條件覆寫：${model.change}其餘已知維持題給值。`]:[]),model.formula,...results.map(r=>`${r.formula} → ${r.label}＝${fmt(r.value)} ${r.unit}。`),...mechanics,...(inverse?[`反解得 ${unknown.symbol}＝${fmt(wanted[0].value)} ${unknown.unit}；以原關係式回代，${target.label}＝${fmt(target.value)} ${target.unit}。`]:[]),...(index===4?[`錯因核對：${model.pitfall}`]:[]),'檢查量綱、邊界條件與受力方向；數值一致仍需審閱推導及圖解。'];
    const text=`${model.title}｜${type}\n${model.assumptions}\n${given.join('；')}。\n${condition?model.change+'\n':''}${task}`;
-   return {id:`${topic}-d${String(day.day).padStart(2,'0')}-v${index}`,version:1,contentRevision:gravityTopics[topic]?3:2,...(model.unitSystem?{unitSystem:model.unitSystem}:{}),type,index,model:id,condition,params:p,unknown:inverse?unknown.symbol:null,target:inverse?target:null,title:model.title,prompt:text,fields:wanted.map((r,i)=>({id:'s'+i,label:r.label,value:r.value,unit:r.unit,...(/靜不定計數|外部反力分量數|塑性鉸總數/.test(r.label)?{integer:true}:{})})),steps,plain:`先把「${model.title}」的已知與邊界說清楚，再用題設關係求 ${wanted[0].label}。${model.pitfall} 這裡只核對本題明示模型；完整工程設計還需其他檢核。`,drawing:{kind:model.kind,labels:given,task:'先畫題給幾何、受力方向及座標，再補內力、變形或應力分布；示意不按比例。'},source,digest:hash({id,p,condition,results})};
+   return {id:`${topic}-d${String(day.day).padStart(2,'0')}-v${index}`,version:1,contentRevision:revision[topic]??2,...(model.unitSystem?{unitSystem:model.unitSystem}:{}),type,index,model:id,condition,params:p,unknown:inverse?unknown.symbol:null,target:inverse?target:null,title:model.title,prompt:text,fields:wanted.map((r,i)=>({id:'s'+i,label:r.label,value:r.value,unit:r.unit,...(/靜不定計數|外部反力分量數|塑性鉸總數/.test(r.label)?{integer:true}:{})})),steps,plain:`先把「${model.title}」的已知與邊界說清楚，再用題設關係求 ${wanted[0].label}。${model.pitfall} 這裡只核對本題明示模型；完整工程設計還需其他檢核。`,drawing:{kind:model.kind,labels:given,task:'先畫題給幾何、受力方向及座標，再補內力、變形或應力分布；示意不按比例。'},source,digest:hash({id,p,condition,results})};
   });
   const cond=evaluate(id,params,true)[0].value,answerDirection=cond>base[0].value+1e-9?'增加':cond<base[0].value-1e-9?'減少':'不變';
   const unit=base[0].unit||'無因次';const units=[...new Set([unit,'kN','kN·m','m','MPa','無因次'].map(u=>gravityTopics[topic]?gravityTopics[topic](u):u))].slice(0,4);
@@ -69,7 +73,8 @@ for(const [topic,t] of Object.entries(TOPICS)){
   const warmups=[{id:'unit',prompt:`「${base[0].label}」依本題應使用哪個單位？`,options:units,answer:unit,explanation:`依定義及一致單位，本題用 ${unit}；勿只看結果數字。`},{id:'relation',prompt:`求「${base[0].label}」應先採用哪條關係？`,options:[base[0].formula,...otherModels.slice(day.day%8,day.day%8+2)],answer:base[0].formula,explanation:model.formula},{id:'condition',prompt:`依題設「${model.change}」，主要結果的有號數值會如何變化？`,options:['增加','減少','不變'],answer:answerDirection,explanation:`原情境 ${fmt(base[0].value)} ${base[0].unit}；改變情境 ${fmt(cond)} ${base[0].unit}。${model.formula}`}];
   coverage.push({topic,day:day.day,model:id,cases:cases.length,warmups:3,originalHash:hash(day),focus:day.task});
   const note=lessonNotes[topic]?.[day.day];
-  return {day:day.day,focus:day.task,original:day,cases,warmups,diagnostic:{claim:wrong[id],explanation:model.pitfall},...(note?{originalReference:note.reference}:{}),scope:'原課題全文及來源保留。新增題組為本課考點的明示模型演練；不等同官方原卷逐題詳解，也不涵蓋本課所有規範分支。'+(note?' '+note.scope:'')};
+  const examDay=examCourses[topic]?.days[day.day-1];if(examDay&&examDay.day!==day.day)throw Error('原卷單位課表課次不符 '+topic);
+  return {day:day.day,focus:day.task,original:day,...(examDay?{examOriginal:examDay}:{}),cases,warmups,diagnostic:{claim:wrong[id],explanation:model.pitfall},...(note?{originalReference:note.reference}:{}),scope:'原課題全文及來源保留。新增題組為本課考點的明示模型演練；不等同官方原卷逐題詳解，也不涵蓋本課所有規範分支。'+(note?' '+note.scope:'')};
  });
  fs.writeFileSync(`site/studio/content/${topic}.json`,JSON.stringify({version:'studio-content-1',topic,name:t.name,references:course.sources??[],lessons})+'\n');
 }
